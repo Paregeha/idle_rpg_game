@@ -1,6 +1,9 @@
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
+import 'package:idle_rpg/data/save_database.dart';
+import 'package:idle_rpg/data/save_providers.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 
@@ -17,10 +20,16 @@ final _config = BalanceConfig(
 );
 
 ProviderContainer makeContainer(FakeClock clock) {
+  final db = SaveDatabase(NativeDatabase.memory());
+  addTearDown(db.close);
+
   final container = ProviderContainer(
     overrides: [
       clockProvider.overrideWithValue(clock),
       balanceConfigProvider.overrideWith((ref) async => _config),
+      // Backgrounding writes a save, so even the loop tests need somewhere to
+      // write it.
+      saveDatabaseProvider.overrideWithValue(db),
     ],
   );
   addTearDown(container.dispose);
@@ -105,7 +114,7 @@ void main() {
         ..startTicking();
       expect(controller.isTicking, isTrue);
 
-      controller.onPaused();
+      await controller.onPaused();
 
       expect(
         controller.isTicking,
@@ -117,7 +126,7 @@ void main() {
     test('coming back credits the gap through the offline path', () async {
       final clock = FakeClock(0);
       final controller = await bootedController(makeContainer(clock));
-      controller.onPaused();
+      await controller.onPaused();
 
       clock.advance(const Duration(hours: 3));
       final report = controller.onResumed();
@@ -134,7 +143,7 @@ void main() {
     test('a long absence is capped, not ticked through', () async {
       final clock = FakeClock(0);
       final controller = await bootedController(makeContainer(clock));
-      controller.onPaused();
+      await controller.onPaused();
 
       clock.advance(const Duration(days: 2));
       final report = controller.onResumed();

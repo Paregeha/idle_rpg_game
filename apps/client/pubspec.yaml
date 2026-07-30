@@ -9,6 +9,10 @@ environment:
 resolution: workspace
 
 dependencies:
+  drift: ^2.34.3
+  # Official wrapper: pulls in the right sqlite3 libraries per platform.
+  # sqlite3_flutter_libs is published as +eol and must not be used directly.
+  drift_flutter: ^0.3.1
   flutter:
     sdk: flutter
   # 3.4+ needs Dart 3.12; the Flutter SDK here ships 3.11.3.
