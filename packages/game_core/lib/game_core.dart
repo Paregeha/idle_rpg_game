@@ -8,6 +8,7 @@ library;
 export 'src/balance/balance_config.dart';
 export 'src/balance/balance_exception.dart';
 export 'src/balance/generator_config.dart';
+export 'src/balance/hero_config.dart';
 export 'src/balance/monster_config.dart';
 export 'src/balance/prestige_config.dart';
 export 'src/balance/start_config.dart';
