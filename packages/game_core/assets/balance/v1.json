@@ -1,7 +1,6 @@
 {
   "version": 1,
   "offlineCapMs": 28800000,
-
   "generators": {
     "apprentice": {
       "produces": "gold",
@@ -40,7 +39,6 @@
       "costGrowth": 1.12
     }
   },
-
   "hero": {
     "baseAttack": "2e0",
     "baseHp": "5e1",
@@ -50,19 +48,20 @@
     "critFactor": 2.0,
     "dodgeChance": 0.05
   },
-
   "start": {
-    "generators": { "apprentice": 1 },
-    "resources": { "gold": "0e0" }
+    "generators": {
+      "apprentice": 1
+    },
+    "resources": {
+      "gold": "0e0"
+    }
   },
-
   "prestige": {
     "resource": "gold",
     "currencyBase": "1e6",
     "currencyExponent": 0.5,
     "bonusPerPoint": "2e-2"
   },
-
   "monsters": {
     "slime": {
       "baseHp": "1e1",
@@ -103,6 +102,160 @@
       "attackGrowth": 1.4,
       "attacksPerSecond": 0.9,
       "dropChance": 0.18
+    }
+  },
+  "slots": [
+    "weapon",
+    "armour",
+    "helm",
+    "trinket"
+  ],
+  "rarities": {
+    "common": {
+      "statMultiplier": 1.0,
+      "rank": 0
+    },
+    "rare": {
+      "statMultiplier": 2.2,
+      "rank": 1
+    },
+    "epic": {
+      "statMultiplier": 5.0,
+      "rank": 2
+    },
+    "legendary": {
+      "statMultiplier": 12.0,
+      "rank": 3
+    }
+  },
+  "items": {
+    "chipped_blade": {
+      "slot": "weapon",
+      "rarity": "common",
+      "stats": {
+        "flatAttack": "3e0"
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "iron_sword": {
+      "slot": "weapon",
+      "rarity": "rare",
+      "stats": {
+        "flatAttack": "1.2e1",
+        "critChance": 0.03
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "ember_brand": {
+      "slot": "weapon",
+      "rarity": "epic",
+      "stats": {
+        "flatAttack": "6e1",
+        "attackMultiplier": 1.15
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "wyrmfang": {
+      "slot": "weapon",
+      "rarity": "legendary",
+      "stats": {
+        "flatAttack": "3e2",
+        "attackMultiplier": 1.4,
+        "critChance": 0.08
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "padded_vest": {
+      "slot": "armour",
+      "rarity": "common",
+      "stats": {
+        "flatHp": "2e1"
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "scale_mail": {
+      "slot": "armour",
+      "rarity": "rare",
+      "stats": {
+        "flatHp": "9e1",
+        "mitigation": 0.04
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "golem_plate": {
+      "slot": "armour",
+      "rarity": "epic",
+      "stats": {
+        "flatHp": "4e2",
+        "mitigation": 0.1,
+        "hpMultiplier": 1.15
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "leather_cap": {
+      "slot": "helm",
+      "rarity": "common",
+      "stats": {
+        "flatHp": "8e0"
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "forge_helm": {
+      "slot": "helm",
+      "rarity": "rare",
+      "stats": {
+        "flatHp": "4e1",
+        "mitigation": 0.03
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "crown_of_ash": {
+      "slot": "helm",
+      "rarity": "epic",
+      "stats": {
+        "flatHp": "1.8e2",
+        "critFactor": 0.3
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "copper_ring": {
+      "slot": "trinket",
+      "rarity": "common",
+      "stats": {
+        "critChance": 0.02
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "patina_charm": {
+      "slot": "trinket",
+      "rarity": "rare",
+      "stats": {
+        "critChance": 0.05,
+        "dodgeChance": 0.03
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "ember_sigil": {
+      "slot": "trinket",
+      "rarity": "epic",
+      "stats": {
+        "critChance": 0.09,
+        "attacksPerSecond": 0.2
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
     }
   }
 }

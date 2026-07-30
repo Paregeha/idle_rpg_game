@@ -113,6 +113,35 @@ void main() {
     expect(produced, isNotEmpty);
   });
 
+  test('every slot has something to put in it', () {
+    // A declared slot with no items is a hole in the UI: the screen shows an
+    // empty square the player can never fill.
+    for (final slot in config.slots) {
+      expect(
+        config.items.values.any((item) => item.slot == slot),
+        isTrue,
+        reason: 'nothing can be equipped in the $slot slot',
+      );
+    }
+  });
+
+  test('rarer items are actually better', () {
+    // Ranked rarities that do not increase in strength would make the whole
+    // reward loop meaningless.
+    final byRank = config.rarities.entries.toList()
+      ..sort((a, b) => a.value.rank.compareTo(b.value.rank));
+
+    for (var i = 1; i < byRank.length; i++) {
+      expect(
+        byRank[i].value.statMultiplier,
+        greaterThan(byRank[i - 1].value.statMultiplier),
+        reason:
+            '${byRank[i].key} ranks above ${byRank[i - 1].key} but is '
+            'no stronger',
+      );
+    }
+  });
+
   test('drop chances are sane probabilities', () {
     for (final entry in config.monsters.entries) {
       expect(entry.value.dropChance, inInclusiveRange(0, 1));

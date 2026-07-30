@@ -29,6 +29,21 @@ _BalanceConfig _$BalanceConfigFromJson(Map<String, dynamic> json) =>
       hero: json['hero'] == null
           ? const HeroConfig()
           : HeroConfig.fromJson(json['hero'] as Map<String, dynamic>),
+      slots:
+          (json['slots'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+          const <String>[],
+      rarities:
+          (json['rarities'] as Map<String, dynamic>?)?.map(
+            (k, e) =>
+                MapEntry(k, RarityConfig.fromJson(e as Map<String, dynamic>)),
+          ) ??
+          const <String, RarityConfig>{},
+      items:
+          (json['items'] as Map<String, dynamic>?)?.map(
+            (k, e) =>
+                MapEntry(k, ItemConfig.fromJson(e as Map<String, dynamic>)),
+          ) ??
+          const <String, ItemConfig>{},
       start: json['start'] == null
           ? const StartConfig()
           : StartConfig.fromJson(json['start'] as Map<String, dynamic>),
@@ -42,6 +57,9 @@ Map<String, dynamic> _$BalanceConfigToJson(_BalanceConfig instance) =>
       'monsters': instance.monsters.map((k, e) => MapEntry(k, e.toJson())),
       'prestige': instance.prestige.toJson(),
       'hero': instance.hero.toJson(),
+      'slots': instance.slots,
+      'rarities': instance.rarities.map((k, e) => MapEntry(k, e.toJson())),
+      'items': instance.items.map((k, e) => MapEntry(k, e.toJson())),
       'start': instance.start.toJson(),
       'offlineCapMs': instance.offlineCapMs,
     };
