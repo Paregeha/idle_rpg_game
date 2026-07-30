@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:idle_rpg/app/game_lifecycle.dart';
 import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/app/theme.dart';
 
@@ -39,7 +40,7 @@ class _IdleRpgAppState extends State<IdleRpgApp> {
               maxScaleFactor: 1.3,
             ),
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: GameLifecycle(child: child ?? const SizedBox.shrink()),
         );
       },
     );

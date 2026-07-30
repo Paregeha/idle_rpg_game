@@ -27,3 +27,11 @@ dev_dependencies:
   # Upper end is capped in practice by the test_api version flutter_test pins.
   test: ^1.25.5
   very_good_analysis: ^10.2.0
+
+# Declaring assets does not make this a Flutter package: the section is only
+# read by the flutter tool when a Flutter app depends on it, and the Dart VM
+# ignores it entirely. The client reads the file through
+# `packages/game_core/assets/...`; the server reads it straight off disk.
+flutter:
+  assets:
+    - assets/balance/
