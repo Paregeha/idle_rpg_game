@@ -13,6 +13,8 @@ dependencies:
   # Official wrapper: pulls in the right sqlite3 libraries per platform.
   # sqlite3_flutter_libs is published as +eol and must not be used directly.
   drift_flutter: ^0.3.1
+  # Only the battle scene uses Flame; menus stay plain Flutter (rule 7).
+  flame: ^1.38.0
   flutter:
     sdk: flutter
   # 3.4+ needs Dart 3.12; the Flutter SDK here ships 3.11.3.
@@ -23,6 +25,7 @@ dependencies:
     path: ../server_client
 
 dev_dependencies:
+  flame_test: ^2.3.0
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0

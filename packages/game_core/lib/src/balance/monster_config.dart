@@ -21,6 +21,21 @@ abstract class MonsterConfig with _$MonsterConfig {
     /// Reward is multiplied by this per level.
     required double rewardGrowth,
 
+    /// Damage of one swing at level 0.
+    @BigNumConverter() @Default(BigNum.one) BigNum baseAttack,
+
+    /// Attack is multiplied by this per level.
+    @Default(1.4) double attackGrowth,
+
+    /// Swings per second.
+    @Default(0.8) double attacksPerSecond,
+
+    /// Fraction of incoming damage absorbed, in `0..1`.
+    @Default(0.0) double mitigation,
+
+    /// Probability in `0..1` of dodging a swing.
+    @Default(0.0) double dodgeChance,
+
     /// Probability in `0..1` that a kill drops an item.
     @Default(0.0) double dropChance,
   }) = _MonsterConfig;
@@ -39,6 +54,17 @@ abstract class MonsterConfig with _$MonsterConfig {
   BigNum hpFor(int level) {
     _requireNonNegative(level);
     return baseHp * BigNum.fromDouble(hpGrowth).pow(level);
+  }
+
+  /// Damage this monster deals at [level].
+  ///
+  /// Formula: `baseAttack * attackGrowth^level`.
+  ///
+  /// Kept below [hpFor]'s growth so that deeper zones kill a player through
+  /// attrition rather than one-shotting them, which reads as unfair.
+  BigNum attackFor(int level) {
+    _requireNonNegative(level);
+    return baseAttack * BigNum.fromDouble(attackGrowth).pow(level);
   }
 
   /// Reward for killing a monster at [level].

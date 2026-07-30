@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:game_core/src/balance/balance_exception.dart';
 import 'package:game_core/src/balance/generator_config.dart';
+import 'package:game_core/src/balance/hero_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
 import 'package:game_core/src/balance/start_config.dart';
@@ -36,6 +37,8 @@ abstract class BalanceConfig with _$BalanceConfig {
     @Default(<String, MonsterConfig>{}) Map<String, MonsterConfig> monsters,
 
     @Default(PrestigeConfig()) PrestigeConfig prestige,
+
+    @Default(HeroConfig()) HeroConfig hero,
 
     @Default(StartConfig()) StartConfig start,
 
@@ -197,9 +200,30 @@ abstract class BalanceConfig with _$BalanceConfig {
       );
     }
 
+    if (hero.perUnitMultiplier < 1) {
+      throw const BalanceConfigException(
+        'below 1 means building generators makes the hero weaker',
+        field: 'hero.perUnitMultiplier',
+      );
+    }
+    if (hero.attacksPerSecond <= 0) {
+      throw const BalanceConfigException(
+        'must be positive, or the hero never swings',
+        field: 'hero.attacksPerSecond',
+      );
+    }
+
     for (final entry in monsters.entries) {
       final path = 'monsters.${entry.key}';
       final monster = entry.value;
+
+      if (monster.attacksPerSecond <= 0) {
+        throw BalanceConfigException(
+          'must be positive, or the monster is harmless and every fight is a '
+          'formality',
+          field: '$path.attacksPerSecond',
+        );
+      }
 
       if (monster.baseHp.isNegative || monster.baseHp.isZero) {
         throw BalanceConfigException('must be positive', field: '$path.baseHp');

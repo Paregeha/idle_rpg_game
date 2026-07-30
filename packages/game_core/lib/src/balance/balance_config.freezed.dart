@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$BalanceConfig {
 
 /// Schema version of this config.
- int get version; Map<String, GeneratorConfig> get generators; Map<String, MonsterConfig> get monsters; PrestigeConfig get prestige; StartConfig get start;/// How much of an absence is paid out, in milliseconds.
+ int get version; Map<String, GeneratorConfig> get generators; Map<String, MonsterConfig> get monsters; PrestigeConfig get prestige; HeroConfig get hero; StartConfig get start;/// How much of an absence is paid out, in milliseconds.
 ///
 /// The cap is what keeps an idle game a game: without it, returning after a
 /// month would hand over a month of progress and skip the part the player
@@ -34,16 +34,16 @@ $BalanceConfigCopyWith<BalanceConfig> get copyWith => _$BalanceConfigCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.monsters, monsters)&&(identical(other.prestige, prestige) || other.prestige == prestige)&&(identical(other.start, start) || other.start == start)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.monsters, monsters)&&(identical(other.prestige, prestige) || other.prestige == prestige)&&(identical(other.hero, hero) || other.hero == hero)&&(identical(other.start, start) || other.start == start)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,version,const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(monsters),prestige,start,offlineCapMs);
+int get hashCode => Object.hash(runtimeType,version,const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(monsters),prestige,hero,start,offlineCapMs);
 
 @override
 String toString() {
-  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, prestige: $prestige, start: $start, offlineCapMs: $offlineCapMs)';
+  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, prestige: $prestige, hero: $hero, start: $start, offlineCapMs: $offlineCapMs)';
 }
 
 
@@ -54,11 +54,11 @@ abstract mixin class $BalanceConfigCopyWith<$Res>  {
   factory $BalanceConfigCopyWith(BalanceConfig value, $Res Function(BalanceConfig) _then) = _$BalanceConfigCopyWithImpl;
 @useResult
 $Res call({
- int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, PrestigeConfig prestige, StartConfig start, int offlineCapMs
+ int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, PrestigeConfig prestige, HeroConfig hero, StartConfig start, int offlineCapMs
 });
 
 
-$PrestigeConfigCopyWith<$Res> get prestige;$StartConfigCopyWith<$Res> get start;
+$PrestigeConfigCopyWith<$Res> get prestige;$HeroConfigCopyWith<$Res> get hero;$StartConfigCopyWith<$Res> get start;
 
 }
 /// @nodoc
@@ -71,13 +71,14 @@ class _$BalanceConfigCopyWithImpl<$Res>
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? prestige = null,Object? start = null,Object? offlineCapMs = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? prestige = null,Object? hero = null,Object? start = null,Object? offlineCapMs = null,}) {
   return _then(_self.copyWith(
 version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as int,generators: null == generators ? _self.generators : generators // ignore: cast_nullable_to_non_nullable
 as Map<String, GeneratorConfig>,monsters: null == monsters ? _self.monsters : monsters // ignore: cast_nullable_to_non_nullable
 as Map<String, MonsterConfig>,prestige: null == prestige ? _self.prestige : prestige // ignore: cast_nullable_to_non_nullable
-as PrestigeConfig,start: null == start ? _self.start : start // ignore: cast_nullable_to_non_nullable
+as PrestigeConfig,hero: null == hero ? _self.hero : hero // ignore: cast_nullable_to_non_nullable
+as HeroConfig,start: null == start ? _self.start : start // ignore: cast_nullable_to_non_nullable
 as StartConfig,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
 as int,
   ));
@@ -90,6 +91,15 @@ $PrestigeConfigCopyWith<$Res> get prestige {
   
   return $PrestigeConfigCopyWith<$Res>(_self.prestige, (value) {
     return _then(_self.copyWith(prestige: value));
+  });
+}/// Create a copy of BalanceConfig
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$HeroConfigCopyWith<$Res> get hero {
+  
+  return $HeroConfigCopyWith<$Res>(_self.hero, (value) {
+    return _then(_self.copyWith(hero: value));
   });
 }/// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
@@ -182,10 +192,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  StartConfig start,  int offlineCapMs)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  StartConfig start,  int offlineCapMs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BalanceConfig() when $default != null:
-return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.start,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.start,_that.offlineCapMs);case _:
   return orElse();
 
 }
@@ -203,10 +213,10 @@ return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  StartConfig start,  int offlineCapMs)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  StartConfig start,  int offlineCapMs)  $default,) {final _that = this;
 switch (_that) {
 case _BalanceConfig():
-return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.start,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.start,_that.offlineCapMs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -223,10 +233,10 @@ return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  StartConfig start,  int offlineCapMs)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  StartConfig start,  int offlineCapMs)?  $default,) {final _that = this;
 switch (_that) {
 case _BalanceConfig() when $default != null:
-return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.start,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.start,_that.offlineCapMs);case _:
   return null;
 
 }
@@ -238,7 +248,7 @@ return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_th
 @JsonSerializable()
 
 class _BalanceConfig extends BalanceConfig {
-  const _BalanceConfig({this.version = supportedBalanceVersion, final  Map<String, GeneratorConfig> generators = const <String, GeneratorConfig>{}, final  Map<String, MonsterConfig> monsters = const <String, MonsterConfig>{}, this.prestige = const PrestigeConfig(), this.start = const StartConfig(), this.offlineCapMs = _eightHoursMs}): _generators = generators,_monsters = monsters,super._();
+  const _BalanceConfig({this.version = supportedBalanceVersion, final  Map<String, GeneratorConfig> generators = const <String, GeneratorConfig>{}, final  Map<String, MonsterConfig> monsters = const <String, MonsterConfig>{}, this.prestige = const PrestigeConfig(), this.hero = const HeroConfig(), this.start = const StartConfig(), this.offlineCapMs = _eightHoursMs}): _generators = generators,_monsters = monsters,super._();
   factory _BalanceConfig.fromJson(Map<String, dynamic> json) => _$BalanceConfigFromJson(json);
 
 /// Schema version of this config.
@@ -258,6 +268,7 @@ class _BalanceConfig extends BalanceConfig {
 }
 
 @override@JsonKey() final  PrestigeConfig prestige;
+@override@JsonKey() final  HeroConfig hero;
 @override@JsonKey() final  StartConfig start;
 /// How much of an absence is paid out, in milliseconds.
 ///
@@ -279,16 +290,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._monsters, _monsters)&&(identical(other.prestige, prestige) || other.prestige == prestige)&&(identical(other.start, start) || other.start == start)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._monsters, _monsters)&&(identical(other.prestige, prestige) || other.prestige == prestige)&&(identical(other.hero, hero) || other.hero == hero)&&(identical(other.start, start) || other.start == start)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,version,const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_monsters),prestige,start,offlineCapMs);
+int get hashCode => Object.hash(runtimeType,version,const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_monsters),prestige,hero,start,offlineCapMs);
 
 @override
 String toString() {
-  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, prestige: $prestige, start: $start, offlineCapMs: $offlineCapMs)';
+  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, prestige: $prestige, hero: $hero, start: $start, offlineCapMs: $offlineCapMs)';
 }
 
 
@@ -299,11 +310,11 @@ abstract mixin class _$BalanceConfigCopyWith<$Res> implements $BalanceConfigCopy
   factory _$BalanceConfigCopyWith(_BalanceConfig value, $Res Function(_BalanceConfig) _then) = __$BalanceConfigCopyWithImpl;
 @override @useResult
 $Res call({
- int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, PrestigeConfig prestige, StartConfig start, int offlineCapMs
+ int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, PrestigeConfig prestige, HeroConfig hero, StartConfig start, int offlineCapMs
 });
 
 
-@override $PrestigeConfigCopyWith<$Res> get prestige;@override $StartConfigCopyWith<$Res> get start;
+@override $PrestigeConfigCopyWith<$Res> get prestige;@override $HeroConfigCopyWith<$Res> get hero;@override $StartConfigCopyWith<$Res> get start;
 
 }
 /// @nodoc
@@ -316,13 +327,14 @@ class __$BalanceConfigCopyWithImpl<$Res>
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? prestige = null,Object? start = null,Object? offlineCapMs = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? prestige = null,Object? hero = null,Object? start = null,Object? offlineCapMs = null,}) {
   return _then(_BalanceConfig(
 version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as int,generators: null == generators ? _self._generators : generators // ignore: cast_nullable_to_non_nullable
 as Map<String, GeneratorConfig>,monsters: null == monsters ? _self._monsters : monsters // ignore: cast_nullable_to_non_nullable
 as Map<String, MonsterConfig>,prestige: null == prestige ? _self.prestige : prestige // ignore: cast_nullable_to_non_nullable
-as PrestigeConfig,start: null == start ? _self.start : start // ignore: cast_nullable_to_non_nullable
+as PrestigeConfig,hero: null == hero ? _self.hero : hero // ignore: cast_nullable_to_non_nullable
+as HeroConfig,start: null == start ? _self.start : start // ignore: cast_nullable_to_non_nullable
 as StartConfig,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
 as int,
   ));
@@ -336,6 +348,15 @@ $PrestigeConfigCopyWith<$Res> get prestige {
   
   return $PrestigeConfigCopyWith<$Res>(_self.prestige, (value) {
     return _then(_self.copyWith(prestige: value));
+  });
+}/// Create a copy of BalanceConfig
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$HeroConfigCopyWith<$Res> get hero {
+  
+  return $HeroConfigCopyWith<$Res>(_self.hero, (value) {
+    return _then(_self.copyWith(hero: value));
   });
 }/// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
