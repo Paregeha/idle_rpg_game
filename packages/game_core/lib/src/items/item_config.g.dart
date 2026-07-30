@@ -51,7 +51,7 @@ _ItemConfig _$ItemConfigFromJson(Map<String, dynamic> json) => _ItemConfig(
   slot: json['slot'] as String,
   rarity: json['rarity'] as String,
   stats: json['stats'] == null
-      ? const ItemStats()
+      ? ItemStats.empty
       : ItemStats.fromJson(json['stats'] as Map<String, dynamic>),
   levelMultiplier: (json['levelMultiplier'] as num?)?.toDouble() ?? 1.12,
   maxLevel: (json['maxLevel'] as num?)?.toInt() ?? 20,

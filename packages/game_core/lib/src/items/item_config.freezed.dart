@@ -784,7 +784,7 @@ return $default(_that.slot,_that.rarity,_that.stats,_that.levelMultiplier,_that.
 @JsonSerializable()
 
 class _ItemConfig extends ItemConfig {
-  const _ItemConfig({required this.slot, required this.rarity, this.stats = const ItemStats(), this.levelMultiplier = 1.12, this.maxLevel = 20}): super._();
+  const _ItemConfig({required this.slot, required this.rarity, this.stats = ItemStats.empty, this.levelMultiplier = 1.12, this.maxLevel = 20}): super._();
   factory _ItemConfig.fromJson(Map<String, dynamic> json) => _$ItemConfigFromJson(json);
 
 /// Which slot it occupies. Free-form so slots stay data.
