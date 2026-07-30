@@ -1,0 +1,22 @@
+﻿name: game_core
+description: >-
+  Pure Dart rules of the game: BigNum math, immutable state, deterministic
+  simulation and balance config. Runs on the Dart VM (server) and inside the
+  Flutter client. Must never depend on Flutter or Flame.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+resolution: workspace
+
+dependencies:
+  # Pinned by flutter_test in the Flutter SDK; keep the lower bound loose enough
+  # that the client can resolve alongside game_core.
+  meta: ^1.16.0
+
+dev_dependencies:
+  # Upper end is capped in practice by the test_api version flutter_test pins.
+  test: ^1.25.5
+  very_good_analysis: ^10.2.0

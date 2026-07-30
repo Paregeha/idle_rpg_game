@@ -1,0 +1,19 @@
+﻿name: balance_tools
+description: >-
+  CLI simulators used to tune the balance config without launching the game.
+  See `T-018` in TASKS.md.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+resolution: workspace
+
+dependencies:
+  args: ^2.7.0
+  game_core: ^0.1.0
+
+dev_dependencies:
+  test: ^1.25.5
+  very_good_analysis: ^10.2.0
