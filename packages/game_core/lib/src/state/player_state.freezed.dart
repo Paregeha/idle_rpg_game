@@ -27,7 +27,13 @@ mixin _$PlayerState {
 /// function of what the run *produced*, not of what is left after spending
 /// it. Rewarding the balance on hand would punish the player for buying
 /// the upgrades the run exists to buy.
-@BigNumConverter() Map<String, BigNum> get earnedThisRun; List<HeroState> get heroes; PrestigeState get prestige;
+@BigNumConverter() Map<String, BigNum> get earnedThisRun; List<HeroState> get heroes;/// Every item the player owns, by its instance id.
+ Map<String, OwnedItem> get inventory;/// Slot name to the instance id worn in it.
+///
+/// Stored as slot -> item rather than a flag on the item so a slot can only
+/// ever hold one thing: the invariant is in the shape of the data instead
+/// of in code that has to remember to enforce it.
+ Map<String, String> get equipped; PrestigeState get prestige;
 /// Create a copy of PlayerState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -40,16 +46,16 @@ $PlayerStateCopyWith<PlayerState> get copyWith => _$PlayerStateCopyWithImpl<Play
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlayerState&&(identical(other.lastTickAtMs, lastTickAtMs) || other.lastTickAtMs == lastTickAtMs)&&(identical(other.rngSeed, rngSeed) || other.rngSeed == rngSeed)&&(identical(other.version, version) || other.version == version)&&(identical(other.carryOverMs, carryOverMs) || other.carryOverMs == carryOverMs)&&const DeepCollectionEquality().equals(other.resources, resources)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.upgrades, upgrades)&&const DeepCollectionEquality().equals(other.earnedThisRun, earnedThisRun)&&const DeepCollectionEquality().equals(other.heroes, heroes)&&(identical(other.prestige, prestige) || other.prestige == prestige));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlayerState&&(identical(other.lastTickAtMs, lastTickAtMs) || other.lastTickAtMs == lastTickAtMs)&&(identical(other.rngSeed, rngSeed) || other.rngSeed == rngSeed)&&(identical(other.version, version) || other.version == version)&&(identical(other.carryOverMs, carryOverMs) || other.carryOverMs == carryOverMs)&&const DeepCollectionEquality().equals(other.resources, resources)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.upgrades, upgrades)&&const DeepCollectionEquality().equals(other.earnedThisRun, earnedThisRun)&&const DeepCollectionEquality().equals(other.heroes, heroes)&&const DeepCollectionEquality().equals(other.inventory, inventory)&&const DeepCollectionEquality().equals(other.equipped, equipped)&&(identical(other.prestige, prestige) || other.prestige == prestige));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,lastTickAtMs,rngSeed,version,carryOverMs,const DeepCollectionEquality().hash(resources),const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(upgrades),const DeepCollectionEquality().hash(earnedThisRun),const DeepCollectionEquality().hash(heroes),prestige);
+int get hashCode => Object.hash(runtimeType,lastTickAtMs,rngSeed,version,carryOverMs,const DeepCollectionEquality().hash(resources),const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(upgrades),const DeepCollectionEquality().hash(earnedThisRun),const DeepCollectionEquality().hash(heroes),const DeepCollectionEquality().hash(inventory),const DeepCollectionEquality().hash(equipped),prestige);
 
 @override
 String toString() {
-  return 'PlayerState(lastTickAtMs: $lastTickAtMs, rngSeed: $rngSeed, version: $version, carryOverMs: $carryOverMs, resources: $resources, generators: $generators, upgrades: $upgrades, earnedThisRun: $earnedThisRun, heroes: $heroes, prestige: $prestige)';
+  return 'PlayerState(lastTickAtMs: $lastTickAtMs, rngSeed: $rngSeed, version: $version, carryOverMs: $carryOverMs, resources: $resources, generators: $generators, upgrades: $upgrades, earnedThisRun: $earnedThisRun, heroes: $heroes, inventory: $inventory, equipped: $equipped, prestige: $prestige)';
 }
 
 
@@ -60,7 +66,7 @@ abstract mixin class $PlayerStateCopyWith<$Res>  {
   factory $PlayerStateCopyWith(PlayerState value, $Res Function(PlayerState) _then) = _$PlayerStateCopyWithImpl;
 @useResult
 $Res call({
- int lastTickAtMs, int rngSeed, int version, int carryOverMs,@BigNumConverter() Map<String, BigNum> resources, Map<String, GeneratorState> generators, Map<String, int> upgrades,@BigNumConverter() Map<String, BigNum> earnedThisRun, List<HeroState> heroes, PrestigeState prestige
+ int lastTickAtMs, int rngSeed, int version, int carryOverMs,@BigNumConverter() Map<String, BigNum> resources, Map<String, GeneratorState> generators, Map<String, int> upgrades,@BigNumConverter() Map<String, BigNum> earnedThisRun, List<HeroState> heroes, Map<String, OwnedItem> inventory, Map<String, String> equipped, PrestigeState prestige
 });
 
 
@@ -77,7 +83,7 @@ class _$PlayerStateCopyWithImpl<$Res>
 
 /// Create a copy of PlayerState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? lastTickAtMs = null,Object? rngSeed = null,Object? version = null,Object? carryOverMs = null,Object? resources = null,Object? generators = null,Object? upgrades = null,Object? earnedThisRun = null,Object? heroes = null,Object? prestige = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? lastTickAtMs = null,Object? rngSeed = null,Object? version = null,Object? carryOverMs = null,Object? resources = null,Object? generators = null,Object? upgrades = null,Object? earnedThisRun = null,Object? heroes = null,Object? inventory = null,Object? equipped = null,Object? prestige = null,}) {
   return _then(_self.copyWith(
 lastTickAtMs: null == lastTickAtMs ? _self.lastTickAtMs : lastTickAtMs // ignore: cast_nullable_to_non_nullable
 as int,rngSeed: null == rngSeed ? _self.rngSeed : rngSeed // ignore: cast_nullable_to_non_nullable
@@ -88,7 +94,9 @@ as Map<String, BigNum>,generators: null == generators ? _self.generators : gener
 as Map<String, GeneratorState>,upgrades: null == upgrades ? _self.upgrades : upgrades // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,earnedThisRun: null == earnedThisRun ? _self.earnedThisRun : earnedThisRun // ignore: cast_nullable_to_non_nullable
 as Map<String, BigNum>,heroes: null == heroes ? _self.heroes : heroes // ignore: cast_nullable_to_non_nullable
-as List<HeroState>,prestige: null == prestige ? _self.prestige : prestige // ignore: cast_nullable_to_non_nullable
+as List<HeroState>,inventory: null == inventory ? _self.inventory : inventory // ignore: cast_nullable_to_non_nullable
+as Map<String, OwnedItem>,equipped: null == equipped ? _self.equipped : equipped // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,prestige: null == prestige ? _self.prestige : prestige // ignore: cast_nullable_to_non_nullable
 as PrestigeState,
   ));
 }
@@ -183,10 +191,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  List<HeroState> heroes,  PrestigeState prestige)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  List<HeroState> heroes,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  PrestigeState prestige)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlayerState() when $default != null:
-return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.heroes,_that.prestige);case _:
+return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.heroes,_that.inventory,_that.equipped,_that.prestige);case _:
   return orElse();
 
 }
@@ -204,10 +212,10 @@ return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  List<HeroState> heroes,  PrestigeState prestige)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  List<HeroState> heroes,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  PrestigeState prestige)  $default,) {final _that = this;
 switch (_that) {
 case _PlayerState():
-return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.heroes,_that.prestige);case _:
+return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.heroes,_that.inventory,_that.equipped,_that.prestige);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -224,10 +232,10 @@ return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  List<HeroState> heroes,  PrestigeState prestige)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  List<HeroState> heroes,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  PrestigeState prestige)?  $default,) {final _that = this;
 switch (_that) {
 case _PlayerState() when $default != null:
-return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.heroes,_that.prestige);case _:
+return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.heroes,_that.inventory,_that.equipped,_that.prestige);case _:
   return null;
 
 }
@@ -239,7 +247,7 @@ return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs
 @JsonSerializable()
 
 class _PlayerState implements PlayerState {
-  const _PlayerState({required this.lastTickAtMs, required this.rngSeed, this.version = stateSchemaVersion, this.carryOverMs = 0, @BigNumConverter() final  Map<String, BigNum> resources = const <String, BigNum>{}, final  Map<String, GeneratorState> generators = const <String, GeneratorState>{}, final  Map<String, int> upgrades = const <String, int>{}, @BigNumConverter() final  Map<String, BigNum> earnedThisRun = const <String, BigNum>{}, final  List<HeroState> heroes = const <HeroState>[], this.prestige = const PrestigeState()}): _resources = resources,_generators = generators,_upgrades = upgrades,_earnedThisRun = earnedThisRun,_heroes = heroes;
+  const _PlayerState({required this.lastTickAtMs, required this.rngSeed, this.version = stateSchemaVersion, this.carryOverMs = 0, @BigNumConverter() final  Map<String, BigNum> resources = const <String, BigNum>{}, final  Map<String, GeneratorState> generators = const <String, GeneratorState>{}, final  Map<String, int> upgrades = const <String, int>{}, @BigNumConverter() final  Map<String, BigNum> earnedThisRun = const <String, BigNum>{}, final  List<HeroState> heroes = const <HeroState>[], final  Map<String, OwnedItem> inventory = const <String, OwnedItem>{}, final  Map<String, String> equipped = const <String, String>{}, this.prestige = const PrestigeState()}): _resources = resources,_generators = generators,_upgrades = upgrades,_earnedThisRun = earnedThisRun,_heroes = heroes,_inventory = inventory,_equipped = equipped;
   factory _PlayerState.fromJson(Map<String, dynamic> json) => _$PlayerStateFromJson(json);
 
 @override final  int lastTickAtMs;
@@ -299,6 +307,32 @@ class _PlayerState implements PlayerState {
   return EqualUnmodifiableListView(_heroes);
 }
 
+/// Every item the player owns, by its instance id.
+ final  Map<String, OwnedItem> _inventory;
+/// Every item the player owns, by its instance id.
+@override@JsonKey() Map<String, OwnedItem> get inventory {
+  if (_inventory is EqualUnmodifiableMapView) return _inventory;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_inventory);
+}
+
+/// Slot name to the instance id worn in it.
+///
+/// Stored as slot -> item rather than a flag on the item so a slot can only
+/// ever hold one thing: the invariant is in the shape of the data instead
+/// of in code that has to remember to enforce it.
+ final  Map<String, String> _equipped;
+/// Slot name to the instance id worn in it.
+///
+/// Stored as slot -> item rather than a flag on the item so a slot can only
+/// ever hold one thing: the invariant is in the shape of the data instead
+/// of in code that has to remember to enforce it.
+@override@JsonKey() Map<String, String> get equipped {
+  if (_equipped is EqualUnmodifiableMapView) return _equipped;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_equipped);
+}
+
 @override@JsonKey() final  PrestigeState prestige;
 
 /// Create a copy of PlayerState
@@ -314,16 +348,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlayerState&&(identical(other.lastTickAtMs, lastTickAtMs) || other.lastTickAtMs == lastTickAtMs)&&(identical(other.rngSeed, rngSeed) || other.rngSeed == rngSeed)&&(identical(other.version, version) || other.version == version)&&(identical(other.carryOverMs, carryOverMs) || other.carryOverMs == carryOverMs)&&const DeepCollectionEquality().equals(other._resources, _resources)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._upgrades, _upgrades)&&const DeepCollectionEquality().equals(other._earnedThisRun, _earnedThisRun)&&const DeepCollectionEquality().equals(other._heroes, _heroes)&&(identical(other.prestige, prestige) || other.prestige == prestige));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlayerState&&(identical(other.lastTickAtMs, lastTickAtMs) || other.lastTickAtMs == lastTickAtMs)&&(identical(other.rngSeed, rngSeed) || other.rngSeed == rngSeed)&&(identical(other.version, version) || other.version == version)&&(identical(other.carryOverMs, carryOverMs) || other.carryOverMs == carryOverMs)&&const DeepCollectionEquality().equals(other._resources, _resources)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._upgrades, _upgrades)&&const DeepCollectionEquality().equals(other._earnedThisRun, _earnedThisRun)&&const DeepCollectionEquality().equals(other._heroes, _heroes)&&const DeepCollectionEquality().equals(other._inventory, _inventory)&&const DeepCollectionEquality().equals(other._equipped, _equipped)&&(identical(other.prestige, prestige) || other.prestige == prestige));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,lastTickAtMs,rngSeed,version,carryOverMs,const DeepCollectionEquality().hash(_resources),const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_upgrades),const DeepCollectionEquality().hash(_earnedThisRun),const DeepCollectionEquality().hash(_heroes),prestige);
+int get hashCode => Object.hash(runtimeType,lastTickAtMs,rngSeed,version,carryOverMs,const DeepCollectionEquality().hash(_resources),const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_upgrades),const DeepCollectionEquality().hash(_earnedThisRun),const DeepCollectionEquality().hash(_heroes),const DeepCollectionEquality().hash(_inventory),const DeepCollectionEquality().hash(_equipped),prestige);
 
 @override
 String toString() {
-  return 'PlayerState(lastTickAtMs: $lastTickAtMs, rngSeed: $rngSeed, version: $version, carryOverMs: $carryOverMs, resources: $resources, generators: $generators, upgrades: $upgrades, earnedThisRun: $earnedThisRun, heroes: $heroes, prestige: $prestige)';
+  return 'PlayerState(lastTickAtMs: $lastTickAtMs, rngSeed: $rngSeed, version: $version, carryOverMs: $carryOverMs, resources: $resources, generators: $generators, upgrades: $upgrades, earnedThisRun: $earnedThisRun, heroes: $heroes, inventory: $inventory, equipped: $equipped, prestige: $prestige)';
 }
 
 
@@ -334,7 +368,7 @@ abstract mixin class _$PlayerStateCopyWith<$Res> implements $PlayerStateCopyWith
   factory _$PlayerStateCopyWith(_PlayerState value, $Res Function(_PlayerState) _then) = __$PlayerStateCopyWithImpl;
 @override @useResult
 $Res call({
- int lastTickAtMs, int rngSeed, int version, int carryOverMs,@BigNumConverter() Map<String, BigNum> resources, Map<String, GeneratorState> generators, Map<String, int> upgrades,@BigNumConverter() Map<String, BigNum> earnedThisRun, List<HeroState> heroes, PrestigeState prestige
+ int lastTickAtMs, int rngSeed, int version, int carryOverMs,@BigNumConverter() Map<String, BigNum> resources, Map<String, GeneratorState> generators, Map<String, int> upgrades,@BigNumConverter() Map<String, BigNum> earnedThisRun, List<HeroState> heroes, Map<String, OwnedItem> inventory, Map<String, String> equipped, PrestigeState prestige
 });
 
 
@@ -351,7 +385,7 @@ class __$PlayerStateCopyWithImpl<$Res>
 
 /// Create a copy of PlayerState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? lastTickAtMs = null,Object? rngSeed = null,Object? version = null,Object? carryOverMs = null,Object? resources = null,Object? generators = null,Object? upgrades = null,Object? earnedThisRun = null,Object? heroes = null,Object? prestige = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? lastTickAtMs = null,Object? rngSeed = null,Object? version = null,Object? carryOverMs = null,Object? resources = null,Object? generators = null,Object? upgrades = null,Object? earnedThisRun = null,Object? heroes = null,Object? inventory = null,Object? equipped = null,Object? prestige = null,}) {
   return _then(_PlayerState(
 lastTickAtMs: null == lastTickAtMs ? _self.lastTickAtMs : lastTickAtMs // ignore: cast_nullable_to_non_nullable
 as int,rngSeed: null == rngSeed ? _self.rngSeed : rngSeed // ignore: cast_nullable_to_non_nullable
@@ -362,7 +396,9 @@ as Map<String, BigNum>,generators: null == generators ? _self._generators : gene
 as Map<String, GeneratorState>,upgrades: null == upgrades ? _self._upgrades : upgrades // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,earnedThisRun: null == earnedThisRun ? _self._earnedThisRun : earnedThisRun // ignore: cast_nullable_to_non_nullable
 as Map<String, BigNum>,heroes: null == heroes ? _self._heroes : heroes // ignore: cast_nullable_to_non_nullable
-as List<HeroState>,prestige: null == prestige ? _self.prestige : prestige // ignore: cast_nullable_to_non_nullable
+as List<HeroState>,inventory: null == inventory ? _self._inventory : inventory // ignore: cast_nullable_to_non_nullable
+as Map<String, OwnedItem>,equipped: null == equipped ? _self._equipped : equipped // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,prestige: null == prestige ? _self.prestige : prestige // ignore: cast_nullable_to_non_nullable
 as PrestigeState,
   ));
 }

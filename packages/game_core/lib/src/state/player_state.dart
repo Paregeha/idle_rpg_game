@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:game_core/src/items/owned_item.dart';
 import 'package:game_core/src/math/big_num.dart';
 import 'package:game_core/src/state/big_num_converter.dart';
 import 'package:game_core/src/state/generator_state.dart';
@@ -51,6 +52,16 @@ abstract class PlayerState with _$PlayerState {
     @Default(<String, BigNum>{})
     Map<String, BigNum> earnedThisRun,
     @Default(<HeroState>[]) List<HeroState> heroes,
+
+    /// Every item the player owns, by its instance id.
+    @Default(<String, OwnedItem>{}) Map<String, OwnedItem> inventory,
+
+    /// Slot name to the instance id worn in it.
+    ///
+    /// Stored as slot -> item rather than a flag on the item so a slot can only
+    /// ever hold one thing: the invariant is in the shape of the data instead
+    /// of in code that has to remember to enforce it.
+    @Default(<String, String>{}) Map<String, String> equipped,
     @Default(PrestigeState()) PrestigeState prestige,
   }) = _PlayerState;
 

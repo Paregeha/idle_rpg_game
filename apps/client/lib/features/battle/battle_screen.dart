@@ -32,12 +32,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
 
     final monsterId = config.monsters.keys.first;
     final monster = config.monsters[monsterId]!;
-    final unitsOwned = state.generators.values.fold(
-      0,
-      (sum, generator) => sum + generator.owned,
-    );
-
-    final heroStats = config.hero.statsFor(unitsOwned: unitsOwned);
+    // One function answers "how strong is the hero", so this screen, the hero
+    // screen and the server cannot drift apart.
+    final heroStats = heroCombatStats(state, config);
     final monsterStats = CombatStats(
       attack: monster.attackFor(0),
       maxHp: monster.hpFor(0),
