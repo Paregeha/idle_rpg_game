@@ -13,6 +13,7 @@ workspace:
   - apps/server
   - apps/server_client
   - tools/balance
+  - tools/ci
 
 dev_dependencies:
   melos: ^8.2.2
@@ -37,6 +38,12 @@ melos:
         Run every package's tests: plain Dart packages on the VM, the Flutter
         client through the Flutter test runner.
       run: melos run test:dart && melos run test:client
+
+    check:core-deps:
+      description: >-
+        Fail if game_core ever gains a Flutter or Flame dependency. Runs in CI
+        before the tests, since a violation invalidates the server build.
+      run: dart run ci_tools:check_core_deps
 
     test:dart:
       description: >-
