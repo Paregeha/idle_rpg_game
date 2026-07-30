@@ -15,7 +15,12 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BalanceConfig {
 
- Map<String, GeneratorConfig> get generators;
+ Map<String, GeneratorConfig> get generators;/// How much of an absence is paid out, in milliseconds.
+///
+/// The cap is what keeps an idle game a game: without it, coming back after
+/// a month would hand over a month of progress and skip the part the player
+/// is here for.
+ int get offlineCapMs;
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +33,16 @@ $BalanceConfigCopyWith<BalanceConfig> get copyWith => _$BalanceConfigCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BalanceConfig&&const DeepCollectionEquality().equals(other.generators, generators));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BalanceConfig&&const DeepCollectionEquality().equals(other.generators, generators)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(generators));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(generators),offlineCapMs);
 
 @override
 String toString() {
-  return 'BalanceConfig(generators: $generators)';
+  return 'BalanceConfig(generators: $generators, offlineCapMs: $offlineCapMs)';
 }
 
 
@@ -48,7 +53,7 @@ abstract mixin class $BalanceConfigCopyWith<$Res>  {
   factory $BalanceConfigCopyWith(BalanceConfig value, $Res Function(BalanceConfig) _then) = _$BalanceConfigCopyWithImpl;
 @useResult
 $Res call({
- Map<String, GeneratorConfig> generators
+ Map<String, GeneratorConfig> generators, int offlineCapMs
 });
 
 
@@ -65,10 +70,11 @@ class _$BalanceConfigCopyWithImpl<$Res>
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? generators = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? generators = null,Object? offlineCapMs = null,}) {
   return _then(_self.copyWith(
 generators: null == generators ? _self.generators : generators // ignore: cast_nullable_to_non_nullable
-as Map<String, GeneratorConfig>,
+as Map<String, GeneratorConfig>,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -153,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, GeneratorConfig> generators)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, GeneratorConfig> generators,  int offlineCapMs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BalanceConfig() when $default != null:
-return $default(_that.generators);case _:
+return $default(_that.generators,_that.offlineCapMs);case _:
   return orElse();
 
 }
@@ -174,10 +180,10 @@ return $default(_that.generators);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, GeneratorConfig> generators)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, GeneratorConfig> generators,  int offlineCapMs)  $default,) {final _that = this;
 switch (_that) {
 case _BalanceConfig():
-return $default(_that.generators);case _:
+return $default(_that.generators,_that.offlineCapMs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +200,10 @@ return $default(_that.generators);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, GeneratorConfig> generators)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, GeneratorConfig> generators,  int offlineCapMs)?  $default,) {final _that = this;
 switch (_that) {
 case _BalanceConfig() when $default != null:
-return $default(_that.generators);case _:
+return $default(_that.generators,_that.offlineCapMs);case _:
   return null;
 
 }
@@ -209,7 +215,7 @@ return $default(_that.generators);case _:
 @JsonSerializable()
 
 class _BalanceConfig implements BalanceConfig {
-  const _BalanceConfig({final  Map<String, GeneratorConfig> generators = const <String, GeneratorConfig>{}}): _generators = generators;
+  const _BalanceConfig({final  Map<String, GeneratorConfig> generators = const <String, GeneratorConfig>{}, this.offlineCapMs = _eightHoursMs}): _generators = generators;
   factory _BalanceConfig.fromJson(Map<String, dynamic> json) => _$BalanceConfigFromJson(json);
 
  final  Map<String, GeneratorConfig> _generators;
@@ -219,6 +225,12 @@ class _BalanceConfig implements BalanceConfig {
   return EqualUnmodifiableMapView(_generators);
 }
 
+/// How much of an absence is paid out, in milliseconds.
+///
+/// The cap is what keeps an idle game a game: without it, coming back after
+/// a month would hand over a month of progress and skip the part the player
+/// is here for.
+@override@JsonKey() final  int offlineCapMs;
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BalanceConfig&&const DeepCollectionEquality().equals(other._generators, _generators));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BalanceConfig&&const DeepCollectionEquality().equals(other._generators, _generators)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_generators));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_generators),offlineCapMs);
 
 @override
 String toString() {
-  return 'BalanceConfig(generators: $generators)';
+  return 'BalanceConfig(generators: $generators, offlineCapMs: $offlineCapMs)';
 }
 
 
@@ -253,7 +265,7 @@ abstract mixin class _$BalanceConfigCopyWith<$Res> implements $BalanceConfigCopy
   factory _$BalanceConfigCopyWith(_BalanceConfig value, $Res Function(_BalanceConfig) _then) = __$BalanceConfigCopyWithImpl;
 @override @useResult
 $Res call({
- Map<String, GeneratorConfig> generators
+ Map<String, GeneratorConfig> generators, int offlineCapMs
 });
 
 
@@ -270,10 +282,11 @@ class __$BalanceConfigCopyWithImpl<$Res>
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? generators = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? generators = null,Object? offlineCapMs = null,}) {
   return _then(_BalanceConfig(
 generators: null == generators ? _self._generators : generators // ignore: cast_nullable_to_non_nullable
-as Map<String, GeneratorConfig>,
+as Map<String, GeneratorConfig>,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
