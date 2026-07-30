@@ -269,5 +269,11 @@
     },
     "pityThreshold": 60,
     "pityRarity": "legendary"
+  },
+  "itemUpgrade": {
+    "costResource": "gold",
+    "costBase": "5e2",
+    "costGrowth": 1.6,
+    "duplicatesPerLevel": 1
   }
 }
