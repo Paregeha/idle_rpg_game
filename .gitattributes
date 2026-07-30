@@ -1,0 +1,17 @@
+# Normalize to LF in the repository. Development happens on Windows while CI
+# and the Fly.io images run Linux; without this, shell scripts and the
+# Dockerfile break once they are checked out with CRLF.
+* text=auto eol=lf
+
+*.bat  text eol=crlf
+*.ps1  text eol=crlf
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.riv  binary
+*.ttf  binary
+*.otf  binary
+*.keystore binary
+*.jks  binary

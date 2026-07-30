@@ -1,0 +1,41 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+pubspec_overrides.yaml
+*.g.dart.lock
+
+# Only the workspace root lock file is versioned; member packages resolve
+# through it, so their lock files would just be noise.
+apps/*/pubspec.lock
+packages/*/pubspec.lock
+tools/*/pubspec.lock
+
+# Flutter client
+apps/client/.flutter-plugins
+apps/client/.flutter-plugins-dependencies
+apps/client/android/.gradle/
+apps/client/android/local.properties
+apps/client/android/key.properties
+apps/client/ios/Pods/
+apps/client/ios/.symlinks/
+apps/client/ios/Flutter/Flutter.framework
+apps/client/ios/Flutter/Flutter.podspec
+apps/client/ios/Flutter/Generated.xcconfig
+apps/client/ios/Flutter/flutter_export_environment.sh
+*.jks
+*.keystore
+
+# Serverpod — passwords.yaml holds real secrets once deployed
+apps/server/config/passwords.yaml
+apps/server/web/app/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+!.vscode/launch.json
+
+# OS
+.DS_Store
+Thumbs.db
