@@ -152,9 +152,15 @@ class BigNum implements Comparable<BigNum> {
 
   /// Raises this value to [exponent_].
   ///
-  /// Formula: `(m * 10^e)^p = 10^(p * log10(m * 10^e))`. Going through the
-  /// logarithm keeps fractional powers working and never overflows, since the
-  /// resulting order of magnitude stays an `int`.
+  /// Whole exponents go through exponentiation by squaring, which is exact:
+  /// `BigNum(2, 0).pow(3)` is `8`, not `8.000000000000002`. That matters more
+  /// than it looks — generator levels are whole numbers, so this path runs on
+  /// every production calculation, and a logarithmic detour would leave a
+  /// client and the server holding values that compare unequal.
+  ///
+  /// Other exponents use `(m * 10^e)^p = 10^(p * log10(m * 10^e))`, which keeps
+  /// fractional powers working and never overflows, since the resulting order
+  /// of magnitude stays an `int`.
   ///
   /// Throws [ArgumentError] for a negative base, where a fractional power has
   /// no real answer.
@@ -165,10 +171,34 @@ class BigNum implements Comparable<BigNum> {
       throw ArgumentError.value(this, 'this', 'pow of a negative base');
     }
 
+    if (exponent_ > 0 &&
+        exponent_ <= _maxExactPower &&
+        exponent_ == exponent_.roundToDouble()) {
+      return _wholePow(exponent_.round());
+    }
+
     final scaledLog = log10() * exponent_;
     final wholePart = scaledLog.floor();
     final fraction = scaledLog - wholePart;
     return BigNum(math.pow(10, fraction).toDouble(), wholePart);
+  }
+
+  /// Above this the squaring loop stops being worth it and precision of the
+  /// logarithm is no longer the limiting factor anyway.
+  static const int _maxExactPower = 4096;
+
+  BigNum _wholePow(int exponent_) {
+    var result = one;
+    var base = this;
+    var remaining = exponent_;
+
+    while (remaining > 0) {
+      if (remaining.isOdd) result *= base;
+      remaining >>= 1;
+      if (remaining > 0) base *= base;
+    }
+
+    return result;
   }
 
   /// Base-10 logarithm: `exponent + log10(mantissa)`.

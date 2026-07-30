@@ -70,6 +70,27 @@ happens to be activated globally — green locally, `melos: not found` in CI. Th
 `dart run` form uses the workspace's own dev dependency, which also pins the
 version to `pubspec.lock` instead of whatever the machine has.
 
+## ADR-007 · Fixed one-second steps with a carried remainder
+
+`simulate` pays progress only in whole one-second steps. Leftover milliseconds
+are stored in the state as `carryOverMs` and consumed by the next call. A client
+ticking at 30 Hz would otherwise discard part of every frame, and the rounding
+would compound into a visible gap between what the player sees and what the
+server computes within a single session.
+
+Because generator output is linear in time, the payout for those steps is one
+multiplication rather than a loop — thirty days costs the same as one second
+(measured: about 5 µs either way, against a 50 ms budget). The moment a mechanic
+gains a threshold inside the span, such as an automatic level-up, the honest fix
+is to split the span at the threshold and use the closed form on each part —
+never to fall back to stepping through every second, and never to add a second
+"fast path" implementation, which is precisely how a client and a server begin
+to disagree.
+
+The cost is that `carryOverMs` is part of the persisted state and therefore part
+of the save format: it has to be carried through every migration, and a save
+that loses it silently loses up to a second of progress.
+
 ## ADR-006 · Our own PRNG instead of `dart:math`'s `Random`
 
 `Random(seed)` does not promise the same sequence across the Dart VM and a
