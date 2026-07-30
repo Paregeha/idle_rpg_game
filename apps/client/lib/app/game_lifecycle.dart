@@ -54,8 +54,14 @@ class _GameLifecycleState extends ConsumerState<GameLifecycle>
     // The loop cannot start until the balance config has loaded.
     ref.listen(balanceConfigProvider, (previous, next) {
       if (!next.hasValue) return;
-      final controller = ref.read(gameControllerProvider.notifier)..load();
-      controller.startTicking();
+      final controller = ref.read(gameControllerProvider.notifier);
+      // Restore before ticking: starting a fresh game and then loading a save
+      // over it would briefly show the wrong numbers.
+      controller.restore().then((_) {
+        controller
+          ..startTicking()
+          ..startAutosave();
+      });
     });
 
     final config = ref.watch(balanceConfigProvider);

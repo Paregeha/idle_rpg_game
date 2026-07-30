@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
+import 'package:idle_rpg/data/save_providers.dart';
+import 'package:idle_rpg/data/save_repository.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 
 /// How often the local view of the state is advanced.
@@ -19,13 +21,17 @@ const Duration tickInterval = Duration(milliseconds: 33);
 /// gameplay decision may be made from this state alone.
 class GameController extends Notifier<PlayerState?> {
   Timer? _ticker;
+  Timer? _autosave;
   int _lastTickMs = 0;
 
   @override
   PlayerState? build() {
     // Riverpod disposes the notifier when nothing listens; a timer left running
     // would keep a dead state advancing and hold the object alive.
-    ref.onDispose(stopTicking);
+    ref.onDispose(() {
+      stopTicking();
+      _autosave?.cancel();
+    });
     return null;
   }
 
@@ -33,7 +39,40 @@ class GameController extends Notifier<PlayerState?> {
 
   Clock get _clock => ref.read(clockProvider);
 
-  /// Starts a fresh game, or resumes an existing state after an absence.
+  SaveRepository get _saves => ref.read(saveRepositoryProvider);
+
+  /// Restores the local save, or starts a fresh game if there is none.
+  ///
+  /// A save that cannot be read is treated as no save: the player restarts,
+  /// which is bad, but refusing to launch would be worse and is not something
+  /// they can act on.
+  Future<OfflineReport?> restore() async {
+    final config = _config;
+    if (config == null) return null;
+
+    await _saves.initialise();
+    final record = await _saves.load();
+    final nowMs = _clock.nowMs;
+
+    if (record == null) {
+      state = newGame(nowMs: nowMs, rngSeed: nowMs, config: config);
+      _lastTickMs = nowMs;
+      return null;
+    }
+
+    // Time passed while the app was not running: credit it through the offline
+    // path so the cap applies.
+    final report = applyOfflineProgress(
+      record.state,
+      nowMs: nowMs,
+      config: config,
+    );
+    state = report.state;
+    _lastTickMs = nowMs;
+    return report;
+  }
+
+  /// Starts a fresh game without touching disk. Used by tests and by a reset.
   void load({PlayerState? saved}) {
     final config = _config;
     if (config == null) return;
@@ -48,6 +87,24 @@ class GameController extends Notifier<PlayerState?> {
 
     _lastTickMs = nowMs;
   }
+
+  /// Writes the current state to disk. Safe to call when there is nothing yet.
+  Future<void> saveNow() async {
+    final current = state;
+    if (current == null) return;
+    await _saves.save(current, nowMs: _clock.nowMs);
+  }
+
+  void startAutosave() {
+    _autosave ??= Timer.periodic(autosaveInterval, (_) => saveNow());
+  }
+
+  void stopAutosave() {
+    _autosave?.cancel();
+    _autosave = null;
+  }
+
+  bool get isAutosaving => _autosave != null;
 
   void startTicking() {
     if (_ticker != null) return;
@@ -86,7 +143,13 @@ class GameController extends Notifier<PlayerState?> {
   /// running behind a locked screen burns power for a screen nobody is looking
   /// at, and earns the player nothing that the offline calculation would not
   /// give them anyway.
-  void onPaused() => stopTicking();
+  Future<void> onPaused() async {
+    stopTicking();
+    stopAutosave();
+    // Save on the way out, not only on the timer: the app may be killed while
+    // backgrounded and never get another chance.
+    await saveNow();
+  }
 
   /// Called when the app comes back.
   ///
@@ -107,6 +170,7 @@ class GameController extends Notifier<PlayerState?> {
     state = report.state;
     _lastTickMs = _clock.nowMs;
     startTicking();
+    startAutosave();
     return report;
   }
 }
