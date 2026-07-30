@@ -40,6 +40,11 @@
     }
   },
 
+  "start": {
+    "generators": { "apprentice": 1 },
+    "resources": { "gold": "0e0" }
+  },
+
   "prestige": {
     "resource": "gold",
     "currencyBase": "1e6",
