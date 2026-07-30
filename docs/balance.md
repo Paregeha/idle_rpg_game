@@ -57,6 +57,31 @@ at or below 1 (units would never get more expensive and progression would
 disappear), `hpGrowth` or `rewardGrowth` at or below 1, and a `dropChance`
 outside 0..1.
 
+## What the first run says (v1, 30 days)
+
+| profile | day 1 | day 7 | day 14 | day 30 |
+|---|---|---|---|---|
+| casual | 187 | 728 | 779 | 827 |
+| active | 544 | 760 | 802 | 846 |
+| whale | 602 | 765 | 806 | 849 |
+
+Units owned. Two problems are visible immediately, and neither would have been
+obvious from reading the config:
+
+**The curve saturates within a week.** A casual player reaches 728 units on day
+7 and gains only ~100 more over the next three weeks. Whatever the game is
+after day 7, it is not this loop.
+
+**Playing more barely matters.** By day 30 the gap between a casual and a whale
+is under 3%. Six times the sessions buys almost nothing, which removes the
+reason to open the game.
+
+Both point the same way: `costGrowth` (1.07–1.12) is too shallow against
+production that scales linearly with units, so everything affordable gets bought
+almost at once and the wall arrives together. Fixing it is a design decision —
+steeper cost growth, generator levels that matter more, or content beyond
+generators — not a code change.
+
 ## Invariants worth testing
 
 - Progression is monotonic: no upgrade ever lowers the rate of progress.

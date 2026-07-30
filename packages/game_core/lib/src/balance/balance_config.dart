@@ -5,6 +5,7 @@ import 'package:game_core/src/balance/balance_exception.dart';
 import 'package:game_core/src/balance/generator_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
+import 'package:game_core/src/balance/start_config.dart';
 
 part 'balance_config.freezed.dart';
 part 'balance_config.g.dart';
@@ -35,6 +36,8 @@ abstract class BalanceConfig with _$BalanceConfig {
     @Default(<String, MonsterConfig>{}) Map<String, MonsterConfig> monsters,
 
     @Default(PrestigeConfig()) PrestigeConfig prestige,
+
+    @Default(StartConfig()) StartConfig start,
 
     /// How much of an absence is paid out, in milliseconds.
     ///
@@ -137,6 +140,29 @@ abstract class BalanceConfig with _$BalanceConfig {
           field: '$path.costGrowth',
         );
       }
+    }
+
+    for (final entry in start.generators.entries) {
+      if (!generators.containsKey(entry.key)) {
+        throw BalanceConfigException(
+          'grants "${entry.key}", which no generator defines',
+          field: 'start.generators.${entry.key}',
+        );
+      }
+      if (entry.value <= 0) {
+        throw BalanceConfigException(
+          'must be positive, got ${entry.value}',
+          field: 'start.generators.${entry.key}',
+        );
+      }
+    }
+
+    if (generators.isNotEmpty && start.generators.isEmpty) {
+      throw const BalanceConfigException(
+        'is empty, so a new player has no income and can never afford the '
+        'first generator',
+        field: 'start.generators',
+      );
     }
 
     if (prestige.resource.trim().isEmpty) {

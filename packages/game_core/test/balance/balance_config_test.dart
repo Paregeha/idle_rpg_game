@@ -24,7 +24,10 @@ String json({
         "dropChance": 0.1
       }
     }''',
-}) => '{ $version, $offlineCap, $generators, $monsters }';
+  // A config with generators but no starting loadout is refused, so every
+  // fixture needs one unless it is the fixture testing that rule.
+  String start = '"start": { "generators": { "miner": 1 } }',
+}) => '{ $version, $offlineCap, $generators, $monsters, $start }';
 
 void main() {
   group('parsing', () {
@@ -50,6 +53,7 @@ void main() {
         "costGrowth": 1.1
       }
     }''',
+          start: '"start": { "generators": { "vault": 1 } }',
         ),
       );
 
@@ -108,6 +112,7 @@ void main() {
         "costGrowth": 1.07
       }
     }''',
+          start: '"start": { "generators": { "ghost": 1 } }',
         ),
         mentioning: 'produces',
       );
@@ -125,6 +130,7 @@ void main() {
         "costGrowth": 1.07
       }
     }''',
+          start: '"start": { "generators": { "drain": 1 } }',
         ),
         mentioning: 'baseRatePerSecond',
       );
@@ -144,6 +150,7 @@ void main() {
         "costGrowth": 1.0
       }
     }''',
+          start: '"start": { "generators": { "free": 1 } }',
         ),
         mentioning: 'costGrowth',
       );

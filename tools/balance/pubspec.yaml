@@ -13,6 +13,7 @@ resolution: workspace
 dependencies:
   args: ^2.7.0
   game_core: ^0.1.0
+  meta: ^1.16.0
 
 dev_dependencies:
   test: ^1.25.5
