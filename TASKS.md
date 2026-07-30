@@ -79,7 +79,7 @@ BigNum замість double, Flame лише для бою.
 > перевіряти близькість `(a+b)+c ≈ a+(b+c)` у межах відносної похибки 1e-9, а не
 > рівність. Комутативність множення можна вимагати точну. Див. ADR-002.
 
-### [ ] T-011 · Моделі стану
+### [x] T-011 · Моделі стану
 **Файли:** `game_core/lib/src/state/*.dart` (freezed).
 **Acceptance:**
 - `PlayerState { version, lastTickAtMs, resources, generators, upgrades, heroes, rngSeed, prestige }`.

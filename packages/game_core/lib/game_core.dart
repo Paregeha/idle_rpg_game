@@ -6,6 +6,11 @@
 library;
 
 export 'src/math/big_num.dart';
+export 'src/state/big_num_converter.dart';
+export 'src/state/generator_state.dart';
+export 'src/state/hero_state.dart';
+export 'src/state/player_state.dart';
+export 'src/state/prestige_state.dart';
 
 /// Schema version of [/* PlayerState */] persisted state.
 ///

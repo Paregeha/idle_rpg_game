@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # Without this, toJson() leaves nested models as objects and relies on
+          # jsonEncode to finish the job. The state is handed to the database
+          # and to Serverpod, not only to jsonEncode, so toJson() must return a
+          # fully primitive structure on its own.
+          explicit_to_json: true

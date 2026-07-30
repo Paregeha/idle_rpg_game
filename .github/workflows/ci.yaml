@@ -42,6 +42,15 @@ jobs:
       - name: Guard game_core dependencies
         run: dart run melos run check:core-deps --no-select
 
+      # Generated sources are committed, so a stale *.freezed.dart is a real
+      # risk: the code would compile against a model that no longer matches.
+      - name: Regenerate code
+        working-directory: packages/game_core
+        run: dart run build_runner build
+
+      - name: Fail if generated code is stale
+        run: git diff --exit-code -- '*.freezed.dart' '*.g.dart'
+
       - name: Check formatting
         run: dart run melos run format --no-select
 
