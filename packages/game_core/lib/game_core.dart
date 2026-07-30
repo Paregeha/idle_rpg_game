@@ -5,6 +5,8 @@
 /// player's progress without trusting a stream of client events.
 library;
 
+export 'src/math/big_num.dart';
+
 /// Schema version of [/* PlayerState */] persisted state.
 ///
 /// Bump this whenever the shape of the saved state changes, so migrations can
