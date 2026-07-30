@@ -70,6 +70,25 @@ happens to be activated globally — green locally, `melos: not found` in CI. Th
 `dart run` form uses the workspace's own dev dependency, which also pins the
 version to `pubspec.lock` instead of whatever the machine has.
 
+## ADR-006 · Our own PRNG instead of `dart:math`'s `Random`
+
+`Random(seed)` does not promise the same sequence across the Dart VM and a
+JavaScript runtime. Client and server drawing different numbers from the same
+state is precisely the divergence rule 5 exists to prevent, so `SeededRandom`
+implements xorshift128 itself. That algorithm is the right shape for the
+promise: only shifts and XOR, no multiplication — a 32×32 multiply would
+overflow JavaScript's 53-bit integer precision and quietly differ. Every
+intermediate is forced back through `toUnsigned(32)`, which behaves identically
+on both platforms. CI runs the core test suite compiled to JavaScript so the
+claim is checked rather than assumed.
+
+The cost is a generator we own and must not casually change: saved games carry
+an RNG state, so altering the step function would desynchronise every existing
+save from the server. A golden-sequence test makes any such change loud. The
+generator is also not cryptographically secure, which is acceptable only
+because the server recomputes every outcome — predicting a roll gains a player
+nothing.
+
 ## ADR-005 · Serverpod integration tests are opt-in locally
 
 `melos run test` covers the pure-Dart packages and the Flutter client only. The

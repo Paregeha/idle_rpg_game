@@ -86,12 +86,18 @@ BigNum замість double, Flame лише для бою.
 - Усе immutable, `copyWith` згенеровано, `toJson/fromJson` покриті round-trip тестом.
 - Поле `version` для майбутніх міграцій стану.
 
-### [ ] T-012 · Clock і детермінізм
+### [x] T-012 · Clock і детермінізм
 **Файли:** `game_core/lib/src/time/clock.dart`, `SeededRandom`.
 **Acceptance:**
 - Абстракція `Clock` з реалізаціями `SystemClock` і `FakeClock`.
 - Жодного `DateTime.now()` у `game_core` — перевіряється grep-тестом у CI.
 - `SeededRandom` з тим самим seed дає ідентичну послідовність на всіх платформах.
+> `dart:math` `Random(seed)` цього **не гарантує** між VM і JS, тому написано
+> власний xorshift128 (лише зсуви й XOR, без множення — воно вилізло б за 53-бітну
+> точність JS). CI проганяє тести ядра ще й скомпільованими в JavaScript, щоб це
+> перевірялось, а не припускалось. Див. ADR-006.
+> `DateTime.now()` дозволений рівно в одному файлі — `system_clock.dart`, це адаптер,
+> а не логіка гри. Перевіряється `check:no-wall-clock`.
 
 ### [ ] T-013 · simulate(state, dt) — серце гри
 **Навіщо:** одна функція обслуговує і живий тік, і офлайн-прогрес, і серверну валідацію.

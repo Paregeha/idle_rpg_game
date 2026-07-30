@@ -6,11 +6,14 @@
 library;
 
 export 'src/math/big_num.dart';
+export 'src/random/seeded_random.dart';
 export 'src/state/big_num_converter.dart';
 export 'src/state/generator_state.dart';
 export 'src/state/hero_state.dart';
 export 'src/state/player_state.dart';
 export 'src/state/prestige_state.dart';
+export 'src/time/clock.dart';
+export 'src/time/system_clock.dart';
 
 /// Schema version of [/* PlayerState */] persisted state.
 ///

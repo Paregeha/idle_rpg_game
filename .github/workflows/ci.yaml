@@ -42,6 +42,9 @@ jobs:
       - name: Guard game_core dependencies
         run: dart run melos run check:core-deps --no-select
 
+      - name: Guard against device-clock access
+        run: dart run melos run check:no-wall-clock --no-select
+
       # Generated sources are committed, so a stale *.freezed.dart is a real
       # risk: the code would compile against a model that no longer matches.
       - name: Regenerate code
@@ -62,6 +65,11 @@ jobs:
 
       - name: Test Flutter client
         run: dart run melos run test:client --no-select
+
+      # The seeded RNG must give an identical sequence on the VM and in JS.
+      # A VM-only test run would never catch a divergence there.
+      - name: Test core compiled to JavaScript
+        run: dart run melos run test:core:web --no-select
 
   test-server:
     name: Server integration tests
