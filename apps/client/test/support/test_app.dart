@@ -21,6 +21,11 @@ final testBalanceConfig = BalanceConfig(
   start: const StartConfig(generators: {'miner': 1}),
 );
 
+/// The container behind the running app, for reading controllers in a test.
+ProviderContainer containerOf(WidgetTester tester) {
+  return ProviderScope.containerOf(tester.element(find.byType(IdleRpgApp)));
+}
+
 /// Pumps the whole app with a fake clock and a stub config.
 Future<FakeClock> pumpGame(WidgetTester tester) async {
   final clock = FakeClock(1770000000000);

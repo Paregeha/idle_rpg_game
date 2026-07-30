@@ -83,6 +83,36 @@ void main() {
     );
   });
 
+  test('every generator can actually be bought', () {
+    // A generator priced in what it produces can only be bought with its own
+    // output, so the first one is unreachable forever. The gem shrine was
+    // exactly that until the forge screen showed "no income yet" beside a pile
+    // of gold.
+    final produced = config.generators.values.map((g) => g.produces).toSet();
+
+    for (final entry in config.generators.entries) {
+      final generator = entry.value;
+      if (generator.pricedIn != generator.produces) continue;
+
+      final othersProduceIt = config.generators.entries.any(
+        (other) =>
+            other.key != entry.key &&
+            other.value.produces == generator.pricedIn,
+      );
+      final grantedAtStart = config.start.generators.containsKey(entry.key);
+
+      expect(
+        othersProduceIt || grantedAtStart,
+        isTrue,
+        reason:
+            '${entry.key} costs the ${generator.pricedIn} only it produces, '
+            'so a player can never buy the first one',
+      );
+    }
+
+    expect(produced, isNotEmpty);
+  });
+
   test('drop chances are sane probabilities', () {
     for (final entry in config.monsters.entries) {
       expect(entry.value.dropChance, inInclusiveRange(0, 1));

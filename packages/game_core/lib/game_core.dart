@@ -21,6 +21,7 @@ export 'src/random/seeded_random.dart';
 export 'src/sim/offline_progress.dart';
 export 'src/sim/offline_report.dart';
 export 'src/sim/prestige.dart';
+export 'src/sim/projection.dart';
 export 'src/sim/purchase.dart';
 export 'src/sim/sim_result.dart';
 export 'src/sim/simulator.dart';

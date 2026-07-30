@@ -33,6 +33,7 @@
     },
     "shrine": {
       "produces": "gems",
+      "costResource": "gold",
       "baseRatePerSecond": "1e-2",
       "levelMultiplier": 1.12,
       "costBase": "5e3",

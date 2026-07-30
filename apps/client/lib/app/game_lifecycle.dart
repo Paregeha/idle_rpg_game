@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:game_core/game_core.dart';
+import 'package:idle_rpg/features/offline/offline_report_sheet.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 
@@ -37,7 +39,7 @@ class _GameLifecycleState extends ConsumerState<GameLifecycle>
 
     switch (lifecycle) {
       case AppLifecycleState.resumed:
-        controller.onResumed();
+        _showIfWorthShowing(controller.onResumed());
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
@@ -49,6 +51,18 @@ class _GameLifecycleState extends ConsumerState<GameLifecycle>
     }
   }
 
+  /// Only interrupts the player when there is something to report.
+  ///
+  /// A sheet that appears after a five-second absence saying "+0" is noise, and
+  /// noise is what teaches players to dismiss dialogs without reading them.
+  void _showIfWorthShowing(OfflineReport? report) {
+    if (report == null || report.isEmpty) return;
+    if (report.creditedFor < const Duration(minutes: 1)) return;
+    if (!mounted) return;
+
+    OfflineReportSheet.show(context, report);
+  }
+
   @override
   Widget build(BuildContext context) {
     // The loop cannot start until the balance config has loaded.
@@ -57,10 +71,11 @@ class _GameLifecycleState extends ConsumerState<GameLifecycle>
       final controller = ref.read(gameControllerProvider.notifier);
       // Restore before ticking: starting a fresh game and then loading a save
       // over it would briefly show the wrong numbers.
-      controller.restore().then((_) {
+      controller.restore().then((report) {
         controller
           ..startTicking()
           ..startAutosave();
+        _showIfWorthShowing(report);
       });
     });
 
