@@ -6,7 +6,9 @@
 library;
 
 export 'src/balance/balance_config.dart';
+export 'src/balance/balance_exception.dart';
 export 'src/balance/generator_config.dart';
+export 'src/balance/monster_config.dart';
 export 'src/math/big_num.dart';
 export 'src/random/seeded_random.dart';
 export 'src/sim/offline_progress.dart';

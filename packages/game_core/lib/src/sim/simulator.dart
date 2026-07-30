@@ -50,13 +50,13 @@ SimResult simulate(PlayerState state, Duration dt, BalanceConfig config) {
       // the conservative choice, and losing the save is not.
       if (generator == null) continue;
 
-      final owned = entry.value.owned;
-      if (owned <= 0) continue;
-
-      final ratePerSecond =
-          generator.baseRatePerSecond *
-          BigNum.fromDouble(owned.toDouble()) *
-          BigNum.fromDouble(generator.levelMultiplier).pow(entry.value.level);
+      // The formula lives on the config, not here: `simulator.dart` must stay
+      // free of balance numbers so a change ships as data (rule 6).
+      final ratePerSecond = generator.ratePerSecond(
+        owned: entry.value.owned,
+        level: entry.value.level,
+      );
+      if (ratePerSecond.isZero) continue;
 
       final produced = ratePerSecond * elapsedSeconds;
       if (produced.isZero) continue;
