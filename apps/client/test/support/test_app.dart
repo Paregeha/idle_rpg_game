@@ -1,6 +1,9 @@
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
+import 'package:idle_rpg/data/save_database.dart';
+import 'package:idle_rpg/data/save_providers.dart';
 import 'package:idle_rpg/main.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 
@@ -21,12 +24,16 @@ final testBalanceConfig = BalanceConfig(
 /// Pumps the whole app with a fake clock and a stub config.
 Future<FakeClock> pumpGame(WidgetTester tester) async {
   final clock = FakeClock(1770000000000);
+  final db = SaveDatabase(NativeDatabase.memory());
+  addTearDown(db.close);
 
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         clockProvider.overrideWithValue(clock),
         balanceConfigProvider.overrideWith((ref) async => testBalanceConfig),
+        // Launch restores a save, so widget tests need somewhere to read from.
+        saveDatabaseProvider.overrideWithValue(db),
       ],
       child: const IdleRpgApp(),
     ),
