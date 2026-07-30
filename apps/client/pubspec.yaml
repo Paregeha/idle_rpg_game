@@ -11,7 +11,10 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
+  # 3.4+ needs Dart 3.12; the Flutter SDK here ships 3.11.3.
+  flutter_riverpod: ^3.3.2
   game_core: ^0.1.0
+  go_router: ^17.3.0
   idle_rpg_client:
     path: ../server_client
 

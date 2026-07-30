@@ -5,7 +5,9 @@ import 'package:idle_rpg/main.dart';
 
 void main() {
   testWidgets('app boots', (tester) async {
-    await tester.pumpWidget(const MainApp());
+    await tester.pumpWidget(const IdleRpgApp());
+    await tester.pumpAndSettle();
+
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 
