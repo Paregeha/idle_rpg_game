@@ -12,11 +12,18 @@ environment:
 resolution: workspace
 
 dependencies:
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
   # Pinned by flutter_test in the Flutter SDK; keep the lower bound loose enough
   # that the client can resolve alongside game_core.
   meta: ^1.16.0
 
 dev_dependencies:
+  # Capped in practice by the analyzer version the Flutter SDK pins: pub picks
+  # build_runner 2.15.1 rather than the newest, which wants a newer analyzer.
+  build_runner: ^2.4.0
+  freezed: ^3.2.5
+  json_serializable: ^6.14.1
   # Upper end is capped in practice by the test_api version flutter_test pins.
   test: ^1.25.5
   very_good_analysis: ^10.2.0
