@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:game_core/src/balance/balance_exception.dart';
 import 'package:game_core/src/balance/generator_config.dart';
 import 'package:game_core/src/balance/hero_config.dart';
+import 'package:game_core/src/balance/lamp_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
 import 'package:game_core/src/balance/start_config.dart';
@@ -40,6 +41,8 @@ abstract class BalanceConfig with _$BalanceConfig {
     @Default(PrestigeConfig()) PrestigeConfig prestige,
 
     @Default(HeroConfig()) HeroConfig hero,
+
+    @Default(LampConfig()) LampConfig lamp,
 
     /// Equipment slots, in display order. Data rather than an enum: adding a
     /// fifth slot must be a change to this file, not a code change.
@@ -206,6 +209,41 @@ abstract class BalanceConfig with _$BalanceConfig {
       throw const BalanceConfigException(
         'must not be negative, or prestiging would make the player weaker',
         field: 'prestige.bonusPerPoint',
+      );
+    }
+
+    if (lamp.weights.isNotEmpty) {
+      for (final entry in lamp.weights.entries) {
+        if (!rarities.containsKey(entry.key)) {
+          throw BalanceConfigException(
+            'weights a rarity "${entry.key}" that does not exist',
+            field: 'lamp.weights',
+          );
+        }
+        if (entry.value < 0) {
+          throw BalanceConfigException(
+            'must not be negative',
+            field: 'lamp.weights.${entry.key}',
+          );
+        }
+      }
+      if (lamp.totalWeight <= 0) {
+        throw const BalanceConfigException(
+          'sum to zero, so the lamp could never pick anything',
+          field: 'lamp.weights',
+        );
+      }
+    }
+    if (lamp.pityThreshold < 0) {
+      throw const BalanceConfigException(
+        'must not be negative',
+        field: 'lamp.pityThreshold',
+      );
+    }
+    if (lamp.pityRarity.isNotEmpty && !rarities.containsKey(lamp.pityRarity)) {
+      throw BalanceConfigException(
+        'guarantees "${lamp.pityRarity}", which no rarity defines',
+        field: 'lamp.pityRarity',
       );
     }
 

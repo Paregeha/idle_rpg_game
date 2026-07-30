@@ -47,6 +47,13 @@ _PlayerState _$PlayerStateFromJson(Map<String, dynamic> json) => _PlayerState(
         (k, e) => MapEntry(k, e as String),
       ) ??
       const <String, String>{},
+  rngState:
+      (json['rngState'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList() ??
+      const <int>[],
+  itemsCreated: (json['itemsCreated'] as num?)?.toInt() ?? 0,
+  pityCounter: (json['pityCounter'] as num?)?.toInt() ?? 0,
   prestige: json['prestige'] == null
       ? const PrestigeState()
       : PrestigeState.fromJson(json['prestige'] as Map<String, dynamic>),
@@ -69,5 +76,8 @@ Map<String, dynamic> _$PlayerStateToJson(_PlayerState instance) =>
       'heroes': instance.heroes.map((e) => e.toJson()).toList(),
       'inventory': instance.inventory.map((k, e) => MapEntry(k, e.toJson())),
       'equipped': instance.equipped,
+      'rngState': instance.rngState,
+      'itemsCreated': instance.itemsCreated,
+      'pityCounter': instance.pityCounter,
       'prestige': instance.prestige.toJson(),
     };

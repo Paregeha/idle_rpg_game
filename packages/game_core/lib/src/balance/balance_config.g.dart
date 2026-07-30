@@ -29,6 +29,9 @@ _BalanceConfig _$BalanceConfigFromJson(Map<String, dynamic> json) =>
       hero: json['hero'] == null
           ? const HeroConfig()
           : HeroConfig.fromJson(json['hero'] as Map<String, dynamic>),
+      lamp: json['lamp'] == null
+          ? const LampConfig()
+          : LampConfig.fromJson(json['lamp'] as Map<String, dynamic>),
       slots:
           (json['slots'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const <String>[],
@@ -57,6 +60,7 @@ Map<String, dynamic> _$BalanceConfigToJson(_BalanceConfig instance) =>
       'monsters': instance.monsters.map((k, e) => MapEntry(k, e.toJson())),
       'prestige': instance.prestige.toJson(),
       'hero': instance.hero.toJson(),
+      'lamp': instance.lamp.toJson(),
       'slots': instance.slots,
       'rarities': instance.rarities.map((k, e) => MapEntry(k, e.toJson())),
       'items': instance.items.map((k, e) => MapEntry(k, e.toJson())),
