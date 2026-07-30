@@ -1,0 +1,19 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "apps/server_client/**"
+    - "apps/server/lib/src/generated/**"
+    - "**/.dart_tool/**"
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # Player-facing strings live in ARB files (T-070); code comments and
+    # identifiers stay English, so this stays off until localization lands.
+    public_member_api_docs: false

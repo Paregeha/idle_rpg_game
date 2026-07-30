@@ -1,0 +1,71 @@
+﻿name: idle_rpg_workspace
+description: >-
+  Idle RPG monorepo. A pure-Dart game core shared by the Flutter client and the
+  Serverpod backend.
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+workspace:
+  - packages/game_core
+  - apps/client
+  - apps/server
+  - apps/server_client
+  - tools/balance
+
+dev_dependencies:
+  melos: ^8.2.2
+  very_good_analysis: ^10.2.0
+
+melos:
+  scripts:
+    analyze:
+      description: Static analysis across every package in the workspace.
+      run: dart analyze --fatal-infos
+
+    format:
+      description: Verify formatting without writing changes.
+      run: dart format --output=none --set-exit-if-changed .
+
+    format:fix:
+      description: Apply formatting in place.
+      run: dart format .
+
+    test:
+      description: >-
+        Run every package's tests: plain Dart packages on the VM, the Flutter
+        client through the Flutter test runner.
+      run: melos run test:dart && melos run test:client
+
+    test:dart:
+      description: >-
+        Run tests of the pure-Dart packages. The server is excluded on purpose:
+        its integration tests need a live Postgres, see test:server.
+      run: melos exec -- dart test
+      packageFilters:
+        flutter: false
+        dirExists: test
+        ignore:
+          - idle_rpg_server
+
+    test:server:
+      description: >-
+        Serverpod integration tests. Requires the database to be up first:
+        cd apps/server && docker compose up --detach
+      run: melos exec -- dart test
+      packageFilters:
+        scope: idle_rpg_server
+
+    test:core:
+      description: Run the game_core tests only.
+      run: melos exec -- dart test
+      packageFilters:
+        scope: game_core
+
+    test:client:
+      description: Run the Flutter client widget tests.
+      run: melos exec -- flutter test
+      packageFilters:
+        flutter: true
+        dirExists: test
