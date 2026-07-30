@@ -15,10 +15,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BalanceConfig {
 
- Map<String, GeneratorConfig> get generators;/// How much of an absence is paid out, in milliseconds.
+/// Schema version of this config.
+ int get version; Map<String, GeneratorConfig> get generators; Map<String, MonsterConfig> get monsters;/// How much of an absence is paid out, in milliseconds.
 ///
-/// The cap is what keeps an idle game a game: without it, coming back after
-/// a month would hand over a month of progress and skip the part the player
+/// The cap is what keeps an idle game a game: without it, returning after a
+/// month would hand over a month of progress and skip the part the player
 /// is here for.
  int get offlineCapMs;
 /// Create a copy of BalanceConfig
@@ -33,16 +34,16 @@ $BalanceConfigCopyWith<BalanceConfig> get copyWith => _$BalanceConfigCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BalanceConfig&&const DeepCollectionEquality().equals(other.generators, generators)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.monsters, monsters)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(generators),offlineCapMs);
+int get hashCode => Object.hash(runtimeType,version,const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(monsters),offlineCapMs);
 
 @override
 String toString() {
-  return 'BalanceConfig(generators: $generators, offlineCapMs: $offlineCapMs)';
+  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, offlineCapMs: $offlineCapMs)';
 }
 
 
@@ -53,7 +54,7 @@ abstract mixin class $BalanceConfigCopyWith<$Res>  {
   factory $BalanceConfigCopyWith(BalanceConfig value, $Res Function(BalanceConfig) _then) = _$BalanceConfigCopyWithImpl;
 @useResult
 $Res call({
- Map<String, GeneratorConfig> generators, int offlineCapMs
+ int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, int offlineCapMs
 });
 
 
@@ -70,10 +71,12 @@ class _$BalanceConfigCopyWithImpl<$Res>
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? generators = null,Object? offlineCapMs = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? offlineCapMs = null,}) {
   return _then(_self.copyWith(
-generators: null == generators ? _self.generators : generators // ignore: cast_nullable_to_non_nullable
-as Map<String, GeneratorConfig>,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
+version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
+as int,generators: null == generators ? _self.generators : generators // ignore: cast_nullable_to_non_nullable
+as Map<String, GeneratorConfig>,monsters: null == monsters ? _self.monsters : monsters // ignore: cast_nullable_to_non_nullable
+as Map<String, MonsterConfig>,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -159,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, GeneratorConfig> generators,  int offlineCapMs)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  int offlineCapMs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BalanceConfig() when $default != null:
-return $default(_that.generators,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.offlineCapMs);case _:
   return orElse();
 
 }
@@ -180,10 +183,10 @@ return $default(_that.generators,_that.offlineCapMs);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, GeneratorConfig> generators,  int offlineCapMs)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  int offlineCapMs)  $default,) {final _that = this;
 switch (_that) {
 case _BalanceConfig():
-return $default(_that.generators,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.offlineCapMs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +203,10 @@ return $default(_that.generators,_that.offlineCapMs);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, GeneratorConfig> generators,  int offlineCapMs)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  int offlineCapMs)?  $default,) {final _that = this;
 switch (_that) {
 case _BalanceConfig() when $default != null:
-return $default(_that.generators,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.offlineCapMs);case _:
   return null;
 
 }
@@ -214,10 +217,12 @@ return $default(_that.generators,_that.offlineCapMs);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _BalanceConfig implements BalanceConfig {
-  const _BalanceConfig({final  Map<String, GeneratorConfig> generators = const <String, GeneratorConfig>{}, this.offlineCapMs = _eightHoursMs}): _generators = generators;
+class _BalanceConfig extends BalanceConfig {
+  const _BalanceConfig({this.version = supportedBalanceVersion, final  Map<String, GeneratorConfig> generators = const <String, GeneratorConfig>{}, final  Map<String, MonsterConfig> monsters = const <String, MonsterConfig>{}, this.offlineCapMs = _eightHoursMs}): _generators = generators,_monsters = monsters,super._();
   factory _BalanceConfig.fromJson(Map<String, dynamic> json) => _$BalanceConfigFromJson(json);
 
+/// Schema version of this config.
+@override@JsonKey() final  int version;
  final  Map<String, GeneratorConfig> _generators;
 @override@JsonKey() Map<String, GeneratorConfig> get generators {
   if (_generators is EqualUnmodifiableMapView) return _generators;
@@ -225,10 +230,17 @@ class _BalanceConfig implements BalanceConfig {
   return EqualUnmodifiableMapView(_generators);
 }
 
+ final  Map<String, MonsterConfig> _monsters;
+@override@JsonKey() Map<String, MonsterConfig> get monsters {
+  if (_monsters is EqualUnmodifiableMapView) return _monsters;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_monsters);
+}
+
 /// How much of an absence is paid out, in milliseconds.
 ///
-/// The cap is what keeps an idle game a game: without it, coming back after
-/// a month would hand over a month of progress and skip the part the player
+/// The cap is what keeps an idle game a game: without it, returning after a
+/// month would hand over a month of progress and skip the part the player
 /// is here for.
 @override@JsonKey() final  int offlineCapMs;
 
@@ -245,16 +257,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BalanceConfig&&const DeepCollectionEquality().equals(other._generators, _generators)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._monsters, _monsters)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_generators),offlineCapMs);
+int get hashCode => Object.hash(runtimeType,version,const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_monsters),offlineCapMs);
 
 @override
 String toString() {
-  return 'BalanceConfig(generators: $generators, offlineCapMs: $offlineCapMs)';
+  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, offlineCapMs: $offlineCapMs)';
 }
 
 
@@ -265,7 +277,7 @@ abstract mixin class _$BalanceConfigCopyWith<$Res> implements $BalanceConfigCopy
   factory _$BalanceConfigCopyWith(_BalanceConfig value, $Res Function(_BalanceConfig) _then) = __$BalanceConfigCopyWithImpl;
 @override @useResult
 $Res call({
- Map<String, GeneratorConfig> generators, int offlineCapMs
+ int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, int offlineCapMs
 });
 
 
@@ -282,10 +294,12 @@ class __$BalanceConfigCopyWithImpl<$Res>
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? generators = null,Object? offlineCapMs = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? offlineCapMs = null,}) {
   return _then(_BalanceConfig(
-generators: null == generators ? _self._generators : generators // ignore: cast_nullable_to_non_nullable
-as Map<String, GeneratorConfig>,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
+version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
+as int,generators: null == generators ? _self._generators : generators // ignore: cast_nullable_to_non_nullable
+as Map<String, GeneratorConfig>,monsters: null == monsters ? _self._monsters : monsters // ignore: cast_nullable_to_non_nullable
+as Map<String, MonsterConfig>,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

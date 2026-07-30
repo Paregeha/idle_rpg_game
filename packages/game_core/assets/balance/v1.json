@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "offlineCapMs": 28800000,
+
+  "generators": {
+    "apprentice": {
+      "produces": "gold",
+      "baseRatePerSecond": "1e0",
+      "levelMultiplier": 1.15,
+      "costBase": "1e1",
+      "costGrowth": 1.07
+    },
+    "miner": {
+      "produces": "gold",
+      "baseRatePerSecond": "8e0",
+      "levelMultiplier": 1.15,
+      "costBase": "1.2e2",
+      "costGrowth": 1.08
+    },
+    "forge": {
+      "produces": "gold",
+      "baseRatePerSecond": "9e1",
+      "levelMultiplier": 1.15,
+      "costBase": "1.5e3",
+      "costGrowth": 1.09
+    },
+    "vault": {
+      "produces": "gold",
+      "baseRatePerSecond": "1.1e3",
+      "levelMultiplier": 1.15,
+      "costBase": "2e4",
+      "costGrowth": 1.1
+    },
+    "shrine": {
+      "produces": "gems",
+      "baseRatePerSecond": "1e-2",
+      "levelMultiplier": 1.12,
+      "costBase": "5e3",
+      "costGrowth": 1.12
+    }
+  },
+
+  "monsters": {
+    "slime": {
+      "baseHp": "1e1",
+      "hpGrowth": 1.55,
+      "rewardBase": "2e0",
+      "rewardGrowth": 1.45,
+      "dropChance": 0.05
+    },
+    "wolf": {
+      "baseHp": "1.4e2",
+      "hpGrowth": 1.55,
+      "rewardBase": "1.8e1",
+      "rewardGrowth": 1.45,
+      "dropChance": 0.08
+    },
+    "golem": {
+      "baseHp": "3.2e3",
+      "hpGrowth": 1.58,
+      "rewardBase": "2.4e2",
+      "rewardGrowth": 1.46,
+      "dropChance": 0.12
+    },
+    "wyrm": {
+      "baseHp": "9e4",
+      "hpGrowth": 1.6,
+      "rewardBase": "4.5e3",
+      "rewardGrowth": 1.47,
+      "dropChance": 0.18
+    }
+  }
+}

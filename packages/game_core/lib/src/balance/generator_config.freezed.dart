@@ -18,7 +18,9 @@ mixin _$GeneratorConfig {
 /// Key of the resource this generator adds to.
  String get produces;/// Output per second for a single unit at level 0.
 @BigNumConverter() BigNum get baseRatePerSecond;/// Rate is multiplied by this, raised to the generator's level.
- double get levelMultiplier;
+ double get levelMultiplier;/// Price of the first unit.
+@BigNumConverter() BigNum get costBase;/// Price is multiplied by this for each unit already owned.
+ double get costGrowth;
 /// Create a copy of GeneratorConfig
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +33,16 @@ $GeneratorConfigCopyWith<GeneratorConfig> get copyWith => _$GeneratorConfigCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GeneratorConfig&&(identical(other.produces, produces) || other.produces == produces)&&(identical(other.baseRatePerSecond, baseRatePerSecond) || other.baseRatePerSecond == baseRatePerSecond)&&(identical(other.levelMultiplier, levelMultiplier) || other.levelMultiplier == levelMultiplier));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GeneratorConfig&&(identical(other.produces, produces) || other.produces == produces)&&(identical(other.baseRatePerSecond, baseRatePerSecond) || other.baseRatePerSecond == baseRatePerSecond)&&(identical(other.levelMultiplier, levelMultiplier) || other.levelMultiplier == levelMultiplier)&&(identical(other.costBase, costBase) || other.costBase == costBase)&&(identical(other.costGrowth, costGrowth) || other.costGrowth == costGrowth));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,produces,baseRatePerSecond,levelMultiplier);
+int get hashCode => Object.hash(runtimeType,produces,baseRatePerSecond,levelMultiplier,costBase,costGrowth);
 
 @override
 String toString() {
-  return 'GeneratorConfig(produces: $produces, baseRatePerSecond: $baseRatePerSecond, levelMultiplier: $levelMultiplier)';
+  return 'GeneratorConfig(produces: $produces, baseRatePerSecond: $baseRatePerSecond, levelMultiplier: $levelMultiplier, costBase: $costBase, costGrowth: $costGrowth)';
 }
 
 
@@ -51,7 +53,7 @@ abstract mixin class $GeneratorConfigCopyWith<$Res>  {
   factory $GeneratorConfigCopyWith(GeneratorConfig value, $Res Function(GeneratorConfig) _then) = _$GeneratorConfigCopyWithImpl;
 @useResult
 $Res call({
- String produces,@BigNumConverter() BigNum baseRatePerSecond, double levelMultiplier
+ String produces,@BigNumConverter() BigNum baseRatePerSecond, double levelMultiplier,@BigNumConverter() BigNum costBase, double costGrowth
 });
 
 
@@ -68,11 +70,13 @@ class _$GeneratorConfigCopyWithImpl<$Res>
 
 /// Create a copy of GeneratorConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? produces = null,Object? baseRatePerSecond = null,Object? levelMultiplier = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? produces = null,Object? baseRatePerSecond = null,Object? levelMultiplier = null,Object? costBase = null,Object? costGrowth = null,}) {
   return _then(_self.copyWith(
 produces: null == produces ? _self.produces : produces // ignore: cast_nullable_to_non_nullable
 as String,baseRatePerSecond: null == baseRatePerSecond ? _self.baseRatePerSecond : baseRatePerSecond // ignore: cast_nullable_to_non_nullable
 as BigNum,levelMultiplier: null == levelMultiplier ? _self.levelMultiplier : levelMultiplier // ignore: cast_nullable_to_non_nullable
+as double,costBase: null == costBase ? _self.costBase : costBase // ignore: cast_nullable_to_non_nullable
+as BigNum,costGrowth: null == costGrowth ? _self.costGrowth : costGrowth // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }
@@ -158,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String produces, @BigNumConverter()  BigNum baseRatePerSecond,  double levelMultiplier)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String produces, @BigNumConverter()  BigNum baseRatePerSecond,  double levelMultiplier, @BigNumConverter()  BigNum costBase,  double costGrowth)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GeneratorConfig() when $default != null:
-return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier);case _:
+return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier,_that.costBase,_that.costGrowth);case _:
   return orElse();
 
 }
@@ -179,10 +183,10 @@ return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String produces, @BigNumConverter()  BigNum baseRatePerSecond,  double levelMultiplier)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String produces, @BigNumConverter()  BigNum baseRatePerSecond,  double levelMultiplier, @BigNumConverter()  BigNum costBase,  double costGrowth)  $default,) {final _that = this;
 switch (_that) {
 case _GeneratorConfig():
-return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier);case _:
+return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier,_that.costBase,_that.costGrowth);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +203,10 @@ return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String produces, @BigNumConverter()  BigNum baseRatePerSecond,  double levelMultiplier)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String produces, @BigNumConverter()  BigNum baseRatePerSecond,  double levelMultiplier, @BigNumConverter()  BigNum costBase,  double costGrowth)?  $default,) {final _that = this;
 switch (_that) {
 case _GeneratorConfig() when $default != null:
-return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier);case _:
+return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier,_that.costBase,_that.costGrowth);case _:
   return null;
 
 }
@@ -213,8 +217,8 @@ return $default(_that.produces,_that.baseRatePerSecond,_that.levelMultiplier);ca
 /// @nodoc
 @JsonSerializable()
 
-class _GeneratorConfig implements GeneratorConfig {
-  const _GeneratorConfig({required this.produces, @BigNumConverter() required this.baseRatePerSecond, this.levelMultiplier = 1.0});
+class _GeneratorConfig extends GeneratorConfig {
+  const _GeneratorConfig({required this.produces, @BigNumConverter() required this.baseRatePerSecond, this.levelMultiplier = 1.0, @BigNumConverter() this.costBase = BigNum.one, this.costGrowth = 1.07}): super._();
   factory _GeneratorConfig.fromJson(Map<String, dynamic> json) => _$GeneratorConfigFromJson(json);
 
 /// Key of the resource this generator adds to.
@@ -223,6 +227,10 @@ class _GeneratorConfig implements GeneratorConfig {
 @override@BigNumConverter() final  BigNum baseRatePerSecond;
 /// Rate is multiplied by this, raised to the generator's level.
 @override@JsonKey() final  double levelMultiplier;
+/// Price of the first unit.
+@override@JsonKey()@BigNumConverter() final  BigNum costBase;
+/// Price is multiplied by this for each unit already owned.
+@override@JsonKey() final  double costGrowth;
 
 /// Create a copy of GeneratorConfig
 /// with the given fields replaced by the non-null parameter values.
@@ -237,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GeneratorConfig&&(identical(other.produces, produces) || other.produces == produces)&&(identical(other.baseRatePerSecond, baseRatePerSecond) || other.baseRatePerSecond == baseRatePerSecond)&&(identical(other.levelMultiplier, levelMultiplier) || other.levelMultiplier == levelMultiplier));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GeneratorConfig&&(identical(other.produces, produces) || other.produces == produces)&&(identical(other.baseRatePerSecond, baseRatePerSecond) || other.baseRatePerSecond == baseRatePerSecond)&&(identical(other.levelMultiplier, levelMultiplier) || other.levelMultiplier == levelMultiplier)&&(identical(other.costBase, costBase) || other.costBase == costBase)&&(identical(other.costGrowth, costGrowth) || other.costGrowth == costGrowth));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,produces,baseRatePerSecond,levelMultiplier);
+int get hashCode => Object.hash(runtimeType,produces,baseRatePerSecond,levelMultiplier,costBase,costGrowth);
 
 @override
 String toString() {
-  return 'GeneratorConfig(produces: $produces, baseRatePerSecond: $baseRatePerSecond, levelMultiplier: $levelMultiplier)';
+  return 'GeneratorConfig(produces: $produces, baseRatePerSecond: $baseRatePerSecond, levelMultiplier: $levelMultiplier, costBase: $costBase, costGrowth: $costGrowth)';
 }
 
 
@@ -257,7 +265,7 @@ abstract mixin class _$GeneratorConfigCopyWith<$Res> implements $GeneratorConfig
   factory _$GeneratorConfigCopyWith(_GeneratorConfig value, $Res Function(_GeneratorConfig) _then) = __$GeneratorConfigCopyWithImpl;
 @override @useResult
 $Res call({
- String produces,@BigNumConverter() BigNum baseRatePerSecond, double levelMultiplier
+ String produces,@BigNumConverter() BigNum baseRatePerSecond, double levelMultiplier,@BigNumConverter() BigNum costBase, double costGrowth
 });
 
 
@@ -274,11 +282,13 @@ class __$GeneratorConfigCopyWithImpl<$Res>
 
 /// Create a copy of GeneratorConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? produces = null,Object? baseRatePerSecond = null,Object? levelMultiplier = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? produces = null,Object? baseRatePerSecond = null,Object? levelMultiplier = null,Object? costBase = null,Object? costGrowth = null,}) {
   return _then(_GeneratorConfig(
 produces: null == produces ? _self.produces : produces // ignore: cast_nullable_to_non_nullable
 as String,baseRatePerSecond: null == baseRatePerSecond ? _self.baseRatePerSecond : baseRatePerSecond // ignore: cast_nullable_to_non_nullable
 as BigNum,levelMultiplier: null == levelMultiplier ? _self.levelMultiplier : levelMultiplier // ignore: cast_nullable_to_non_nullable
+as double,costBase: null == costBase ? _self.costBase : costBase // ignore: cast_nullable_to_non_nullable
+as BigNum,costGrowth: null == costGrowth ? _self.costGrowth : costGrowth // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }

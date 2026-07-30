@@ -23,12 +23,39 @@ change than the diff of the config does.
 
 ## Curves
 
-Filled in as the config takes shape in T-015. The shape we start from:
+All of these live in `assets/balance/v1.json` and are validated on load.
 
-- Upgrade cost: `base * growth^n`.
-- Monster HP and rewards: per-zone curves keyed off player level.
-- Offline: capped accrual, cap in config (starting at 8 hours), separate VIP
-  multiplier.
+| Quantity | Formula | Config fields |
+|---|---|---|
+| Generator output | `baseRatePerSecond * owned * levelMultiplier^level` | `generators.*` |
+| Generator price | `costBase * costGrowth^owned` | `costBase`, `costGrowth` |
+| Bulk price | geometric series over the above | — |
+| Monster health | `baseHp * hpGrowth^level` | `monsters.*` |
+| Kill reward | `rewardBase * rewardGrowth^level` | `monsters.*` |
+| Offline payout | `min(away, offlineCapMs * vipMultiplier)` | `offlineCapMs` |
+
+The pacing of the genre comes from one gap: output grows *linearly* with how
+many units you own, while price grows *exponentially*. Everything else is
+decoration on top of that.
+
+A second, smaller gap does the same job for combat: `hpGrowth` is set above
+`rewardGrowth` in every monster, so pushing into a deeper zone is a decision
+with a cost rather than a free upgrade. A test asserts this holds for the
+shipped file, because it is the kind of invariant that a well-meaning tuning
+pass silently breaks.
+
+## Validation
+
+The config is validated when it is parsed, not when a value is first read.
+Balance can be updated without a client release (T-035), so a broken file can
+reach a running game — failing loudly at load, naming the field, beats a silent
+default that quietly changes the economy for everyone.
+
+Rejected outright: a missing or future `version`, a non-positive cap, a
+generator that produces nothing or produces at a negative rate, `costGrowth`
+at or below 1 (units would never get more expensive and progression would
+disappear), `hpGrowth` or `rewardGrowth` at or below 1, and a `dropChance`
+outside 0..1.
 
 ## Invariants worth testing
 
