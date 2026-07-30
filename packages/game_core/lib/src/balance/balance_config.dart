@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:game_core/src/balance/balance_exception.dart';
 import 'package:game_core/src/balance/generator_config.dart';
 import 'package:game_core/src/balance/hero_config.dart';
+import 'package:game_core/src/balance/item_upgrade_config.dart';
 import 'package:game_core/src/balance/lamp_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
@@ -43,6 +44,8 @@ abstract class BalanceConfig with _$BalanceConfig {
     @Default(HeroConfig()) HeroConfig hero,
 
     @Default(LampConfig()) LampConfig lamp,
+
+    @Default(ItemUpgradeConfig()) ItemUpgradeConfig itemUpgrade,
 
     /// Equipment slots, in display order. Data rather than an enum: adding a
     /// fifth slot must be a change to this file, not a code change.
@@ -209,6 +212,26 @@ abstract class BalanceConfig with _$BalanceConfig {
       throw const BalanceConfigException(
         'must not be negative, or prestiging would make the player weaker',
         field: 'prestige.bonusPerPoint',
+      );
+    }
+
+    if (itemUpgrade.costGrowth < 1) {
+      throw const BalanceConfigException(
+        'below 1 means each level is cheaper than the last, so upgrading has '
+        'no cost curve at all',
+        field: 'itemUpgrade.costGrowth',
+      );
+    }
+    if (itemUpgrade.duplicatesPerLevel < 0) {
+      throw const BalanceConfigException(
+        'must not be negative',
+        field: 'itemUpgrade.duplicatesPerLevel',
+      );
+    }
+    if (itemUpgrade.costBase.isNegative || itemUpgrade.costBase.isZero) {
+      throw const BalanceConfigException(
+        'must be positive',
+        field: 'itemUpgrade.costBase',
       );
     }
 
