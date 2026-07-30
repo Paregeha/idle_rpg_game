@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:game_core/src/items/owned_item.dart';
 import 'package:game_core/src/math/big_num.dart';
+import 'package:game_core/src/random/seeded_random.dart';
 import 'package:game_core/src/state/big_num_converter.dart';
 import 'package:game_core/src/state/generator_state.dart';
 import 'package:game_core/src/state/hero_state.dart';
@@ -62,9 +63,35 @@ abstract class PlayerState with _$PlayerState {
     /// ever hold one thing: the invariant is in the shape of the data instead
     /// of in code that has to remember to enforce it.
     @Default(<String, String>{}) Map<String, String> equipped,
+
+    /// Live RNG state, so randomness resumes rather than restarting.
+    ///
+    /// Empty means "not drawn from yet"; the generator is then seeded from
+    /// [rngSeed]. Storing only the seed would make every lamp open after a
+    /// reload produce the same item.
+    @Default(<int>[]) List<int> rngState,
+
+    /// Items created so far, used to mint ids.
+    ///
+    /// A counter rather than a clock or a random value: the server has to
+    /// arrive at the same ids from the same state (`T-032`).
+    @Default(0) int itemsCreated,
+
+    /// Opens since the pity rarity last dropped.
+    @Default(0) int pityCounter,
     @Default(PrestigeState()) PrestigeState prestige,
   }) = _PlayerState;
 
+  const PlayerState._();
+
   factory PlayerState.fromJson(Map<String, dynamic> json) =>
       _$PlayerStateFromJson(json);
+
+  /// A generator resumed from this state's RNG position.
+  ///
+  /// Callers must write [SeededRandom.state] back, or the next draw repeats
+  /// this one.
+  SeededRandom random() => rngState.isEmpty
+      ? SeededRandom(rngSeed)
+      : SeededRandom.fromState(rngState);
 }

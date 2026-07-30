@@ -1,0 +1,109 @@
+import 'package:game_core/src/balance/balance_config.dart';
+import 'package:game_core/src/items/owned_item.dart';
+import 'package:game_core/src/math/big_num.dart';
+import 'package:game_core/src/random/seeded_random.dart';
+import 'package:game_core/src/state/player_state.dart';
+import 'package:meta/meta.dart';
+
+/// Why an open did not happen.
+enum LampRefusal { cannotAfford, noItemsConfigured }
+
+/// Outcome of opening the lamp.
+@immutable
+class LampResult {
+  const LampResult({
+    required this.state,
+    this.item,
+    this.refusal,
+    this.wasPity = false,
+  });
+
+  final PlayerState state;
+
+  /// What was drawn, or null if the open was refused.
+  final OwnedItem? item;
+
+  final LampRefusal? refusal;
+
+  /// Whether the pity counter forced this rarity.
+  ///
+  /// Surfaced so the UI can say so. A guarantee the player never sees is a
+  /// guarantee they do not believe exists.
+  final bool wasPity;
+
+  bool get opened => item != null;
+}
+
+/// Opens the lamp once.
+///
+/// Randomness comes from the RNG state carried in [PlayerState], not from a
+/// fresh generator: a lamp seeded only by `rngSeed` would hand out the same
+/// item on every open, and one seeded by the clock could not be checked by the
+/// server (`T-032`).
+///
+/// Everything about the draw — the rarity weights, the pity threshold, the
+/// price — is config, so the economy can be retuned without a release.
+LampResult openLamp(PlayerState state, BalanceConfig config) {
+  final lamp = config.lamp;
+
+  final balance = state.resources[lamp.costResource] ?? BigNum.zero;
+  if (balance < lamp.costAmount) {
+    return LampResult(state: state, refusal: LampRefusal.cannotAfford);
+  }
+  if (config.items.isEmpty || lamp.totalWeight <= 0) {
+    return LampResult(state: state, refusal: LampRefusal.noItemsConfigured);
+  }
+
+  final rng = state.random();
+
+  final pityDue = lamp.hasPity && state.pityCounter >= lamp.pityThreshold - 1;
+  final rarity = pityDue ? lamp.pityRarity : _drawRarity(rng, lamp.weights);
+
+  // A rarity with no items behind it must not swallow the open: fall back to
+  // anything rather than charging the player for nothing.
+  final candidates = config.items.entries
+      .where((entry) => entry.value.rarity == rarity)
+      .toList();
+  final pool = candidates.isEmpty ? config.items.entries.toList() : candidates;
+  final drawn = pool[rng.nextInt(pool.length)];
+
+  final gotPityRarity = drawn.value.rarity == lamp.pityRarity;
+
+  return LampResult(
+    state: state.copyWith(
+      resources: {
+        ...state.resources,
+        lamp.costResource: balance - lamp.costAmount,
+      },
+      inventory: {
+        ...state.inventory,
+        // Ids are derived from a counter, not from a clock or a random draw,
+        // so the server replays the same ids from the same state.
+        'item-${state.itemsCreated}': OwnedItem(
+          id: 'item-${state.itemsCreated}',
+          configId: drawn.key,
+        ),
+      },
+      itemsCreated: state.itemsCreated + 1,
+      pityCounter: gotPityRarity ? 0 : state.pityCounter + 1,
+      rngState: rng.state,
+    ),
+    item: OwnedItem(id: 'item-${state.itemsCreated}', configId: drawn.key),
+    wasPity: pityDue,
+  );
+}
+
+/// Picks a rarity by weight.
+String _drawRarity(SeededRandom rng, Map<String, double> weights) {
+  final total = weights.values.fold<double>(0, (sum, w) => sum + w);
+  var roll = rng.nextDouble() * total;
+
+  for (final entry in weights.entries) {
+    roll -= entry.value;
+    if (roll < 0) return entry.key;
+  }
+
+  // Floating-point rounding can leave roll fractionally above zero on the last
+  // entry; returning it is correct rather than falling through to nothing.
+  return weights.keys.last;
+}

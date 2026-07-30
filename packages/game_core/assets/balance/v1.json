@@ -257,5 +257,17 @@
       "levelMultiplier": 1.12,
       "maxLevel": 20
     }
+  },
+  "lamp": {
+    "costResource": "gems",
+    "costAmount": "1e0",
+    "weights": {
+      "common": 70.0,
+      "rare": 22.0,
+      "epic": 7.0,
+      "legendary": 1.0
+    },
+    "pityThreshold": 60,
+    "pityRarity": "legendary"
   }
 }
