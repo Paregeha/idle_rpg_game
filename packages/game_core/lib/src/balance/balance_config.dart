@@ -7,6 +7,7 @@ import 'package:game_core/src/balance/hero_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
 import 'package:game_core/src/balance/start_config.dart';
+import 'package:game_core/src/items/item_config.dart';
 
 part 'balance_config.freezed.dart';
 part 'balance_config.g.dart';
@@ -39,6 +40,14 @@ abstract class BalanceConfig with _$BalanceConfig {
     @Default(PrestigeConfig()) PrestigeConfig prestige,
 
     @Default(HeroConfig()) HeroConfig hero,
+
+    /// Equipment slots, in display order. Data rather than an enum: adding a
+    /// fifth slot must be a change to this file, not a code change.
+    @Default(<String>[]) List<String> slots,
+
+    @Default(<String, RarityConfig>{}) Map<String, RarityConfig> rarities,
+
+    @Default(<String, ItemConfig>{}) Map<String, ItemConfig> items,
 
     @Default(StartConfig()) StartConfig start,
 
@@ -198,6 +207,65 @@ abstract class BalanceConfig with _$BalanceConfig {
         'must not be negative, or prestiging would make the player weaker',
         field: 'prestige.bonusPerPoint',
       );
+    }
+
+    for (final entry in rarities.entries) {
+      if (entry.value.statMultiplier <= 0) {
+        throw BalanceConfigException(
+          'must be positive, or items of this rarity would be worthless',
+          field: 'rarities.${entry.key}.statMultiplier',
+        );
+      }
+    }
+
+    for (final entry in items.entries) {
+      final path = 'items.${entry.key}';
+      final item = entry.value;
+
+      if (!slots.contains(item.slot)) {
+        throw BalanceConfigException(
+          'is "${item.slot}", which is not one of the declared slots '
+          '(${slots.join(', ')}) — the item could never be worn',
+          field: '$path.slot',
+        );
+      }
+      if (!rarities.containsKey(item.rarity)) {
+        throw BalanceConfigException(
+          'is "${item.rarity}", which no rarity defines',
+          field: '$path.rarity',
+        );
+      }
+      if (item.stats.flatAttack.isNegative || item.stats.flatHp.isNegative) {
+        throw BalanceConfigException(
+          'cannot be negative: an item that makes the hero weaker reads as a '
+          'bug, not as a trade-off',
+          field: '$path.stats',
+        );
+      }
+      if (item.levelMultiplier < 1) {
+        throw BalanceConfigException(
+          'below 1 means upgrading an item makes it worse',
+          field: '$path.levelMultiplier',
+        );
+      }
+      if (item.maxLevel < 0) {
+        throw BalanceConfigException(
+          'must not be negative',
+          field: '$path.maxLevel',
+        );
+      }
+      if (item.stats.critChance < 0 || item.stats.critChance > 1) {
+        throw BalanceConfigException(
+          'must be a probability between 0 and 1',
+          field: '$path.stats.critChance',
+        );
+      }
+      if (item.stats.dodgeChance < 0 || item.stats.dodgeChance > 1) {
+        throw BalanceConfigException(
+          'must be a probability between 0 and 1',
+          field: '$path.stats.dodgeChance',
+        );
+      }
     }
 
     if (hero.perUnitMultiplier < 1) {
