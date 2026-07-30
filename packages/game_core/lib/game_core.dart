@@ -9,6 +9,8 @@ export 'src/balance/balance_config.dart';
 export 'src/balance/generator_config.dart';
 export 'src/math/big_num.dart';
 export 'src/random/seeded_random.dart';
+export 'src/sim/offline_progress.dart';
+export 'src/sim/offline_report.dart';
 export 'src/sim/sim_result.dart';
 export 'src/sim/simulator.dart';
 export 'src/state/big_num_converter.dart';
