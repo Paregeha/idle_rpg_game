@@ -45,6 +45,20 @@ melos:
         before the tests, since a violation invalidates the server build.
       run: dart run ci_tools:check_core_deps
 
+    check:no-wall-clock:
+      description: >-
+        Fail if game logic reads the device clock instead of an injected Clock.
+      run: dart run ci_tools:check_no_wall_clock
+
+    test:core:web:
+      description: >-
+        Run the core tests compiled to JavaScript. The seeded RNG must produce
+        an identical sequence on the VM and in JS, or a client and the server
+        would diverge from the same state.
+      run: dart run melos exec -- dart test -p chrome
+      packageFilters:
+        scope: game_core
+
     test:dart:
       description: >-
         Run tests of the pure-Dart packages. The server is excluded on purpose:
