@@ -27,6 +27,11 @@ _PlayerState _$PlayerStateFromJson(Map<String, dynamic> json) => _PlayerState(
         (k, e) => MapEntry(k, (e as num).toInt()),
       ) ??
       const <String, int>{},
+  earnedThisRun:
+      (json['earnedThisRun'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, const BigNumConverter().fromJson(e as String)),
+      ) ??
+      const <String, BigNum>{},
   heroes:
       (json['heroes'] as List<dynamic>?)
           ?.map((e) => HeroState.fromJson(e as Map<String, dynamic>))
@@ -48,6 +53,9 @@ Map<String, dynamic> _$PlayerStateToJson(_PlayerState instance) =>
       ),
       'generators': instance.generators.map((k, e) => MapEntry(k, e.toJson())),
       'upgrades': instance.upgrades,
+      'earnedThisRun': instance.earnedThisRun.map(
+        (k, e) => MapEntry(k, const BigNumConverter().toJson(e)),
+      ),
       'heroes': instance.heroes.map((e) => e.toJson()).toList(),
       'prestige': instance.prestige.toJson(),
     };

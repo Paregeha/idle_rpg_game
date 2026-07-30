@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:game_core/src/balance/balance_exception.dart';
 import 'package:game_core/src/balance/generator_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
+import 'package:game_core/src/balance/prestige_config.dart';
 
 part 'balance_config.freezed.dart';
 part 'balance_config.g.dart';
@@ -32,6 +33,8 @@ abstract class BalanceConfig with _$BalanceConfig {
     Map<String, GeneratorConfig> generators,
 
     @Default(<String, MonsterConfig>{}) Map<String, MonsterConfig> monsters,
+
+    @Default(PrestigeConfig()) PrestigeConfig prestige,
 
     /// How much of an absence is paid out, in milliseconds.
     ///
@@ -134,6 +137,38 @@ abstract class BalanceConfig with _$BalanceConfig {
           field: '$path.costGrowth',
         );
       }
+    }
+
+    if (prestige.resource.trim().isEmpty) {
+      throw const BalanceConfigException(
+        'must name the resource the award is computed from',
+        field: 'prestige.resource',
+      );
+    }
+    if (prestige.currencyBase.isNegative || prestige.currencyBase.isZero) {
+      throw const BalanceConfigException(
+        'must be positive; it is the divisor of the award formula',
+        field: 'prestige.currencyBase',
+      );
+    }
+    if (prestige.currencyExponent <= 0) {
+      throw BalanceConfigException(
+        'must be positive, got ${prestige.currencyExponent}',
+        field: 'prestige.currencyExponent',
+      );
+    }
+    if (prestige.currencyExponent > 1) {
+      throw const BalanceConfigException(
+        'above 1 makes one very long run worth more than several deliberate '
+        'ones, which turns the loop into a grind',
+        field: 'prestige.currencyExponent',
+      );
+    }
+    if (prestige.bonusPerPoint.isNegative) {
+      throw const BalanceConfigException(
+        'must not be negative, or prestiging would make the player weaker',
+        field: 'prestige.bonusPerPoint',
+      );
     }
 
     for (final entry in monsters.entries) {

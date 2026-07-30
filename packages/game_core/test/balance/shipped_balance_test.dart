@@ -69,6 +69,20 @@ void main() {
     }
   });
 
+  test('prestige actually pays off', () {
+    expect(config.prestige.bonusPerPoint > BigNum.zero, isTrue);
+    expect(config.prestige.currencyExponent, lessThanOrEqualTo(1));
+    expect(
+      config.generators.keys,
+      contains(anything),
+      reason: 'the prestige resource must be something a generator produces',
+    );
+    expect(
+      config.generators.values.map((g) => g.produces),
+      contains(config.prestige.resource),
+    );
+  });
+
   test('drop chances are sane probabilities', () {
     for (final entry in config.monsters.entries) {
       expect(entry.value.dropChance, inInclusiveRange(0, 1));

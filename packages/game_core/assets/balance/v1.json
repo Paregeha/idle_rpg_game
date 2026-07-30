@@ -40,6 +40,13 @@
     }
   },
 
+  "prestige": {
+    "resource": "gold",
+    "currencyBase": "1e6",
+    "currencyExponent": 0.5,
+    "bonusPerPoint": "2e-2"
+  },
+
   "monsters": {
     "slime": {
       "baseHp": "1e1",

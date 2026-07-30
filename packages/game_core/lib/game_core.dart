@@ -9,6 +9,7 @@ export 'src/balance/balance_config.dart';
 export 'src/balance/balance_exception.dart';
 export 'src/balance/generator_config.dart';
 export 'src/balance/monster_config.dart';
+export 'src/balance/prestige_config.dart';
 export 'src/battle/battle_event.dart';
 export 'src/battle/battle_resolver.dart';
 export 'src/battle/battle_result.dart';
@@ -17,6 +18,7 @@ export 'src/math/big_num.dart';
 export 'src/random/seeded_random.dart';
 export 'src/sim/offline_progress.dart';
 export 'src/sim/offline_report.dart';
+export 'src/sim/prestige.dart';
 export 'src/sim/sim_result.dart';
 export 'src/sim/simulator.dart';
 export 'src/state/big_num_converter.dart';
@@ -26,9 +28,3 @@ export 'src/state/player_state.dart';
 export 'src/state/prestige_state.dart';
 export 'src/time/clock.dart';
 export 'src/time/system_clock.dart';
-
-/// Schema version of [/* PlayerState */] persisted state.
-///
-/// Bump this whenever the shape of the saved state changes, so migrations can
-/// tell old saves apart. Kept here until `T-011` introduces the state models.
-const int gameCoreStateVersion = 1;

@@ -12,6 +12,6 @@ void main() {
   test('game_core is linked into the client', () {
     // Guards the workspace wiring itself: if game_core ever stops resolving
     // from the client, this fails to compile rather than at runtime.
-    expect(gameCoreStateVersion, isPositive);
+    expect(stateSchemaVersion, isPositive);
   });
 }
