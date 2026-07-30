@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
-import 'package:idle_rpg/main.dart';
+
+import 'support/test_app.dart';
 
 void main() {
   testWidgets('app boots', (tester) async {
-    await tester.pumpWidget(const IdleRpgApp());
-    await tester.pumpAndSettle();
+    await pumpGame(tester);
 
     expect(find.byType(MaterialApp), findsOneWidget);
   });

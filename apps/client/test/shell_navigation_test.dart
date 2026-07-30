@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/battle/battle_screen.dart';
 import 'package:idle_rpg/features/hero/hero_screen.dart';
 import 'package:idle_rpg/features/upgrades/upgrades_screen.dart';
-import 'package:idle_rpg/main.dart';
 import 'package:idle_rpg/widgets/resource_bar.dart';
 
-Future<void> pumpApp(WidgetTester tester) async {
-  await tester.pumpWidget(const ProviderScope(child: IdleRpgApp()));
-  await tester.pumpAndSettle();
-}
+import 'support/test_app.dart';
 
 void main() {
   testWidgets('opens on the battle tab', (tester) async {
-    await pumpApp(tester);
+    await pumpGame(tester);
 
     expect(find.byType(BattleScreen), findsOneWidget);
   });
 
   testWidgets('every tab is reachable', (tester) async {
-    await pumpApp(tester);
+    await pumpGame(tester);
 
     await tester.tap(find.text('HERO'));
     await tester.pumpAndSettle();
@@ -39,7 +34,7 @@ void main() {
   testWidgets('the resource bar survives switching tabs', (tester) async {
     // It lives in the shell, so the counters keep running instead of being
     // torn down and rebuilt every time the player looks at another screen.
-    await pumpApp(tester);
+    await pumpGame(tester);
     final barBefore = tester.widget<ResourceBar>(find.byType(ResourceBar));
 
     await tester.tap(find.text('FORGE'));
@@ -54,7 +49,7 @@ void main() {
   });
 
   testWidgets('uses the forge palette, not stock Material', (tester) async {
-    await pumpApp(tester);
+    await pumpGame(tester);
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
     final theme = Theme.of(tester.element(find.byType(Scaffold).first));
@@ -73,13 +68,7 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(textScaler: TextScaler.linear(3)),
-        child: const ProviderScope(child: IdleRpgApp()),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpGame(tester);
 
     expect(tester.takeException(), isNull);
   });
