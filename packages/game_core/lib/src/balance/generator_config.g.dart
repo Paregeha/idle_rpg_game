@@ -13,6 +13,7 @@ _GeneratorConfig _$GeneratorConfigFromJson(Map<String, dynamic> json) =>
         json['baseRatePerSecond'] as String,
       ),
       levelMultiplier: (json['levelMultiplier'] as num?)?.toDouble() ?? 1.0,
+      costResource: json['costResource'] as String? ?? '',
       costBase: json['costBase'] == null
           ? BigNum.one
           : const BigNumConverter().fromJson(json['costBase'] as String),
@@ -26,6 +27,7 @@ Map<String, dynamic> _$GeneratorConfigToJson(_GeneratorConfig instance) =>
         instance.baseRatePerSecond,
       ),
       'levelMultiplier': instance.levelMultiplier,
+      'costResource': instance.costResource,
       'costBase': const BigNumConverter().toJson(instance.costBase),
       'costGrowth': instance.costGrowth,
     };

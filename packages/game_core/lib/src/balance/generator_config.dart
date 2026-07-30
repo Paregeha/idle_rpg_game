@@ -18,6 +18,17 @@ abstract class GeneratorConfig with _$GeneratorConfig {
     /// Rate is multiplied by this, raised to the generator's level.
     @Default(1.0) double levelMultiplier,
 
+    /// Resource the price is paid in.
+    ///
+    /// Separate from [produces] on purpose. A generator that costs what it
+    /// produces can only ever be bought with its own output, so the first one
+    /// is unreachable — the gem shrine was exactly that until the forge screen
+    /// showed "no income yet" next to a pile of gold.
+    ///
+    /// Empty means "the same resource it produces", which is right for the
+    /// gold chain.
+    @Default('') String costResource,
+
     /// Price of the first unit.
     @BigNumConverter() @Default(BigNum.one) BigNum costBase,
 
@@ -45,6 +56,9 @@ abstract class GeneratorConfig with _$GeneratorConfig {
         BigNum.fromDouble(owned.toDouble()) *
         BigNum.fromDouble(levelMultiplier).pow(level);
   }
+
+  /// Which resource a purchase is actually paid in.
+  String get pricedIn => costResource.isEmpty ? produces : costResource;
 
   /// Price of the next unit when [owned] are already held.
   ///

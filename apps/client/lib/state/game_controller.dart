@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
+import 'package:game_core/game_core.dart' as core;
 import 'package:idle_rpg/data/save_providers.dart';
 import 'package:idle_rpg/data/save_repository.dart';
 import 'package:idle_rpg/state/game_providers.dart';
@@ -135,6 +136,40 @@ class GameController extends Notifier<PlayerState?> {
 
     _lastTickMs = nowMs;
     state = simulate(current, Duration(milliseconds: elapsed), config).state;
+  }
+
+  /// Buys [count] units of a generator, if the player can afford it.
+  ///
+  /// Returns whether it went through. This is the shape every player action
+  /// takes: the UI asks for an intent and the rules answer. In `T-032` the same
+  /// call goes to the server, which runs the same function against its own
+  /// state and may disagree — so nothing here may assume success.
+  bool buyGenerator(String generatorId, {int count = 1}) {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return false;
+
+    final result = core.buyGenerator(
+      current,
+      generatorId,
+      config,
+      count: count,
+    );
+    if (!result.succeeded) return false;
+
+    state = result.state;
+    // Save immediately: a purchase is the one action a player would be
+    // genuinely annoyed to lose, and the autosave may be nine seconds away.
+    unawaited(saveNow());
+    return true;
+  }
+
+  /// How many units of [generatorId] the player can afford right now.
+  int affordable(String generatorId) {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return 0;
+    return maxAffordable(current, generatorId, config);
   }
 
   /// Called when the app goes to the background.

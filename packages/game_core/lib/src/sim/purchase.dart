@@ -37,7 +37,7 @@ int maxAffordable(
   final generator = config.generators[generatorId];
   if (generator == null) return 0;
 
-  final balance = state.resources[generator.produces] ?? BigNum.zero;
+  final balance = state.resources[generator.pricedIn] ?? BigNum.zero;
   if (balance <= BigNum.zero) return 0;
 
   final owned = state.generators[generatorId]?.owned ?? 0;
@@ -92,14 +92,14 @@ PurchaseResult buyGenerator(
 
   final owned = state.generators[generatorId]?.owned ?? 0;
   final price = generator.bulkCost(owned: owned, count: count);
-  final balance = state.resources[generator.produces] ?? BigNum.zero;
+  final balance = state.resources[generator.pricedIn] ?? BigNum.zero;
 
   if (price > balance) {
     return PurchaseResult(state: state, bought: 0, spent: BigNum.zero);
   }
 
   final resources = Map<String, BigNum>.of(state.resources)
-    ..[generator.produces] = balance - price;
+    ..[generator.pricedIn] = balance - price;
   final generators = Map<String, GeneratorState>.of(state.generators);
   final existing = generators[generatorId] ?? const GeneratorState();
   generators[generatorId] = existing.copyWith(owned: existing.owned + count);
