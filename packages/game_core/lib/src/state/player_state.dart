@@ -27,6 +27,14 @@ abstract class PlayerState with _$PlayerState {
     required int lastTickAtMs,
     required int rngSeed,
     @Default(stateSchemaVersion) int version,
+
+    /// Milliseconds left over from the last tick that did not complete a whole
+    /// simulation step.
+    ///
+    /// Progress is paid out in fixed one-second steps. Without carrying the
+    /// remainder, a client ticking at 30 Hz would round away a fraction of
+    /// every frame and drift measurably behind the server within a session.
+    @Default(0) int carryOverMs,
     @BigNumConverter()
     @Default(<String, BigNum>{})
     Map<String, BigNum> resources,

@@ -155,6 +155,25 @@ void main() {
       expect(BigNum(2, 0).pow(10), closeToBigNum(BigNum(1.024, 3)));
     });
 
+    test('whole powers are exact, not merely close', () {
+      // Generator levels are whole numbers, so this path runs on every
+      // production calculation. A logarithmic detour would return
+      // 8.000000000000002 here, and two states that should be equal would not
+      // compare equal.
+      expect(BigNum(2, 0).pow(3), BigNum.fromDouble(8));
+      expect(BigNum(3, 0).pow(4), BigNum.fromDouble(81));
+      expect(BigNum(10, 0).pow(6), BigNum(1, 6));
+      expect(BigNum(1.5, 0).pow(2), BigNum.fromDouble(2.25));
+    });
+
+    test('a large whole power stays exact where doubles cannot', () {
+      final result = BigNum(2, 0).pow(200);
+
+      // 2^200 is about 1.606938e60.
+      expect(result.exponent, 60);
+      expect(result.mantissa, closeTo(1.6069380442589903, 1e-12));
+    });
+
     test('raises a large value to a power', () {
       // (1e10)^5 = 1e50
       expect(BigNum(1, 10).pow(5), closeToBigNum(BigNum(1, 50)));

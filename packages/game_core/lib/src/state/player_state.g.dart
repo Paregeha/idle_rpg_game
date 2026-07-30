@@ -10,6 +10,7 @@ _PlayerState _$PlayerStateFromJson(Map<String, dynamic> json) => _PlayerState(
   lastTickAtMs: (json['lastTickAtMs'] as num).toInt(),
   rngSeed: (json['rngSeed'] as num).toInt(),
   version: (json['version'] as num?)?.toInt() ?? stateSchemaVersion,
+  carryOverMs: (json['carryOverMs'] as num?)?.toInt() ?? 0,
   resources:
       (json['resources'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(k, const BigNumConverter().fromJson(e as String)),
@@ -41,6 +42,7 @@ Map<String, dynamic> _$PlayerStateToJson(_PlayerState instance) =>
       'lastTickAtMs': instance.lastTickAtMs,
       'rngSeed': instance.rngSeed,
       'version': instance.version,
+      'carryOverMs': instance.carryOverMs,
       'resources': instance.resources.map(
         (k, e) => MapEntry(k, const BigNumConverter().toJson(e)),
       ),

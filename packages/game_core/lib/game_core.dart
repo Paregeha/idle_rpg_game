@@ -5,8 +5,12 @@
 /// player's progress without trusting a stream of client events.
 library;
 
+export 'src/balance/balance_config.dart';
+export 'src/balance/generator_config.dart';
 export 'src/math/big_num.dart';
 export 'src/random/seeded_random.dart';
+export 'src/sim/sim_result.dart';
+export 'src/sim/simulator.dart';
 export 'src/state/big_num_converter.dart';
 export 'src/state/generator_state.dart';
 export 'src/state/hero_state.dart';
