@@ -1,5 +1,6 @@
 import 'package:game_core/src/balance/balance_config.dart';
 import 'package:game_core/src/math/big_num.dart';
+import 'package:game_core/src/sim/prestige.dart';
 import 'package:game_core/src/sim/sim_result.dart';
 import 'package:game_core/src/state/player_state.dart';
 
@@ -42,6 +43,7 @@ SimResult simulate(PlayerState state, Duration dt, BalanceConfig config) {
   final gains = <String, BigNum>{};
   if (steps > 0) {
     final elapsedSeconds = BigNum.fromDouble(steps.toDouble());
+    final bonus = prestigeMultiplier(state.prestige, config);
 
     for (final entry in state.generators.entries) {
       final generator = config.generators[entry.key];
@@ -58,7 +60,7 @@ SimResult simulate(PlayerState state, Duration dt, BalanceConfig config) {
       );
       if (ratePerSecond.isZero) continue;
 
-      final produced = ratePerSecond * elapsedSeconds;
+      final produced = ratePerSecond * elapsedSeconds * bonus;
       if (produced.isZero) continue;
 
       gains[generator.produces] =
@@ -67,8 +69,13 @@ SimResult simulate(PlayerState state, Duration dt, BalanceConfig config) {
   }
 
   final resources = Map<String, BigNum>.of(state.resources);
+  // Earnings are tracked separately from the balance on hand: the prestige
+  // award is a function of what the run produced, not of what is left after
+  // spending it (T-017).
+  final earned = Map<String, BigNum>.of(state.earnedThisRun);
   for (final gain in gains.entries) {
     resources[gain.key] = (resources[gain.key] ?? BigNum.zero) + gain.value;
+    earned[gain.key] = (earned[gain.key] ?? BigNum.zero) + gain.value;
   }
 
   return SimResult(
@@ -76,6 +83,7 @@ SimResult simulate(PlayerState state, Duration dt, BalanceConfig config) {
       lastTickAtMs: state.lastTickAtMs + dt.inMilliseconds,
       carryOverMs: carryOverMs,
       resources: resources,
+      earnedThisRun: earned,
     ),
     gains: gains,
     stepsSimulated: steps,

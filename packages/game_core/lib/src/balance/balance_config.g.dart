@@ -23,6 +23,9 @@ _BalanceConfig _$BalanceConfigFromJson(Map<String, dynamic> json) =>
                 MapEntry(k, MonsterConfig.fromJson(e as Map<String, dynamic>)),
           ) ??
           const <String, MonsterConfig>{},
+      prestige: json['prestige'] == null
+          ? const PrestigeConfig()
+          : PrestigeConfig.fromJson(json['prestige'] as Map<String, dynamic>),
       offlineCapMs: (json['offlineCapMs'] as num?)?.toInt() ?? _eightHoursMs,
     );
 
@@ -31,5 +34,6 @@ Map<String, dynamic> _$BalanceConfigToJson(_BalanceConfig instance) =>
       'version': instance.version,
       'generators': instance.generators.map((k, e) => MapEntry(k, e.toJson())),
       'monsters': instance.monsters.map((k, e) => MapEntry(k, e.toJson())),
+      'prestige': instance.prestige.toJson(),
       'offlineCapMs': instance.offlineCapMs,
     };

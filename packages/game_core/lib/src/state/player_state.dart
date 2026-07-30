@@ -40,6 +40,16 @@ abstract class PlayerState with _$PlayerState {
     Map<String, BigNum> resources,
     @Default(<String, GeneratorState>{}) Map<String, GeneratorState> generators,
     @Default(<String, int>{}) Map<String, int> upgrades,
+
+    /// Everything earned since the last prestige reset, per resource.
+    ///
+    /// Tracked separately from [resources] because the prestige award is a
+    /// function of what the run *produced*, not of what is left after spending
+    /// it. Rewarding the balance on hand would punish the player for buying
+    /// the upgrades the run exists to buy.
+    @BigNumConverter()
+    @Default(<String, BigNum>{})
+    Map<String, BigNum> earnedThisRun,
     @Default(<HeroState>[]) List<HeroState> heroes,
     @Default(PrestigeState()) PrestigeState prestige,
   }) = _PlayerState;
