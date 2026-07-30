@@ -37,7 +37,7 @@ melos:
       description: >-
         Run every package's tests: plain Dart packages on the VM, the Flutter
         client through the Flutter test runner.
-      run: melos run test:dart && melos run test:client
+      run: dart run melos run test:dart && dart run melos run test:client
 
     check:core-deps:
       description: >-
@@ -49,7 +49,7 @@ melos:
       description: >-
         Run tests of the pure-Dart packages. The server is excluded on purpose:
         its integration tests need a live Postgres, see test:server.
-      run: melos exec -- dart test
+      run: dart run melos exec -- dart test
       packageFilters:
         flutter: false
         dirExists: test
@@ -60,19 +60,19 @@ melos:
       description: >-
         Serverpod integration tests. Requires the database to be up first:
         cd apps/server && docker compose up --detach
-      run: melos exec -- dart test
+      run: dart run melos exec -- dart test
       packageFilters:
         scope: idle_rpg_server
 
     test:core:
       description: Run the game_core tests only.
-      run: melos exec -- dart test
+      run: dart run melos exec -- dart test
       packageFilters:
         scope: game_core
 
     test:client:
       description: Run the Flutter client widget tests.
-      run: melos exec -- flutter test
+      run: dart run melos exec -- flutter test
       packageFilters:
         flutter: true
         dirExists: test

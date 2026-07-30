@@ -63,6 +63,13 @@ The cost is that one shared resolution means the Flutter SDK's pins bind
 constraints must stay loose enough to co-resolve with the client. This surfaced
 immediately during T-001 and will surface again on every Flutter upgrade.
 
+Scripts that invoke melos recursively call it as `dart run melos`, never as a
+bare `melos`. A melos script runs in a shell that does not inherit a global pub
+binary, so `melos exec` inside a script only resolves on a machine where melos
+happens to be activated globally — green locally, `melos: not found` in CI. The
+`dart run` form uses the workspace's own dev dependency, which also pins the
+version to `pubspec.lock` instead of whatever the machine has.
+
 ## ADR-005 · Serverpod integration tests are opt-in locally
 
 `melos run test` covers the pure-Dart packages and the Flutter client only. The

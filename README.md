@@ -27,12 +27,19 @@ truth for the rules of the game.
 Requires the Flutter SDK (3.41.5 or newer) and, for the server, Docker.
 
 ```bash
-dart pub global activate melos
-melos bootstrap
-melos run test
+flutter pub get              # resolves the whole workspace
+dart run melos run test
 ```
 
+melos comes from the workspace's own dev dependency, so no global install is
+needed — and the version is the one in `pubspec.lock` rather than whatever is on
+the machine. Installing it globally (`dart pub global activate melos`) is a
+convenience that lets you type `melos …` instead of `dart run melos …`; the
+commands below work either way.
+
 ## Commands
+
+Prefix each with `dart run` if melos is not installed globally.
 
 | Command | What it does |
 |---|---|
