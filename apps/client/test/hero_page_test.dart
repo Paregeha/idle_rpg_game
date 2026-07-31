@@ -59,15 +59,60 @@ void main() {
     expect(find.text('empty'), findsWidgets);
   });
 
-  testWidgets('a worn slot names what is in it and opens it', (tester) async {
-    await openHero(tester);
+  testWidgets('the first tap picks a slot, the second opens it', (
+    tester,
+  ) async {
+    // A page where every tap opened a dialog would make choosing something to
+    // upgrade a four-tap job.
+    final controller = await openHero(tester);
+    controller.state = controller.state!.copyWith(
+      resources: {'gold': BigNum.fromDouble(1e9)},
+    );
+    await tester.pumpAndSettle();
 
     expect(find.text('Blade'), findsOneWidget);
 
     await tester.tap(find.text('Blade'));
     await tester.pumpAndSettle();
+    expect(find.byType(ItemCard), findsNothing);
+    expect(find.textContaining('UPGRADE WEAPON'), findsOneWidget);
 
+    await tester.tap(find.text('Blade'));
+    await tester.pumpAndSettle();
     expect(find.byType(ItemCard), findsOneWidget);
+  });
+
+  testWidgets('with nothing picked the button says what it wants', (
+    tester,
+  ) async {
+    await openHero(tester);
+
+    expect(find.text('PICK A SLOT'), findsOneWidget);
+  });
+
+  testWidgets('UPGRADE ALL lifts the gear and leaves the outfit alone', (
+    tester,
+  ) async {
+    // Wings, skins and mounts cost crystals. A button that spends a premium
+    // currency as a side effect is the kind of thing that gets refunded.
+    final controller = await openHero(tester);
+    controller.state = controller.state!.copyWith(
+      resources: {
+        'gold': BigNum.fromDouble(1e9),
+        'premiumGems': BigNum.fromDouble(1e6),
+      },
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('UPGRADE ALL'));
+    await tester.pumpAndSettle();
+
+    expect(controller.state!.inventory['i0']!.level, greaterThan(0));
+    expect(
+      controller.state!.resources['premiumGems'],
+      BigNum.fromDouble(1e6),
+      reason: 'crystals are never spent by the sweep',
+    );
   });
 
   testWidgets('every combat stat is named, not just the loud two', (
@@ -76,6 +121,8 @@ void main() {
     // Dodge and armour decide fights the player never sees the dice of.
     await openHero(tester);
 
+    // The list scrolls, so the ones past the fold are offstage rather than
+    // absent — a stat that had been dropped would still fail this.
     for (final label in [
       'ATTACK',
       'HEALTH',
@@ -85,7 +132,11 @@ void main() {
       'DODGE',
       'ARMOUR',
     ]) {
-      expect(find.text(label), findsOneWidget, reason: label);
+      expect(
+        find.text(label, skipOffstage: false),
+        findsOneWidget,
+        reason: label,
+      );
     }
   });
 

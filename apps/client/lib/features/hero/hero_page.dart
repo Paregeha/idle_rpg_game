@@ -9,6 +9,7 @@ import 'package:idle_rpg/features/hero/item_visuals.dart';
 import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
+import 'package:idle_rpg/widgets/resource_bar.dart';
 
 /// The hero in the middle, with what they are wearing around them.
 ///
@@ -21,11 +22,24 @@ import 'package:idle_rpg/state/game_providers.dart';
 /// and the mount sit above the stats on their own: neither is equipment, they
 /// change how the hero looks and what they ride. The rune is deliberately not
 /// here at all — it is not gear and gets its own place.
-class HeroPage extends ConsumerWidget {
+class HeroPage extends ConsumerStatefulWidget {
   const HeroPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HeroPage> createState() => _HeroPageState();
+}
+
+class _HeroPageState extends ConsumerState<HeroPage> {
+  /// The slot the upgrade button acts on.
+  ///
+  /// Tapping a slot picks it; tapping the one already picked opens it. One
+  /// button that upgrades "whatever is selected" needs a selection the player
+  /// can see, and a page where every tap opened a dialog would make choosing
+  /// something to upgrade a four-tap job.
+  String? _picked;
+
+  @override
+  Widget build(BuildContext context) {
     final config = ref.watch(balanceConfigProvider).value;
     final state = ref.watch(gameControllerProvider);
     if (config == null || state == null) return const SizedBox.shrink();
@@ -57,12 +71,16 @@ class HeroPage extends ConsumerWidget {
                     slots: gear.take(half).toList(),
                     config: config,
                     state: state,
+                    picked: _picked,
+                    onPick: _pick,
                   ),
                   Expanded(child: _Figure(level: state.heroLevel)),
                   _Column(
                     slots: gear.skip(half).toList(),
                     config: config,
                     state: state,
+                    picked: _picked,
+                    onPick: _pick,
                   ),
                 ],
               ),
@@ -80,22 +98,46 @@ class HeroPage extends ConsumerWidget {
                             slot: slot,
                             config: config,
                             state: state,
+                            picked: _picked == slot.id,
+                            onPick: _pick,
                           ),
                         ),
                       ),
                   ],
                 ),
               ),
-            // Full width: the numbers are read across, and a narrow column
-            // squeezed between the gear made every one of them wrap.
+            _UpgradeBar(
+              picked: _picked,
+              config: config,
+              state: state,
+              onUpgrade: (id) =>
+                  ref.read(gameControllerProvider.notifier).upgrade(id),
+              onUpgradeAll: () =>
+                  ref.read(gameControllerProvider.notifier).upgradeEverything(),
+            ),
+            // Full width and scrolling: the numbers are read across, and the
+            // list grows every time a stat is added.
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-              child: _Stats(stats: stats),
+              child: SizedBox(height: 132, child: _Stats(stats: stats)),
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// First tap picks a slot, a second on the same one opens it.
+  ///
+  /// A page where every tap opened a dialog would make choosing something to
+  /// upgrade a four-tap job.
+  void _pick(String slotId) {
+    if (_picked == slotId) {
+      final wornId = ref.read(gameControllerProvider)?.equipped[slotId];
+      if (wornId != null) ItemCard.show(context, itemId: wornId);
+      return;
+    }
+    setState(() => _picked = slotId);
   }
 }
 
@@ -105,11 +147,15 @@ class _Column extends StatelessWidget {
     required this.slots,
     required this.config,
     required this.state,
+    required this.picked,
+    required this.onPick,
   });
 
   final List<SlotConfig> slots;
   final BalanceConfig config;
   final PlayerState state;
+  final String? picked;
+  final ValueChanged<String> onPick;
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +165,13 @@ class _Column extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
         children: [
           for (final slot in slots)
-            _SlotTile(slot: slot, config: config, state: state),
+            _SlotTile(
+              slot: slot,
+              config: config,
+              state: state,
+              picked: picked == slot.id,
+              onPick: onPick,
+            ),
         ],
       ),
     );
@@ -132,11 +184,15 @@ class _SlotTile extends StatelessWidget {
     required this.slot,
     required this.config,
     required this.state,
+    required this.picked,
+    required this.onPick,
   });
 
   final SlotConfig slot;
   final BalanceConfig config;
   final PlayerState state;
+  final bool picked;
+  final ValueChanged<String> onPick;
 
   @override
   Widget build(BuildContext context) {
@@ -148,19 +204,21 @@ class _SlotTile extends StatelessWidget {
     final better = hasUpgradeFor(state, slot.id, config);
 
     return GestureDetector(
-      onTap: filled
-          ? () => ItemCard.show(context, itemId: owned.id, slot: slot)
-          : null,
+      onTap: filled ? () => onPick(slot.id) : null,
       child: Container(
         height: 62,
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
         decoration: BoxDecoration(
-          color: GamePalette.forgeSurface,
+          color: picked
+              ? GamePalette.emberDim.withValues(alpha: 0.35)
+              : GamePalette.forgeSurface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: filled ? rarityColour(rank) : GamePalette.forgeRaised,
-            width: filled ? 1.5 : 1,
+            color: picked
+                ? GamePalette.emberBright
+                : (filled ? rarityColour(rank) : GamePalette.forgeRaised),
+            width: picked || filled ? 1.5 : 1,
           ),
         ),
         child: Stack(
@@ -290,7 +348,8 @@ class _Stats extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: GamePalette.forgeRaised),
       ),
-      child: Column(
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
           for (final line in lines) _Line(label: line.$1, value: line.$2),
         ],
@@ -357,4 +416,164 @@ class _Leader extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _Leader oldDelegate) => false;
+}
+
+/// Upgrade the one that is picked, or everything gold can pay for.
+///
+/// Two buttons rather than one, because they answer different questions: this
+/// item, or the whole build. The second deliberately leaves the outfit alone —
+/// wings, skins and mounts cost crystals, and a button that spends a premium
+/// currency as a side effect is the kind of thing that gets refunded.
+class _UpgradeBar extends StatelessWidget {
+  const _UpgradeBar({
+    required this.picked,
+    required this.config,
+    required this.state,
+    required this.onUpgrade,
+    required this.onUpgradeAll,
+  });
+
+  final String? picked;
+  final BalanceConfig config;
+  final PlayerState state;
+  final ValueChanged<String> onUpgrade;
+  final VoidCallback onUpgradeAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final wornId = picked == null ? null : state.equipped[picked];
+    final owned = wornId == null ? null : state.inventory[wornId];
+    final item = owned == null ? null : config.items[owned.configId];
+
+    // The upgrade itself decides whether it would go through, so the button
+    // cannot promise something the rules refuse.
+    final refusal = wornId == null
+        ? UpgradeRefusal.unknownItem
+        : upgradeItem(state, wornId, config).refusal;
+
+    final price = item == null
+        ? null
+        : config.itemUpgrade.costForKind(item.slot, owned!.level);
+    final resource = item == null
+        ? null
+        : config.itemUpgrade.costResourceFor(item.slot);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: _Button(
+              filled: refusal == null,
+              onPressed: refusal == null ? () => onUpgrade(wornId!) : null,
+              label: switch (refusal) {
+                null => 'UPGRADE ${shortName(picked!).toUpperCase()}',
+                UpgradeRefusal.unknownItem => 'PICK A SLOT',
+                UpgradeRefusal.alreadyMaxLevel => 'FULLY UPGRADED',
+                UpgradeRefusal.cannotAfford => 'NOT ENOUGH',
+                UpgradeRefusal.notEnoughDuplicates => 'NEEDS A SPARE',
+              },
+              price: refusal == null ? price : null,
+              resource: resource,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: _Button(
+              filled: false,
+              onPressed: onUpgradeAll,
+              label: 'UPGRADE ALL',
+              price: null,
+              resource: null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Button extends StatelessWidget {
+  const _Button({
+    required this.label,
+    required this.filled,
+    required this.onPressed,
+    required this.price,
+    required this.resource,
+  });
+
+  final String label;
+  final bool filled;
+  final VoidCallback? onPressed;
+  final BigNum? price;
+  final String? resource;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 46,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(23),
+          gradient: filled
+              ? const LinearGradient(
+                  colors: [GamePalette.emberBright, GamePalette.emberDim],
+                )
+              : null,
+          color: filled ? null : GamePalette.forgeSurface,
+          border: filled ? null : Border.all(color: GamePalette.forgeRaised),
+        ),
+        child: TextButton(
+          onPressed: onPressed,
+          style: TextButton.styleFrom(
+            foregroundColor: filled ? GamePalette.bone : GamePalette.gold,
+            disabledForegroundColor: GamePalette.ash,
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(23),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+              if (price != null && resource != null) ...[
+                const SizedBox(height: 1),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: currencyColour(resource!),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      price!.format(),
+                      style: counterStyle(context, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

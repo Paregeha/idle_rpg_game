@@ -266,6 +266,20 @@ class GameController extends Notifier<PlayerState?> {
     return result;
   }
 
+  /// Raises every gear item a level at a time while the player can pay.
+  UpgradeAllResult? upgradeEverything() {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return null;
+
+    final result = core.upgradeAll(current, config);
+    if (result.levels > 0) {
+      state = result.state;
+      unawaited(saveNow());
+    }
+    return result;
+  }
+
   /// Raises a skill one level, paying in duplicate copies.
   SkillUpgradeResult? upgradeSkillById(String skillId) {
     final current = state;

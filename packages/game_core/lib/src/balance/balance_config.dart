@@ -300,6 +300,29 @@ abstract class BalanceConfig with _$BalanceConfig {
         field: 'itemUpgrade.duplicatesPerLevel',
       );
     }
+    for (final entry in itemUpgrade.costResourceByKind.entries) {
+      if (!slots.any((slot) => slot.itemKind == entry.key)) {
+        throw BalanceConfigException(
+          'prices "${entry.key}", which no slot accepts',
+          field: 'itemUpgrade.costResourceByKind',
+        );
+      }
+      if (entry.value.trim().isEmpty) {
+        throw BalanceConfigException(
+          'must name a resource',
+          field: 'itemUpgrade.costResourceByKind.${entry.key}',
+        );
+      }
+    }
+    for (final entry in itemUpgrade.costBaseByKind.entries) {
+      if (entry.value.isNegative || entry.value.isZero) {
+        throw BalanceConfigException(
+          'must be positive',
+          field: 'itemUpgrade.costBaseByKind.${entry.key}',
+        );
+      }
+    }
+
     if (itemUpgrade.costBase.isNegative || itemUpgrade.costBase.isZero) {
       throw const BalanceConfigException(
         'must be positive',

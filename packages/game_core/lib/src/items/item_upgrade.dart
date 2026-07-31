@@ -38,6 +38,56 @@ class UpgradeResult {
   bool get upgraded => item != null;
 }
 
+/// Raises every gear item one level at a time, in slot order, while the
+/// player can pay.
+///
+/// Round-robin rather than pouring everything into the first item: "upgrade
+/// everything" should leave the hero evenly stronger, not with one enormous
+/// sword. A pass that upgrades nothing ends it.
+///
+/// Kinds paid for in a premium currency are never touched. Spending crystals
+/// is a decision, and a button that spends them as a side effect is the kind
+/// of thing that gets refunded.
+UpgradeAllResult upgradeAll(PlayerState state, BalanceConfig config) {
+  final order = config.slots.toList()
+    ..sort((a, b) => a.order.compareTo(b.order));
+
+  var current = state;
+  var levels = 0;
+  var again = true;
+
+  while (again) {
+    again = false;
+
+    for (final slot in order) {
+      if (config.itemUpgrade.isPremium(slot.itemKind)) continue;
+
+      final wornId = current.equipped[slot.id];
+      if (wornId == null) continue;
+
+      final result = upgradeItem(current, wornId, config);
+      if (!result.upgraded) continue;
+
+      current = result.state;
+      levels++;
+      again = true;
+    }
+  }
+
+  return UpgradeAllResult(state: current, levels: levels);
+}
+
+/// What an "upgrade everything" pass managed.
+@immutable
+class UpgradeAllResult {
+  const UpgradeAllResult({required this.state, required this.levels});
+
+  final PlayerState state;
+
+  /// Levels gained across everything it touched.
+  final int levels;
+}
+
 /// Spare copies of [itemId] an upgrade is allowed to eat.
 ///
 /// Unequipped copies only, and never the item itself. The upgrade and the
@@ -80,8 +130,9 @@ UpgradeResult upgradeItem(
   }
 
   final upgrade = config.itemUpgrade;
-  final price = upgrade.costFor(owned.level);
-  final balance = state.resources[upgrade.costResource] ?? BigNum.zero;
+  final resource = upgrade.costResourceFor(item.slot);
+  final price = upgrade.costForKind(item.slot, owned.level);
+  final balance = state.resources[resource] ?? BigNum.zero;
   if (balance < price) {
     return UpgradeResult(state: state, refusal: UpgradeRefusal.cannotAfford);
   }
@@ -106,10 +157,7 @@ UpgradeResult upgradeItem(
   return UpgradeResult(
     state: state.copyWith(
       inventory: inventory,
-      resources: {
-        ...state.resources,
-        upgrade.costResource: balance - price,
-      },
+      resources: {...state.resources, resource: balance - price},
     ),
     item: upgraded,
     consumed: duplicates,
