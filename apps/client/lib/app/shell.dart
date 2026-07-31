@@ -33,6 +33,11 @@ class GameShell extends StatelessWidget {
             label: 'HOME',
           ),
           NavigationDestination(
+            icon: Icon(Icons.storefront_outlined),
+            selectedIcon: Icon(Icons.storefront),
+            label: 'SHOP',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.hardware_outlined),
             selectedIcon: Icon(Icons.hardware),
             label: 'FORGE',

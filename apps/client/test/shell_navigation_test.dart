@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/battle/battle_screen.dart';
 import 'package:idle_rpg/features/home/home_screen.dart';
-import 'package:idle_rpg/features/home/resource_overlay.dart';
+import 'package:idle_rpg/widgets/resource_overlay.dart';
 import 'package:idle_rpg/features/upgrades/upgrades_screen.dart';
 
 import 'support/test_app.dart';

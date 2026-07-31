@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
+import 'package:idle_rpg/features/shop/shop_screen.dart';
 import 'package:idle_rpg/features/skills/skill_card.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
@@ -144,23 +145,20 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
-  testWidgets('a pack costs gems and gives a copy', (tester) async {
+  testWidgets('the pack button goes to the shop rather than buying here', (
+    tester,
+  ) async {
+    // Two buttons that both open packs would leave the player wondering
+    // whether they do the same thing, and the shop is where the odds and the
+    // guarantee are.
     final controller = await withSkills(tester, gems: 500);
     final before = controller.state!.resources['gems']!;
 
     await tester.tap(find.byIcon(Icons.auto_awesome_motion));
     await tester.pumpAndSettle();
 
-    expect(controller.state!.resources['gems']! < before, isTrue);
-    expect(controller.state!.skills, isNotEmpty);
-  });
-
-  testWidgets('a pack cannot be bought without gems', (tester) async {
-    final controller = await withSkills(tester, gems: 0);
-
-    await tester.tap(find.byIcon(Icons.auto_awesome_motion));
-    await tester.pumpAndSettle();
-
+    expect(find.byType(ShopScreen), findsOneWidget);
+    expect(controller.state!.resources['gems'], before);
     expect(controller.state!.skills, isEmpty);
   });
 }

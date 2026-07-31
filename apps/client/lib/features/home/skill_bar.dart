@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
+import 'package:go_router/go_router.dart';
+import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/item_visuals.dart';
 import 'package:idle_rpg/features/skills/skill_card.dart';
@@ -228,7 +230,11 @@ class _Cooldown extends StatelessWidget {
   }
 }
 
-/// Buys one skill pack, priced where the player can see it.
+/// The way to the pack, priced where the player can see it.
+///
+/// Goes to the shop rather than buying here. Two buttons that both open packs
+/// would leave the player wondering whether they do the same thing, and the
+/// shop is where the odds and the guarantee are.
 class _PackButton extends ConsumerWidget {
   const _PackButton({required this.config, required this.state});
 
@@ -243,9 +249,7 @@ class _PackButton extends ConsumerWidget {
         (state.resources[pack.costResource] ?? BigNum.zero) >= price;
 
     return GestureDetector(
-      onTap: affordable
-          ? () => ref.read(gameControllerProvider.notifier).openSkillPack()
-          : null,
+      onTap: () => context.go(Routes.shop),
       child: Container(
         width: 46,
         height: 38,

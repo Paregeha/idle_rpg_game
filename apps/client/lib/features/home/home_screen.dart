@@ -6,7 +6,7 @@ import 'package:idle_rpg/features/battle/battle_screen.dart';
 import 'package:idle_rpg/features/home/equipment_grid.dart';
 import 'package:idle_rpg/features/home/lamp_panel.dart';
 import 'package:idle_rpg/features/home/player_bar.dart';
-import 'package:idle_rpg/features/home/resource_overlay.dart';
+import 'package:idle_rpg/widgets/resource_overlay.dart';
 import 'package:idle_rpg/features/home/skill_bar.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
