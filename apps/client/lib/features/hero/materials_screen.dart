@@ -4,11 +4,12 @@ import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 
-/// What the forge has to work with.
+/// The bag. It holds materials, because that is all there is to hold.
 ///
-/// Gear does not live here. An item is either on the hero or sold as soon as
-/// it is drawn, so a store of things to browse would only ever be empty. What
-/// is worth keeping is the material that breaking gear down pays.
+/// Gear does not live here: an item is either on the hero or sold as soon as
+/// it is drawn, so a store of things to browse would only ever be empty. The
+/// name stays the bag even so — it is where the player goes to see what they
+/// have, and renaming the place would only make them look for the old one.
 class MaterialsScreen extends ConsumerWidget {
   const MaterialsScreen({super.key});
 
@@ -21,7 +22,7 @@ class MaterialsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: GamePalette.forgeSurface,
         foregroundColor: GamePalette.bone,
-        title: Text('MATERIALS', style: Theme.of(context).textTheme.labelSmall),
+        title: Text('BAG', style: Theme.of(context).textTheme.labelSmall),
       ),
       body: config.materialResources.isEmpty
           ? const _Empty()

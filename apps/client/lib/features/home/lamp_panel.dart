@@ -32,8 +32,8 @@ class LampPanel extends ConsumerWidget {
       child: Row(
         children: [
           _SideButton(
-            icon: Icons.hexagon_outlined,
-            label: 'MATS',
+            icon: Icons.inventory_2_outlined,
+            label: 'BAG',
             onTap: () => context.push(Routes.materials),
           ),
           Expanded(

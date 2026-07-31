@@ -70,15 +70,16 @@ void main() {
     );
   });
 
-  testWidgets('materials are a screen of their own', (tester) async {
+  testWidgets('the bag holds materials and nothing else', (tester) async {
     // Gear does not live anywhere: it is on the hero or sold. What is worth
     // keeping is what breaking it down paid.
     await withGear(tester);
 
-    await tester.tap(find.byIcon(Icons.hexagon_outlined));
+    await tester.tap(find.byIcon(Icons.inventory_2_outlined));
     await tester.pumpAndSettle();
 
     expect(find.byType(MaterialsScreen), findsOneWidget);
+    expect(find.text('BAG'), findsOneWidget);
     for (final material in testBalanceConfig.materialResources) {
       expect(find.text(material.toUpperCase()), findsOneWidget);
     }
@@ -91,7 +92,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.hexagon_outlined));
+    await tester.tap(find.byIcon(Icons.inventory_2_outlined));
     await tester.pumpAndSettle();
 
     expect(find.text(BigNum.fromDouble(42).format()), findsOneWidget);

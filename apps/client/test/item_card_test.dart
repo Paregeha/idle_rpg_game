@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
+import 'package:idle_rpg/features/hero/materials_screen.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
 import 'support/test_app.dart';
@@ -28,12 +29,16 @@ Future<void> openCard(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('a worn slot opens the item, not the bag', (tester) async {
+  testWidgets('a worn slot opens the item itself', (tester) async {
     await armed(tester);
     await openCard(tester);
 
     expect(find.byType(ItemCard), findsOneWidget);
-    expect(find.text('BAG'), findsNothing);
+    expect(
+      find.byType(MaterialsScreen),
+      findsNothing,
+      reason: 'tapping worn gear must not take the player somewhere else',
+    );
   });
 
   testWidgets('shows what the next level buys', (tester) async {
