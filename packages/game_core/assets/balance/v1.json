@@ -53,7 +53,8 @@
       "apprentice": 1
     },
     "resources": {
-      "gold": "0e0"
+      "gold": "0e0",
+      "gems": "1e1"
     }
   },
   "prestige": {

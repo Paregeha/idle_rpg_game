@@ -172,6 +172,104 @@ class GameController extends Notifier<PlayerState?> {
     return maxAffordable(current, generatorId, config);
   }
 
+  /// Puts an item on. Returns what came off, if anything.
+  String? equip(String itemId) {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return null;
+
+    final result = core.equipItem(current, itemId, config);
+    if (!result.equipped) return null;
+
+    state = result.state;
+    unawaited(saveNow());
+    return result.replaced;
+  }
+
+  void unequip(String slot) {
+    final current = state;
+    if (current == null) return;
+
+    state = core.unequipSlot(current, slot);
+    unawaited(saveNow());
+  }
+
+  /// Equips the strongest available item in every empty or weaker slot.
+  ///
+  /// "Strongest" is by the attack and health the item actually contributes,
+  /// not by rarity: an upgraded common can beat a fresh epic, and sorting by
+  /// rarity would quietly hand the player the worse item.
+  int equipBest() {
+    final config = _config;
+    final start = state;
+    if (start == null || config == null) return 0;
+
+    var current = start;
+    var changed = 0;
+    for (final slot in config.slots) {
+      final candidates = current.inventory.values.where((owned) {
+        final item = config.items[owned.configId];
+        return item != null && item.slot == slot;
+      }).toList();
+      if (candidates.isEmpty) continue;
+
+      candidates.sort((a, b) => _worth(b, config).compareTo(_worth(a, config)));
+      final best = candidates.first;
+      if (current.equipped[slot] == best.id) continue;
+
+      final result = core.equipItem(current, best.id, config);
+      if (result.equipped) {
+        current = result.state;
+        changed++;
+      }
+    }
+
+    if (changed > 0) {
+      state = current;
+      unawaited(saveNow());
+    }
+    return changed;
+  }
+
+  double _worth(OwnedItem owned, BalanceConfig config) {
+    final item = config.items[owned.configId];
+    final rarity = config.rarities[item?.rarity];
+    if (item == null || rarity == null) return -1;
+
+    final stats = item.statsAt(level: owned.level, rarity: rarity);
+    return stats.flatAttack.toDouble() +
+        stats.flatHp.toDouble() * 0.2 +
+        (stats.attackMultiplier - 1) * 500;
+  }
+
+  /// Opens the lamp once.
+  LampResult? openTheLamp() {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return null;
+
+    final result = core.openLamp(current, config);
+    if (result.opened) {
+      state = result.state;
+      unawaited(saveNow());
+    }
+    return result;
+  }
+
+  /// Raises an item one level.
+  UpgradeResult? upgrade(String itemId) {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return null;
+
+    final result = core.upgradeItem(current, itemId, config);
+    if (result.upgraded) {
+      state = result.state;
+      unawaited(saveNow());
+    }
+    return result;
+  }
+
   /// Called when the app goes to the background.
   ///
   /// Stopping the timer is the whole battery story: a 30 Hz timer that keeps
