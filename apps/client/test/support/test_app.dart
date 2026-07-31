@@ -21,6 +21,7 @@ final testBalanceConfig = BalanceConfig(
   slots: const [
     SlotConfig(id: 'weapon'),
     SlotConfig(id: 'trinket'),
+    SlotConfig(id: 'wings'),
   ],
   rarities: const {'common': RarityConfig()},
   items: {
@@ -28,6 +29,12 @@ final testBalanceConfig = BalanceConfig(
       slot: 'weapon',
       rarity: 'common',
       stats: ItemStats(flatAttack: BigNum.fromDouble(25)),
+    ),
+    'ashen_wings': ItemConfig(
+      slot: 'wings',
+      rarity: 'common',
+      sources: ['craft'],
+      stats: ItemStats(flatHp: BigNum.fromDouble(50)),
     ),
   },
   skills: const {
@@ -41,6 +48,13 @@ final testBalanceConfig = BalanceConfig(
     },
   ),
   materialResources: const ['scrap'],
+  recipes: {
+    'ashen_wings': RecipeConfig(
+      produces: 'ashen_wings',
+      unlockAtHeroLevel: 12,
+      costs: {'scrap': BigNum.fromDouble(120)},
+    ),
+  },
   lamp: const LampConfig(weights: {'common': 1}, costResource: 'gems'),
   displayedResources: const ['gold', 'gems'],
   start: StartConfig(

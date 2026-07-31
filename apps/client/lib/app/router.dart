@@ -1,9 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/shell.dart';
 import 'package:idle_rpg/features/hero/inventory_screen.dart';
+import 'package:idle_rpg/features/forge/forge_screen.dart';
 import 'package:idle_rpg/features/home/home_screen.dart';
 import 'package:idle_rpg/features/shop/shop_screen.dart';
-import 'package:idle_rpg/features/upgrades/upgrades_screen.dart';
 
 /// The places a player can be.
 ///
@@ -50,7 +50,7 @@ GoRouter buildRouter() {
           GoRoute(
             path: Routes.upgrades,
             pageBuilder: (context, state) =>
-                const NoTransitionPage(child: UpgradesScreen()),
+                const NoTransitionPage(child: ForgeScreen()),
           ),
         ],
       ),

@@ -26,7 +26,8 @@ mixin _$BalanceConfig {
  List<SlotConfig> get slots; Map<String, RarityConfig> get rarities; Map<String, ItemConfig> get items;/// Skills the hero can learn, by id.
  Map<String, SkillConfig> get skills;/// Where skill copies come from: the pack, bosses and monsters.
  SkillPackConfig get skillPack;/// What breaking an item down pays.
- SalvageConfig get salvage;/// Resources that are crafting materials rather than currencies.
+ SalvageConfig get salvage;/// What the forge can make, by recipe id.
+ Map<String, RecipeConfig> get recipes;/// Resources that are crafting materials rather than currencies.
 ///
 /// Data, because which of them exist is a balance decision. The bag shows
 /// these on its own tab; the top row shows `displayedResources`.
@@ -48,16 +49,16 @@ $BalanceConfigCopyWith<BalanceConfig> get copyWith => _$BalanceConfigCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.monsters, monsters)&&(identical(other.prestige, prestige) || other.prestige == prestige)&&(identical(other.hero, hero) || other.hero == hero)&&(identical(other.progression, progression) || other.progression == progression)&&(identical(other.lamp, lamp) || other.lamp == lamp)&&const DeepCollectionEquality().equals(other.displayedResources, displayedResources)&&(identical(other.itemUpgrade, itemUpgrade) || other.itemUpgrade == itemUpgrade)&&const DeepCollectionEquality().equals(other.slots, slots)&&const DeepCollectionEquality().equals(other.rarities, rarities)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.skills, skills)&&(identical(other.skillPack, skillPack) || other.skillPack == skillPack)&&(identical(other.salvage, salvage) || other.salvage == salvage)&&const DeepCollectionEquality().equals(other.materialResources, materialResources)&&(identical(other.start, start) || other.start == start)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.monsters, monsters)&&(identical(other.prestige, prestige) || other.prestige == prestige)&&(identical(other.hero, hero) || other.hero == hero)&&(identical(other.progression, progression) || other.progression == progression)&&(identical(other.lamp, lamp) || other.lamp == lamp)&&const DeepCollectionEquality().equals(other.displayedResources, displayedResources)&&(identical(other.itemUpgrade, itemUpgrade) || other.itemUpgrade == itemUpgrade)&&const DeepCollectionEquality().equals(other.slots, slots)&&const DeepCollectionEquality().equals(other.rarities, rarities)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.skills, skills)&&(identical(other.skillPack, skillPack) || other.skillPack == skillPack)&&(identical(other.salvage, salvage) || other.salvage == salvage)&&const DeepCollectionEquality().equals(other.recipes, recipes)&&const DeepCollectionEquality().equals(other.materialResources, materialResources)&&(identical(other.start, start) || other.start == start)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,version,const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(monsters),prestige,hero,progression,lamp,const DeepCollectionEquality().hash(displayedResources),itemUpgrade,const DeepCollectionEquality().hash(slots),const DeepCollectionEquality().hash(rarities),const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(skills),skillPack,salvage,const DeepCollectionEquality().hash(materialResources),start,offlineCapMs);
+int get hashCode => Object.hashAll([runtimeType,version,const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(monsters),prestige,hero,progression,lamp,const DeepCollectionEquality().hash(displayedResources),itemUpgrade,const DeepCollectionEquality().hash(slots),const DeepCollectionEquality().hash(rarities),const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(skills),skillPack,salvage,const DeepCollectionEquality().hash(recipes),const DeepCollectionEquality().hash(materialResources),start,offlineCapMs]);
 
 @override
 String toString() {
-  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, prestige: $prestige, hero: $hero, progression: $progression, lamp: $lamp, displayedResources: $displayedResources, itemUpgrade: $itemUpgrade, slots: $slots, rarities: $rarities, items: $items, skills: $skills, skillPack: $skillPack, salvage: $salvage, materialResources: $materialResources, start: $start, offlineCapMs: $offlineCapMs)';
+  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, prestige: $prestige, hero: $hero, progression: $progression, lamp: $lamp, displayedResources: $displayedResources, itemUpgrade: $itemUpgrade, slots: $slots, rarities: $rarities, items: $items, skills: $skills, skillPack: $skillPack, salvage: $salvage, recipes: $recipes, materialResources: $materialResources, start: $start, offlineCapMs: $offlineCapMs)';
 }
 
 
@@ -68,7 +69,7 @@ abstract mixin class $BalanceConfigCopyWith<$Res>  {
   factory $BalanceConfigCopyWith(BalanceConfig value, $Res Function(BalanceConfig) _then) = _$BalanceConfigCopyWithImpl;
 @useResult
 $Res call({
- int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, PrestigeConfig prestige, HeroConfig hero, ProgressionConfig progression, LampConfig lamp, List<String> displayedResources, ItemUpgradeConfig itemUpgrade, List<SlotConfig> slots, Map<String, RarityConfig> rarities, Map<String, ItemConfig> items, Map<String, SkillConfig> skills, SkillPackConfig skillPack, SalvageConfig salvage, List<String> materialResources, StartConfig start, int offlineCapMs
+ int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, PrestigeConfig prestige, HeroConfig hero, ProgressionConfig progression, LampConfig lamp, List<String> displayedResources, ItemUpgradeConfig itemUpgrade, List<SlotConfig> slots, Map<String, RarityConfig> rarities, Map<String, ItemConfig> items, Map<String, SkillConfig> skills, SkillPackConfig skillPack, SalvageConfig salvage, Map<String, RecipeConfig> recipes, List<String> materialResources, StartConfig start, int offlineCapMs
 });
 
 
@@ -85,7 +86,7 @@ class _$BalanceConfigCopyWithImpl<$Res>
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? prestige = null,Object? hero = null,Object? progression = null,Object? lamp = null,Object? displayedResources = null,Object? itemUpgrade = null,Object? slots = null,Object? rarities = null,Object? items = null,Object? skills = null,Object? skillPack = null,Object? salvage = null,Object? materialResources = null,Object? start = null,Object? offlineCapMs = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? prestige = null,Object? hero = null,Object? progression = null,Object? lamp = null,Object? displayedResources = null,Object? itemUpgrade = null,Object? slots = null,Object? rarities = null,Object? items = null,Object? skills = null,Object? skillPack = null,Object? salvage = null,Object? recipes = null,Object? materialResources = null,Object? start = null,Object? offlineCapMs = null,}) {
   return _then(_self.copyWith(
 version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as int,generators: null == generators ? _self.generators : generators // ignore: cast_nullable_to_non_nullable
@@ -102,7 +103,8 @@ as Map<String, RarityConfig>,items: null == items ? _self.items : items // ignor
 as Map<String, ItemConfig>,skills: null == skills ? _self.skills : skills // ignore: cast_nullable_to_non_nullable
 as Map<String, SkillConfig>,skillPack: null == skillPack ? _self.skillPack : skillPack // ignore: cast_nullable_to_non_nullable
 as SkillPackConfig,salvage: null == salvage ? _self.salvage : salvage // ignore: cast_nullable_to_non_nullable
-as SalvageConfig,materialResources: null == materialResources ? _self.materialResources : materialResources // ignore: cast_nullable_to_non_nullable
+as SalvageConfig,recipes: null == recipes ? _self.recipes : recipes // ignore: cast_nullable_to_non_nullable
+as Map<String, RecipeConfig>,materialResources: null == materialResources ? _self.materialResources : materialResources // ignore: cast_nullable_to_non_nullable
 as List<String>,start: null == start ? _self.start : start // ignore: cast_nullable_to_non_nullable
 as StartConfig,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
 as int,
@@ -262,10 +264,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  ProgressionConfig progression,  LampConfig lamp,  List<String> displayedResources,  ItemUpgradeConfig itemUpgrade,  List<SlotConfig> slots,  Map<String, RarityConfig> rarities,  Map<String, ItemConfig> items,  Map<String, SkillConfig> skills,  SkillPackConfig skillPack,  SalvageConfig salvage,  List<String> materialResources,  StartConfig start,  int offlineCapMs)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  ProgressionConfig progression,  LampConfig lamp,  List<String> displayedResources,  ItemUpgradeConfig itemUpgrade,  List<SlotConfig> slots,  Map<String, RarityConfig> rarities,  Map<String, ItemConfig> items,  Map<String, SkillConfig> skills,  SkillPackConfig skillPack,  SalvageConfig salvage,  Map<String, RecipeConfig> recipes,  List<String> materialResources,  StartConfig start,  int offlineCapMs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BalanceConfig() when $default != null:
-return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.progression,_that.lamp,_that.displayedResources,_that.itemUpgrade,_that.slots,_that.rarities,_that.items,_that.skills,_that.skillPack,_that.salvage,_that.materialResources,_that.start,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.progression,_that.lamp,_that.displayedResources,_that.itemUpgrade,_that.slots,_that.rarities,_that.items,_that.skills,_that.skillPack,_that.salvage,_that.recipes,_that.materialResources,_that.start,_that.offlineCapMs);case _:
   return orElse();
 
 }
@@ -283,10 +285,10 @@ return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  ProgressionConfig progression,  LampConfig lamp,  List<String> displayedResources,  ItemUpgradeConfig itemUpgrade,  List<SlotConfig> slots,  Map<String, RarityConfig> rarities,  Map<String, ItemConfig> items,  Map<String, SkillConfig> skills,  SkillPackConfig skillPack,  SalvageConfig salvage,  List<String> materialResources,  StartConfig start,  int offlineCapMs)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  ProgressionConfig progression,  LampConfig lamp,  List<String> displayedResources,  ItemUpgradeConfig itemUpgrade,  List<SlotConfig> slots,  Map<String, RarityConfig> rarities,  Map<String, ItemConfig> items,  Map<String, SkillConfig> skills,  SkillPackConfig skillPack,  SalvageConfig salvage,  Map<String, RecipeConfig> recipes,  List<String> materialResources,  StartConfig start,  int offlineCapMs)  $default,) {final _that = this;
 switch (_that) {
 case _BalanceConfig():
-return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.progression,_that.lamp,_that.displayedResources,_that.itemUpgrade,_that.slots,_that.rarities,_that.items,_that.skills,_that.skillPack,_that.salvage,_that.materialResources,_that.start,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.progression,_that.lamp,_that.displayedResources,_that.itemUpgrade,_that.slots,_that.rarities,_that.items,_that.skills,_that.skillPack,_that.salvage,_that.recipes,_that.materialResources,_that.start,_that.offlineCapMs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -303,10 +305,10 @@ return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  ProgressionConfig progression,  LampConfig lamp,  List<String> displayedResources,  ItemUpgradeConfig itemUpgrade,  List<SlotConfig> slots,  Map<String, RarityConfig> rarities,  Map<String, ItemConfig> items,  Map<String, SkillConfig> skills,  SkillPackConfig skillPack,  SalvageConfig salvage,  List<String> materialResources,  StartConfig start,  int offlineCapMs)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int version,  Map<String, GeneratorConfig> generators,  Map<String, MonsterConfig> monsters,  PrestigeConfig prestige,  HeroConfig hero,  ProgressionConfig progression,  LampConfig lamp,  List<String> displayedResources,  ItemUpgradeConfig itemUpgrade,  List<SlotConfig> slots,  Map<String, RarityConfig> rarities,  Map<String, ItemConfig> items,  Map<String, SkillConfig> skills,  SkillPackConfig skillPack,  SalvageConfig salvage,  Map<String, RecipeConfig> recipes,  List<String> materialResources,  StartConfig start,  int offlineCapMs)?  $default,) {final _that = this;
 switch (_that) {
 case _BalanceConfig() when $default != null:
-return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.progression,_that.lamp,_that.displayedResources,_that.itemUpgrade,_that.slots,_that.rarities,_that.items,_that.skills,_that.skillPack,_that.salvage,_that.materialResources,_that.start,_that.offlineCapMs);case _:
+return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_that.hero,_that.progression,_that.lamp,_that.displayedResources,_that.itemUpgrade,_that.slots,_that.rarities,_that.items,_that.skills,_that.skillPack,_that.salvage,_that.recipes,_that.materialResources,_that.start,_that.offlineCapMs);case _:
   return null;
 
 }
@@ -318,7 +320,7 @@ return $default(_that.version,_that.generators,_that.monsters,_that.prestige,_th
 @JsonSerializable()
 
 class _BalanceConfig extends BalanceConfig {
-  const _BalanceConfig({this.version = supportedBalanceVersion, final  Map<String, GeneratorConfig> generators = const <String, GeneratorConfig>{}, final  Map<String, MonsterConfig> monsters = const <String, MonsterConfig>{}, this.prestige = const PrestigeConfig(), this.hero = const HeroConfig(), this.progression = const ProgressionConfig(), this.lamp = const LampConfig(), final  List<String> displayedResources = const <String>[], this.itemUpgrade = const ItemUpgradeConfig(), final  List<SlotConfig> slots = const <SlotConfig>[], final  Map<String, RarityConfig> rarities = const <String, RarityConfig>{}, final  Map<String, ItemConfig> items = const <String, ItemConfig>{}, final  Map<String, SkillConfig> skills = const <String, SkillConfig>{}, this.skillPack = const SkillPackConfig(), this.salvage = const SalvageConfig(), final  List<String> materialResources = const <String>[], this.start = const StartConfig(), this.offlineCapMs = _eightHoursMs}): _generators = generators,_monsters = monsters,_displayedResources = displayedResources,_slots = slots,_rarities = rarities,_items = items,_skills = skills,_materialResources = materialResources,super._();
+  const _BalanceConfig({this.version = supportedBalanceVersion, final  Map<String, GeneratorConfig> generators = const <String, GeneratorConfig>{}, final  Map<String, MonsterConfig> monsters = const <String, MonsterConfig>{}, this.prestige = const PrestigeConfig(), this.hero = const HeroConfig(), this.progression = const ProgressionConfig(), this.lamp = const LampConfig(), final  List<String> displayedResources = const <String>[], this.itemUpgrade = const ItemUpgradeConfig(), final  List<SlotConfig> slots = const <SlotConfig>[], final  Map<String, RarityConfig> rarities = const <String, RarityConfig>{}, final  Map<String, ItemConfig> items = const <String, ItemConfig>{}, final  Map<String, SkillConfig> skills = const <String, SkillConfig>{}, this.skillPack = const SkillPackConfig(), this.salvage = const SalvageConfig(), final  Map<String, RecipeConfig> recipes = const <String, RecipeConfig>{}, final  List<String> materialResources = const <String>[], this.start = const StartConfig(), this.offlineCapMs = _eightHoursMs}): _generators = generators,_monsters = monsters,_displayedResources = displayedResources,_slots = slots,_rarities = rarities,_items = items,_skills = skills,_recipes = recipes,_materialResources = materialResources,super._();
   factory _BalanceConfig.fromJson(Map<String, dynamic> json) => _$BalanceConfigFromJson(json);
 
 /// Schema version of this config.
@@ -397,6 +399,15 @@ class _BalanceConfig extends BalanceConfig {
 @override@JsonKey() final  SkillPackConfig skillPack;
 /// What breaking an item down pays.
 @override@JsonKey() final  SalvageConfig salvage;
+/// What the forge can make, by recipe id.
+ final  Map<String, RecipeConfig> _recipes;
+/// What the forge can make, by recipe id.
+@override@JsonKey() Map<String, RecipeConfig> get recipes {
+  if (_recipes is EqualUnmodifiableMapView) return _recipes;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_recipes);
+}
+
 /// Resources that are crafting materials rather than currencies.
 ///
 /// Data, because which of them exist is a balance decision. The bag shows
@@ -433,16 +444,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._monsters, _monsters)&&(identical(other.prestige, prestige) || other.prestige == prestige)&&(identical(other.hero, hero) || other.hero == hero)&&(identical(other.progression, progression) || other.progression == progression)&&(identical(other.lamp, lamp) || other.lamp == lamp)&&const DeepCollectionEquality().equals(other._displayedResources, _displayedResources)&&(identical(other.itemUpgrade, itemUpgrade) || other.itemUpgrade == itemUpgrade)&&const DeepCollectionEquality().equals(other._slots, _slots)&&const DeepCollectionEquality().equals(other._rarities, _rarities)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._skills, _skills)&&(identical(other.skillPack, skillPack) || other.skillPack == skillPack)&&(identical(other.salvage, salvage) || other.salvage == salvage)&&const DeepCollectionEquality().equals(other._materialResources, _materialResources)&&(identical(other.start, start) || other.start == start)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BalanceConfig&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._monsters, _monsters)&&(identical(other.prestige, prestige) || other.prestige == prestige)&&(identical(other.hero, hero) || other.hero == hero)&&(identical(other.progression, progression) || other.progression == progression)&&(identical(other.lamp, lamp) || other.lamp == lamp)&&const DeepCollectionEquality().equals(other._displayedResources, _displayedResources)&&(identical(other.itemUpgrade, itemUpgrade) || other.itemUpgrade == itemUpgrade)&&const DeepCollectionEquality().equals(other._slots, _slots)&&const DeepCollectionEquality().equals(other._rarities, _rarities)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._skills, _skills)&&(identical(other.skillPack, skillPack) || other.skillPack == skillPack)&&(identical(other.salvage, salvage) || other.salvage == salvage)&&const DeepCollectionEquality().equals(other._recipes, _recipes)&&const DeepCollectionEquality().equals(other._materialResources, _materialResources)&&(identical(other.start, start) || other.start == start)&&(identical(other.offlineCapMs, offlineCapMs) || other.offlineCapMs == offlineCapMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,version,const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_monsters),prestige,hero,progression,lamp,const DeepCollectionEquality().hash(_displayedResources),itemUpgrade,const DeepCollectionEquality().hash(_slots),const DeepCollectionEquality().hash(_rarities),const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_skills),skillPack,salvage,const DeepCollectionEquality().hash(_materialResources),start,offlineCapMs);
+int get hashCode => Object.hashAll([runtimeType,version,const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_monsters),prestige,hero,progression,lamp,const DeepCollectionEquality().hash(_displayedResources),itemUpgrade,const DeepCollectionEquality().hash(_slots),const DeepCollectionEquality().hash(_rarities),const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_skills),skillPack,salvage,const DeepCollectionEquality().hash(_recipes),const DeepCollectionEquality().hash(_materialResources),start,offlineCapMs]);
 
 @override
 String toString() {
-  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, prestige: $prestige, hero: $hero, progression: $progression, lamp: $lamp, displayedResources: $displayedResources, itemUpgrade: $itemUpgrade, slots: $slots, rarities: $rarities, items: $items, skills: $skills, skillPack: $skillPack, salvage: $salvage, materialResources: $materialResources, start: $start, offlineCapMs: $offlineCapMs)';
+  return 'BalanceConfig(version: $version, generators: $generators, monsters: $monsters, prestige: $prestige, hero: $hero, progression: $progression, lamp: $lamp, displayedResources: $displayedResources, itemUpgrade: $itemUpgrade, slots: $slots, rarities: $rarities, items: $items, skills: $skills, skillPack: $skillPack, salvage: $salvage, recipes: $recipes, materialResources: $materialResources, start: $start, offlineCapMs: $offlineCapMs)';
 }
 
 
@@ -453,7 +464,7 @@ abstract mixin class _$BalanceConfigCopyWith<$Res> implements $BalanceConfigCopy
   factory _$BalanceConfigCopyWith(_BalanceConfig value, $Res Function(_BalanceConfig) _then) = __$BalanceConfigCopyWithImpl;
 @override @useResult
 $Res call({
- int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, PrestigeConfig prestige, HeroConfig hero, ProgressionConfig progression, LampConfig lamp, List<String> displayedResources, ItemUpgradeConfig itemUpgrade, List<SlotConfig> slots, Map<String, RarityConfig> rarities, Map<String, ItemConfig> items, Map<String, SkillConfig> skills, SkillPackConfig skillPack, SalvageConfig salvage, List<String> materialResources, StartConfig start, int offlineCapMs
+ int version, Map<String, GeneratorConfig> generators, Map<String, MonsterConfig> monsters, PrestigeConfig prestige, HeroConfig hero, ProgressionConfig progression, LampConfig lamp, List<String> displayedResources, ItemUpgradeConfig itemUpgrade, List<SlotConfig> slots, Map<String, RarityConfig> rarities, Map<String, ItemConfig> items, Map<String, SkillConfig> skills, SkillPackConfig skillPack, SalvageConfig salvage, Map<String, RecipeConfig> recipes, List<String> materialResources, StartConfig start, int offlineCapMs
 });
 
 
@@ -470,7 +481,7 @@ class __$BalanceConfigCopyWithImpl<$Res>
 
 /// Create a copy of BalanceConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? prestige = null,Object? hero = null,Object? progression = null,Object? lamp = null,Object? displayedResources = null,Object? itemUpgrade = null,Object? slots = null,Object? rarities = null,Object? items = null,Object? skills = null,Object? skillPack = null,Object? salvage = null,Object? materialResources = null,Object? start = null,Object? offlineCapMs = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? version = null,Object? generators = null,Object? monsters = null,Object? prestige = null,Object? hero = null,Object? progression = null,Object? lamp = null,Object? displayedResources = null,Object? itemUpgrade = null,Object? slots = null,Object? rarities = null,Object? items = null,Object? skills = null,Object? skillPack = null,Object? salvage = null,Object? recipes = null,Object? materialResources = null,Object? start = null,Object? offlineCapMs = null,}) {
   return _then(_BalanceConfig(
 version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as int,generators: null == generators ? _self._generators : generators // ignore: cast_nullable_to_non_nullable
@@ -487,7 +498,8 @@ as Map<String, RarityConfig>,items: null == items ? _self._items : items // igno
 as Map<String, ItemConfig>,skills: null == skills ? _self._skills : skills // ignore: cast_nullable_to_non_nullable
 as Map<String, SkillConfig>,skillPack: null == skillPack ? _self.skillPack : skillPack // ignore: cast_nullable_to_non_nullable
 as SkillPackConfig,salvage: null == salvage ? _self.salvage : salvage // ignore: cast_nullable_to_non_nullable
-as SalvageConfig,materialResources: null == materialResources ? _self._materialResources : materialResources // ignore: cast_nullable_to_non_nullable
+as SalvageConfig,recipes: null == recipes ? _self._recipes : recipes // ignore: cast_nullable_to_non_nullable
+as Map<String, RecipeConfig>,materialResources: null == materialResources ? _self._materialResources : materialResources // ignore: cast_nullable_to_non_nullable
 as List<String>,start: null == start ? _self.start : start // ignore: cast_nullable_to_non_nullable
 as StartConfig,offlineCapMs: null == offlineCapMs ? _self.offlineCapMs : offlineCapMs // ignore: cast_nullable_to_non_nullable
 as int,

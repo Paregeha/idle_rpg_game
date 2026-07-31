@@ -14,6 +14,9 @@ Color currencyColour(String key) => switch (key) {
   // happen.
   'premiumGems' => const Color(0xFFB07BD8),
   'lamps' => GamePalette.emberBright,
+  // A material, not a currency: cold iron rather than one of the bright
+  // colours the things you spend at a counter get.
+  'scrap' => const Color(0xFF8FA3AD),
   _ => GamePalette.bone,
 };
 

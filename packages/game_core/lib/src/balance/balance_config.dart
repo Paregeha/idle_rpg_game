@@ -9,6 +9,7 @@ import 'package:game_core/src/balance/lamp_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
 import 'package:game_core/src/balance/progression_config.dart';
+import 'package:game_core/src/balance/recipe_config.dart';
 import 'package:game_core/src/balance/salvage_config.dart';
 import 'package:game_core/src/balance/skill_config.dart';
 import 'package:game_core/src/balance/slot_config.dart';
@@ -76,6 +77,9 @@ abstract class BalanceConfig with _$BalanceConfig {
 
     /// What breaking an item down pays.
     @Default(SalvageConfig()) SalvageConfig salvage,
+
+    /// What the forge can make, by recipe id.
+    @Default(<String, RecipeConfig>{}) Map<String, RecipeConfig> recipes,
 
     /// Resources that are crafting materials rather than currencies.
     ///
@@ -336,6 +340,52 @@ abstract class BalanceConfig with _$BalanceConfig {
         'guarantees "${lamp.pityRarity}", which no rarity defines',
         field: 'lamp.pityRarity',
       );
+    }
+
+    for (final entry in recipes.entries) {
+      final path = 'recipes.${entry.key}';
+      final recipe = entry.value;
+
+      if (!items.containsKey(recipe.produces)) {
+        throw BalanceConfigException(
+          'makes "${recipe.produces}", which no item defines',
+          field: '$path.produces',
+        );
+      }
+      if (recipe.costs.isEmpty) {
+        throw BalanceConfigException(
+          'costs nothing, so the item it makes is unlimited and free',
+          field: '$path.costs',
+        );
+      }
+      for (final cost in recipe.costs.entries) {
+        if (cost.value.isNegative || cost.value.isZero) {
+          throw BalanceConfigException(
+            'must be positive',
+            field: '$path.costs.${cost.key}',
+          );
+        }
+      }
+      if (recipe.unlockAtHeroLevel < 0) {
+        throw BalanceConfigException(
+          'must not be negative',
+          field: '$path.unlockAtHeroLevel',
+        );
+      }
+    }
+
+    // Anything the config says is crafted must have a recipe, or the slot it
+    // fills can never be filled at all.
+    for (final entry in items.entries) {
+      if (!entry.value.sources.contains('craft')) continue;
+      final made = recipes.values.any((r) => r.produces == entry.key);
+      if (!made) {
+        throw BalanceConfigException(
+          'is marked craft-only but no recipe makes it, so nothing can ever '
+          'fill its slot',
+          field: 'items.${entry.key}.sources',
+        );
+      }
     }
 
     for (final entry in salvage.yields.entries) {

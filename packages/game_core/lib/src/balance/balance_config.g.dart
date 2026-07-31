@@ -68,6 +68,11 @@ _BalanceConfig _$BalanceConfigFromJson(
   salvage: json['salvage'] == null
       ? const SalvageConfig()
       : SalvageConfig.fromJson(json['salvage'] as Map<String, dynamic>),
+  recipes:
+      (json['recipes'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, RecipeConfig.fromJson(e as Map<String, dynamic>)),
+      ) ??
+      const <String, RecipeConfig>{},
   materialResources:
       (json['materialResources'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -96,6 +101,7 @@ Map<String, dynamic> _$BalanceConfigToJson(_BalanceConfig instance) =>
       'skills': instance.skills.map((k, e) => MapEntry(k, e.toJson())),
       'skillPack': instance.skillPack.toJson(),
       'salvage': instance.salvage.toJson(),
+      'recipes': instance.recipes.map((k, e) => MapEntry(k, e.toJson())),
       'materialResources': instance.materialResources,
       'start': instance.start.toJson(),
       'offlineCapMs': instance.offlineCapMs,

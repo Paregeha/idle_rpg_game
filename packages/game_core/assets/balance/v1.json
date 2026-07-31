@@ -684,5 +684,15 @@
   },
   "materialResources": [
     "scrap"
-  ]
+  ],
+  "recipes": {
+    "ashen_wings": {
+      "produces": "ashen_wings",
+      "unlockAtHeroLevel": 20,
+      "costs": {
+        "scrap": "1.2e2",
+        "gold": "1e9"
+      }
+    }
+  }
 }

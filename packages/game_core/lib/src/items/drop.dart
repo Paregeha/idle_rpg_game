@@ -1,5 +1,6 @@
 import 'package:game_core/src/balance/balance_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
+import 'package:game_core/src/items/crafting.dart';
 import 'package:game_core/src/items/lamp.dart';
 import 'package:game_core/src/items/owned_item.dart';
 import 'package:game_core/src/state/player_state.dart';
@@ -48,17 +49,7 @@ DropResult rollDrop(
   }
 
   final drawn = droppable[rng.nextInt(droppable.length)];
-  final id = 'item-${state.itemsCreated}';
+  final minted = mintItem(state.copyWith(rngState: rng.state), drawn.key);
 
-  return DropResult(
-    state: state.copyWith(
-      inventory: {
-        ...state.inventory,
-        id: OwnedItem(id: id, configId: drawn.key),
-      },
-      itemsCreated: state.itemsCreated + 1,
-      rngState: rng.state,
-    ),
-    item: OwnedItem(id: id, configId: drawn.key),
-  );
+  return DropResult(state: minted.state, item: minted.item);
 }

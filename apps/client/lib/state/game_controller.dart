@@ -289,6 +289,20 @@ class GameController extends Notifier<PlayerState?> {
     return result;
   }
 
+  /// Makes one of whatever a recipe produces.
+  CraftResult? craft(String recipeId) {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return null;
+
+    final result = core.craft(current, recipeId, config);
+    if (result.crafted) {
+      state = result.state;
+      unawaited(saveNow());
+    }
+    return result;
+  }
+
   /// Breaks one item down.
   SalvageResult? salvage(String itemId) {
     final current = state;

@@ -1,4 +1,5 @@
 import 'package:game_core/src/balance/balance_config.dart';
+import 'package:game_core/src/items/crafting.dart';
 import 'package:game_core/src/items/owned_item.dart';
 import 'package:game_core/src/math/big_num.dart';
 import 'package:game_core/src/random/seeded_random.dart';
@@ -87,26 +88,21 @@ LampResult openLamp(PlayerState state, BalanceConfig config) {
 
   final gotPityRarity = drawn.value.rarity == lamp.pityRarity;
 
-  return LampResult(
-    state: state.copyWith(
+  final minted = mintItem(
+    state.copyWith(
       resources: {
         ...state.resources,
         lamp.costResource: balance - lamp.costAmount,
       },
-      inventory: {
-        ...state.inventory,
-        // Ids are derived from a counter, not from a clock or a random draw,
-        // so the server replays the same ids from the same state.
-        'item-${state.itemsCreated}': OwnedItem(
-          id: 'item-${state.itemsCreated}',
-          configId: drawn.key,
-        ),
-      },
-      itemsCreated: state.itemsCreated + 1,
       pityCounter: gotPityRarity ? 0 : state.pityCounter + 1,
       rngState: rng.state,
     ),
-    item: OwnedItem(id: 'item-${state.itemsCreated}', configId: drawn.key),
+    drawn.key,
+  );
+
+  return LampResult(
+    state: minted.state,
+    item: minted.item,
     wasPity: pityDue,
   );
 }
