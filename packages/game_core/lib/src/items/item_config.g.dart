@@ -50,6 +50,9 @@ Map<String, dynamic> _$ItemStatsToJson(_ItemStats instance) =>
 _ItemConfig _$ItemConfigFromJson(Map<String, dynamic> json) => _ItemConfig(
   slot: json['slot'] as String,
   rarity: json['rarity'] as String,
+  sources:
+      (json['sources'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const <String>['lamp'],
   stats: json['stats'] == null
       ? ItemStats.empty
       : ItemStats.fromJson(json['stats'] as Map<String, dynamic>),
@@ -61,6 +64,7 @@ Map<String, dynamic> _$ItemConfigToJson(_ItemConfig instance) =>
     <String, dynamic>{
       'slot': instance.slot,
       'rarity': instance.rarity,
+      'sources': instance.sources,
       'stats': instance.stats.toJson(),
       'levelMultiplier': instance.levelMultiplier,
       'maxLevel': instance.maxLevel,

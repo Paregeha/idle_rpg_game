@@ -13,6 +13,7 @@ export 'src/balance/item_upgrade_config.dart';
 export 'src/balance/lamp_config.dart';
 export 'src/balance/monster_config.dart';
 export 'src/balance/prestige_config.dart';
+export 'src/balance/slot_config.dart';
 export 'src/balance/start_config.dart';
 export 'src/battle/battle_event.dart';
 export 'src/battle/battle_resolver.dart';

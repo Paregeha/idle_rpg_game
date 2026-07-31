@@ -209,15 +209,20 @@ class GameController extends Notifier<PlayerState?> {
     for (final slot in config.slots) {
       final candidates = current.inventory.values.where((owned) {
         final item = config.items[owned.configId];
-        return item != null && item.slot == slot;
+        return item != null && item.slot == slot.itemKind;
       }).toList();
       if (candidates.isEmpty) continue;
 
       candidates.sort((a, b) => _worth(b, config).compareTo(_worth(a, config)));
       final best = candidates.first;
-      if (current.equipped[slot] == best.id) continue;
+      if (current.equipped[slot.id] == best.id) continue;
 
-      final result = core.equipItem(current, best.id, config);
+      final result = core.equipItem(
+        current,
+        best.id,
+        config,
+        intoSlot: slot.id,
+      );
       if (result.equipped) {
         current = result.state;
         changed++;

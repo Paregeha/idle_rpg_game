@@ -8,6 +8,7 @@ import 'package:game_core/src/balance/item_upgrade_config.dart';
 import 'package:game_core/src/balance/lamp_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
+import 'package:game_core/src/balance/slot_config.dart';
 import 'package:game_core/src/balance/start_config.dart';
 import 'package:game_core/src/items/item_config.dart';
 
@@ -45,11 +46,18 @@ abstract class BalanceConfig with _$BalanceConfig {
 
     @Default(LampConfig()) LampConfig lamp,
 
+    /// Currencies shown in the top bar, in order.
+    ///
+    /// Data, because which currencies exist is a balance decision. A currency
+    /// the player spends but cannot see is the sort of thing that reads as a
+    /// bug — the lamp cost gems the bar never showed until this was added.
+    @Default(<String>[]) List<String> displayedResources,
+
     @Default(ItemUpgradeConfig()) ItemUpgradeConfig itemUpgrade,
 
-    /// Equipment slots, in display order. Data rather than an enum: adding a
-    /// fifth slot must be a change to this file, not a code change.
-    @Default(<String>[]) List<String> slots,
+    /// Equipment slots. Data rather than an enum: adding a slot must be a
+    /// change to this file, not a code change.
+    @Default(<SlotConfig>[]) List<SlotConfig> slots,
 
     @Default(<String, RarityConfig>{}) Map<String, RarityConfig> rarities,
 
@@ -160,6 +168,15 @@ abstract class BalanceConfig with _$BalanceConfig {
       }
     }
 
+    final slotIds = slots.map((slot) => slot.id).toList();
+    if (slotIds.toSet().length != slotIds.length) {
+      throw const BalanceConfigException(
+        'contains a duplicate id; two slots with the same name would fight '
+        'over the same equipped item',
+        field: 'slots',
+      );
+    }
+
     for (final entry in start.generators.entries) {
       if (!generators.containsKey(entry.key)) {
         throw BalanceConfigException(
@@ -213,6 +230,15 @@ abstract class BalanceConfig with _$BalanceConfig {
         'must not be negative, or prestiging would make the player weaker',
         field: 'prestige.bonusPerPoint',
       );
+    }
+
+    for (final resource in displayedResources) {
+      if (resource.trim().isEmpty) {
+        throw const BalanceConfigException(
+          'contains an empty name',
+          field: 'displayedResources',
+        );
+      }
     }
 
     if (itemUpgrade.costGrowth < 1) {
@@ -283,11 +309,17 @@ abstract class BalanceConfig with _$BalanceConfig {
       final path = 'items.${entry.key}';
       final item = entry.value;
 
-      if (!slots.contains(item.slot)) {
+      if (!slots.any((slot) => slot.itemKind == item.slot)) {
         throw BalanceConfigException(
-          'is "${item.slot}", which is not one of the declared slots '
-          '(${slots.join(', ')}) — the item could never be worn',
+          'is "${item.slot}", which no slot accepts — the item could drop and '
+          'never be wearable',
           field: '$path.slot',
+        );
+      }
+      if (item.sources.isEmpty) {
+        throw BalanceConfigException(
+          'is empty, so nothing can ever produce this item',
+          field: '$path.sources',
         );
       }
       if (!rarities.containsKey(item.rarity)) {

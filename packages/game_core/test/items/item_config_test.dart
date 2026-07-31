@@ -106,7 +106,7 @@ void main() {
   });
 
   group('config validation', () {
-    String json(String items, {String slots = '["weapon"]'}) =>
+    String json(String items, {String slots = '[{"id": "weapon"}]'}) =>
         '''
 {
   "version": 1,
@@ -131,7 +131,7 @@ void main() {
       );
 
       expect(config.items['blade']!.slot, 'weapon');
-      expect(config.slots, ['weapon']);
+      expect(config.slots.single.id, 'weapon');
     });
 
     test('refuses an item in a slot that does not exist', () {
@@ -184,7 +184,7 @@ void main() {
         () => BalanceConfig.parse('''
 {
   "version": 1,
-  "slots": ["weapon"],
+  "slots": [{"id": "weapon"}],
   "rarities": { "junk": { "statMultiplier": 0 } },
   "items": {}
 }

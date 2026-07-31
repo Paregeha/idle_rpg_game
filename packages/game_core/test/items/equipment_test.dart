@@ -2,7 +2,10 @@ import 'package:game_core/game_core.dart';
 import 'package:test/test.dart';
 
 BalanceConfig config() => BalanceConfig(
-  slots: const ['weapon', 'trinket'],
+  slots: const [
+    SlotConfig(id: 'weapon'),
+    SlotConfig(id: 'trinket'),
+  ],
   rarities: const {
     'common': RarityConfig(),
     'epic': RarityConfig(statMultiplier: 5, rank: 2),

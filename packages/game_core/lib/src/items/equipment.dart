@@ -1,4 +1,5 @@
 import 'package:game_core/src/balance/balance_config.dart';
+import 'package:game_core/src/balance/slot_config.dart';
 import 'package:game_core/src/battle/combat_stats.dart';
 import 'package:game_core/src/items/item_config.dart';
 import 'package:game_core/src/math/big_num.dart';
@@ -38,31 +39,68 @@ class EquipResult {
 EquipResult equipItem(
   PlayerState state,
   String itemId,
-  BalanceConfig config,
-) {
+  BalanceConfig config, {
+  String? intoSlot,
+}) {
   final owned = state.inventory[itemId];
   if (owned == null) {
     return EquipResult(state: state, equipped: false);
   }
 
   final item = config.items[owned.configId];
-  if (item == null || !config.slots.contains(item.slot)) {
+  if (item == null) {
     return EquipResult(state: state, equipped: false);
   }
 
-  final previous = state.equipped[item.slot];
-  if (previous == itemId) {
+  final slot = _slotFor(state, config, item.slot, intoSlot);
+  if (slot == null) {
+    return EquipResult(state: state, equipped: false);
+  }
+
+  if (state.equipped[slot.id] == itemId) {
     // Already worn: not a failure, just nothing to do.
     return EquipResult(state: state, equipped: true);
   }
 
+  // Wearing it elsewhere already (ring1 when asked for ring2) has to vacate
+  // the old slot, or one item would be counted twice.
+  final equipped = Map<String, String>.of(state.equipped)
+    ..removeWhere((_, worn) => worn == itemId)
+    ..[slot.id] = itemId;
+
   return EquipResult(
-    state: state.copyWith(
-      equipped: {...state.equipped, item.slot: itemId},
-    ),
+    state: state.copyWith(equipped: equipped),
     equipped: true,
-    replaced: previous,
+    replaced: state.equipped[slot.id],
   );
+}
+
+/// Picks which slot an item of [kind] should go into.
+///
+/// With two slots of the same kind, an empty one is preferred: asking to wear
+/// a second ring should fill the free finger rather than replace the first.
+SlotConfig? _slotFor(
+  PlayerState state,
+  BalanceConfig config,
+  String kind,
+  String? requested,
+) {
+  final candidates = config.slots
+      .where((slot) => slot.itemKind == kind)
+      .toList();
+  if (candidates.isEmpty) return null;
+
+  if (requested != null) {
+    for (final slot in candidates) {
+      if (slot.id == requested) return slot;
+    }
+    return null;
+  }
+
+  for (final slot in candidates) {
+    if (!state.equipped.containsKey(slot.id)) return slot;
+  }
+  return candidates.first;
 }
 
 /// Takes whatever is in [slot] off.
