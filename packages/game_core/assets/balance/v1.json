@@ -539,5 +539,21 @@
     "gold",
     "gems",
     "lamps"
-  ]
+  ],
+  "progression": {
+    "wavesPerStage": 5,
+    "monstersPerWave": 3,
+    "stagesPerChapter": 10,
+    "monsters": [
+      "slime",
+      "wolf",
+      "golem"
+    ],
+    "bosses": [
+      "wyrm",
+      "golem"
+    ],
+    "levelPerStage": 1,
+    "bossLevelBonus": 2
+  }
 }

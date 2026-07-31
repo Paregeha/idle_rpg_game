@@ -69,7 +69,7 @@ void main() {
     test('records every swing with a timecode', () {
       final result = resolveBattle(
         hero: _hero,
-        monster: monster(hp: 3),
+        monsters: [monster(hp: 3)],
         rng: SeededRandom(1),
       );
 
@@ -87,7 +87,7 @@ void main() {
     test('ends with a death', () {
       final result = resolveBattle(
         hero: _hero,
-        monster: monster(hp: 3),
+        monsters: [monster(hp: 3)],
         rng: SeededRandom(1),
       );
 
@@ -97,7 +97,7 @@ void main() {
     test('a guaranteed crit is recorded as a crit', () {
       final result = resolveBattle(
         hero: _hero.copyWith(critChance: 1),
-        monster: monster(hp: 100),
+        monsters: [monster(hp: 100)],
         rng: SeededRandom(1),
       );
 
@@ -117,7 +117,7 @@ void main() {
     test('a guaranteed dodge is recorded as a dodge', () {
       final result = resolveBattle(
         hero: _hero,
-        monster: monster(hp: 100, dodgeChance: 1),
+        monsters: [monster(hp: 100, dodgeChance: 1)],
         rng: SeededRandom(1),
         maxDuration: const Duration(seconds: 5),
       );
@@ -137,7 +137,7 @@ void main() {
     test('events carry the damage dealt', () {
       final result = resolveBattle(
         hero: _hero,
-        monster: monster(hp: 5),
+        monsters: [monster(hp: 5)],
         rng: SeededRandom(1),
       );
 
@@ -150,7 +150,7 @@ void main() {
     test('attack speed sets the spacing of timecodes', () {
       final result = resolveBattle(
         hero: _hero.copyWith(attacksPerSecond: 2),
-        monster: monster(hp: 3),
+        monsters: [monster(hp: 3)],
         rng: SeededRandom(1),
       );
 
@@ -165,7 +165,7 @@ void main() {
     test('the same seed produces an identical journal', () {
       BattleResult run() => resolveBattle(
         hero: _hero.copyWith(critChance: 0.5),
-        monster: monster(hp: 50, dodgeChance: 0.2, attack: 2),
+        monsters: [monster(hp: 50, dodgeChance: 0.2, attack: 2)],
         rng: SeededRandom(20260730),
       );
 
@@ -184,12 +184,12 @@ void main() {
     test('a different seed can produce a different journal', () {
       final a = resolveBattle(
         hero: _hero.copyWith(critChance: 0.5),
-        monster: monster(hp: 200, dodgeChance: 0.3),
+        monsters: [monster(hp: 200, dodgeChance: 0.3)],
         rng: SeededRandom(1),
       );
       final b = resolveBattle(
         hero: _hero.copyWith(critChance: 0.5),
-        monster: monster(hp: 200, dodgeChance: 0.3),
+        monsters: [monster(hp: 200, dodgeChance: 0.3)],
         rng: SeededRandom(2),
       );
 
@@ -203,7 +203,7 @@ void main() {
       // The whole point: a client renders this, it does not produce it.
       final result = resolveBattle(
         hero: _hero,
-        monster: monster(hp: 20),
+        monsters: [monster(hp: 20)],
         rng: SeededRandom(5),
       );
 
@@ -217,7 +217,7 @@ void main() {
     test('the hero wins when the monster dies first', () {
       final result = resolveBattle(
         hero: _hero,
-        monster: monster(hp: 3, attack: 0),
+        monsters: [monster(hp: 3, attack: 0)],
         rng: SeededRandom(1),
       );
 
@@ -228,7 +228,7 @@ void main() {
     test('the hero loses when out-damaged', () {
       final result = resolveBattle(
         hero: _hero.copyWith(maxHp: BigNum.fromDouble(2)),
-        monster: monster(hp: 1000, attack: 10),
+        monsters: [monster(hp: 1000, attack: 10)],
         rng: SeededRandom(1),
       );
 
@@ -239,7 +239,7 @@ void main() {
     test('a stalemate times out instead of running forever', () {
       final result = resolveBattle(
         hero: _hero.copyWith(attack: BigNum.zero),
-        monster: monster(hp: 100, attack: 0),
+        monsters: [monster(hp: 100, attack: 0)],
         rng: SeededRandom(1),
         maxDuration: const Duration(seconds: 3),
       );
@@ -253,7 +253,7 @@ void main() {
 
       resolveBattle(
         hero: _hero.copyWith(attack: BigNum.zero),
-        monster: monster(hp: 100, attack: 0, attacksPerSecond: 20),
+        monsters: [monster(hp: 100, attack: 0, attacksPerSecond: 20)],
         rng: SeededRandom(1),
         maxDuration: const Duration(minutes: 10),
       );

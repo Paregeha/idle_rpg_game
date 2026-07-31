@@ -26,110 +26,122 @@ BigNum damageOf({
 
 /// Resolves an entire fight up front and returns its journal.
 ///
-/// Nothing here is animated, timed against a real clock or spread across
-/// frames: the whole fight is decided in one pass, and the client plays the
-/// result back (`T-023`). That is what makes a 2x button, a skipped animation
-/// or a backgrounded app unable to change the outcome — and what lets the
-/// server recompute the same fight to check a claim.
+/// The hero fights a **group**. A wave is several monsters at once, which is
+/// what makes an area-of-effect skill mean anything later — a resolver that
+/// only knows about one target would have to be rewritten to add them.
+///
+/// Nothing here is animated or timed against a real clock: the whole fight is
+/// decided in one pass and the client plays the result back. That is what makes
+/// a 2x button or a skipped animation unable to change the outcome, and what
+/// lets the server recompute the same fight to check a claim.
 ///
 /// Randomness comes from [rng], whose state travels with the player's save, so
 /// the same fight replays identically anywhere (rule 5).
 ///
-/// [maxDuration] stops a fight that cannot end — two combatants who cannot hurt
-/// each other would otherwise loop forever. The result is
-/// [BattleOutcome.timeout], which the caller decides how to treat.
+/// [maxDuration] stops a fight that cannot end.
 BattleResult resolveBattle({
   required CombatStats hero,
-  required CombatStats monster,
+  required List<CombatStats> monsters,
   required SeededRandom rng,
   Duration maxDuration = const Duration(minutes: 2),
 }) {
+  if (monsters.isEmpty) {
+    return const BattleResult(
+      outcome: BattleOutcome.heroWon,
+      events: [],
+      durationMs: 0,
+    );
+  }
+
   final events = <BattleEvent>[];
   var heroHp = hero.maxHp;
-  var monsterHp = monster.maxHp;
+  final monsterHp = [for (final monster in monsters) monster.maxHp];
 
   final heroIntervalMs = _intervalMs(hero.attacksPerSecond);
-  final monsterIntervalMs = _intervalMs(monster.attacksPerSecond);
+  final monsterIntervals = [
+    for (final monster in monsters) _intervalMs(monster.attacksPerSecond),
+  ];
   final limitMs = maxDuration.inMilliseconds;
 
   var nextHeroSwingMs = heroIntervalMs;
-  var nextMonsterSwingMs = monsterIntervalMs;
+  final nextMonsterSwingMs = [...monsterIntervals];
   var outcome = BattleOutcome.timeout;
   var atMs = 0;
 
+  bool alive(int index) => monsterHp[index] > BigNum.zero;
+  int? firstAlive() {
+    for (var i = 0; i < monsterHp.length; i++) {
+      if (alive(i)) return i;
+    }
+    return null;
+  }
+
   while (true) {
-    // Whoever swings next drives the clock forward. Ties go to the hero, which
-    // only matters when both would land a killing blow on the same tick.
-    final heroFirst = nextHeroSwingMs <= nextMonsterSwingMs;
-    atMs = heroFirst ? nextHeroSwingMs : nextMonsterSwingMs;
+    // Whoever swings next drives the clock. Ties go to the hero, which only
+    // matters when both would land a killing blow on the same tick.
+    var soonest = nextHeroSwingMs;
+    var attackerIndex = -1;
+
+    for (var i = 0; i < monsters.length; i++) {
+      if (!alive(i)) continue;
+      if (nextMonsterSwingMs[i] < soonest) {
+        soonest = nextMonsterSwingMs[i];
+        attackerIndex = i;
+      }
+    }
+
+    atMs = soonest;
     if (atMs > limitMs) {
       atMs = limitMs;
       break;
     }
 
-    final attacker = heroFirst ? hero : monster;
-    final defender = heroFirst ? monster : hero;
-    final source = heroFirst ? BattleSide.hero : BattleSide.monster;
-    final target = heroFirst ? BattleSide.monster : BattleSide.hero;
-
-    if (heroFirst) {
+    if (attackerIndex == -1) {
       nextHeroSwingMs += heroIntervalMs;
-    } else {
-      nextMonsterSwingMs += monsterIntervalMs;
-    }
 
-    // Draw order matters for determinism: dodge is always rolled before crit,
-    // so a change in one does not shift the other's position in the sequence.
-    final dodged = _roll(rng, defender.dodgeChance);
-    if (dodged) {
-      events.add(
-        BattleEvent(
-          atMs: atMs,
-          kind: BattleEventKind.dodge,
-          source: source,
-          target: target,
-        ),
-      );
-      continue;
-    }
+      final target = firstAlive();
+      if (target == null) {
+        outcome = BattleOutcome.heroWon;
+        break;
+      }
 
-    final crit = _roll(rng, attacker.critChance);
-    final damage = damageOf(
-      attack: attacker.attack,
-      critFactor: crit ? attacker.critFactor : 1,
-      mitigation: defender.mitigation,
-    );
-
-    events.add(
-      BattleEvent(
+      final died = _swing(
+        events: events,
+        rng: rng,
         atMs: atMs,
-        kind: crit ? BattleEventKind.crit : BattleEventKind.hit,
-        source: source,
-        target: target,
-        damage: damage,
-      ),
-    );
-
-    if (heroFirst) {
-      monsterHp -= damage;
-    } else {
-      heroHp -= damage;
-    }
-
-    final defenderDead = heroFirst
-        ? monsterHp <= BigNum.zero
-        : heroHp <= BigNum.zero;
-    if (defenderDead) {
-      events.add(
-        BattleEvent(
-          atMs: atMs,
-          kind: BattleEventKind.death,
-          source: source,
-          target: target,
-        ),
+        attacker: hero,
+        defender: monsters[target],
+        source: BattleSide.hero,
+        target: BattleSide.monster,
+        targetIndex: target,
+        applyDamage: (damage) => monsterHp[target] -= damage,
+        isDead: () => monsterHp[target] <= BigNum.zero,
       );
-      outcome = heroFirst ? BattleOutcome.heroWon : BattleOutcome.heroLost;
-      break;
+
+      if (died && firstAlive() == null) {
+        outcome = BattleOutcome.heroWon;
+        break;
+      }
+    } else {
+      nextMonsterSwingMs[attackerIndex] += monsterIntervals[attackerIndex];
+
+      final died = _swing(
+        events: events,
+        rng: rng,
+        atMs: atMs,
+        attacker: monsters[attackerIndex],
+        defender: hero,
+        source: BattleSide.monster,
+        target: BattleSide.hero,
+        targetIndex: attackerIndex,
+        applyDamage: (damage) => heroHp -= damage,
+        isDead: () => heroHp <= BigNum.zero,
+      );
+
+      if (died) {
+        outcome = BattleOutcome.heroLost;
+        break;
+      }
     }
   }
 
@@ -138,6 +150,67 @@ BattleResult resolveBattle({
     events: List<BattleEvent>.unmodifiable(events),
     durationMs: atMs,
   );
+}
+
+/// One swing: dodge, then crit, then damage. Returns whether it killed.
+bool _swing({
+  required List<BattleEvent> events,
+  required SeededRandom rng,
+  required int atMs,
+  required CombatStats attacker,
+  required CombatStats defender,
+  required BattleSide source,
+  required BattleSide target,
+  required int targetIndex,
+  required void Function(BigNum damage) applyDamage,
+  required bool Function() isDead,
+}) {
+  // Draw order matters for determinism: dodge is always rolled before crit, so
+  // a change in one does not shift the other's position in the sequence.
+  if (_roll(rng, defender.dodgeChance)) {
+    events.add(
+      BattleEvent(
+        atMs: atMs,
+        kind: BattleEventKind.dodge,
+        source: source,
+        target: target,
+        targetIndex: targetIndex,
+      ),
+    );
+    return false;
+  }
+
+  final crit = _roll(rng, attacker.critChance);
+  final damage = damageOf(
+    attack: attacker.attack,
+    critFactor: crit ? attacker.critFactor : 1,
+    mitigation: defender.mitigation,
+  );
+
+  events.add(
+    BattleEvent(
+      atMs: atMs,
+      kind: crit ? BattleEventKind.crit : BattleEventKind.hit,
+      source: source,
+      target: target,
+      targetIndex: targetIndex,
+      damage: damage,
+    ),
+  );
+
+  applyDamage(damage);
+  if (!isDead()) return false;
+
+  events.add(
+    BattleEvent(
+      atMs: atMs,
+      kind: BattleEventKind.death,
+      source: source,
+      target: target,
+      targetIndex: targetIndex,
+    ),
+  );
+  return true;
 }
 
 /// A combatant that never swings is parked beyond any real fight rather than

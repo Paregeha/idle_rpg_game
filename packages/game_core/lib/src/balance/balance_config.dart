@@ -8,6 +8,7 @@ import 'package:game_core/src/balance/item_upgrade_config.dart';
 import 'package:game_core/src/balance/lamp_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
+import 'package:game_core/src/balance/progression_config.dart';
 import 'package:game_core/src/balance/slot_config.dart';
 import 'package:game_core/src/balance/start_config.dart';
 import 'package:game_core/src/items/item_config.dart';
@@ -43,6 +44,8 @@ abstract class BalanceConfig with _$BalanceConfig {
     @Default(PrestigeConfig()) PrestigeConfig prestige,
 
     @Default(HeroConfig()) HeroConfig hero,
+
+    @Default(ProgressionConfig()) ProgressionConfig progression,
 
     @Default(LampConfig()) LampConfig lamp,
 
@@ -230,6 +233,28 @@ abstract class BalanceConfig with _$BalanceConfig {
         'must not be negative, or prestiging would make the player weaker',
         field: 'prestige.bonusPerPoint',
       );
+    }
+
+    final progressionNumbers = {
+      'wavesPerStage': progression.wavesPerStage,
+      'monstersPerWave': progression.monstersPerWave,
+      'stagesPerChapter': progression.stagesPerChapter,
+    };
+    for (final entry in progressionNumbers.entries) {
+      if (entry.value < 1) {
+        throw BalanceConfigException(
+          'must be at least 1, got ${entry.value}',
+          field: 'progression.${entry.key}',
+        );
+      }
+    }
+    for (final id in [...progression.monsters, ...progression.bosses]) {
+      if (!monsters.containsKey(id)) {
+        throw BalanceConfigException(
+          'names "$id", which no monster defines',
+          field: 'progression',
+        );
+      }
     }
 
     for (final resource in displayedResources) {

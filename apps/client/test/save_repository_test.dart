@@ -16,7 +16,6 @@ PlayerState sample() => PlayerState(
   resources: {'gold': BigNum(1.5, 42), 'gems': BigNum(4, 2)},
   generators: const {'miner': GeneratorState(level: 3, owned: 27)},
   upgrades: const {'pickaxe': 2},
-  heroes: const [HeroState(id: 'knight', level: 9, experience: 4100)],
   earnedThisRun: {'gold': BigNum(9.9, 43)},
   prestige: PrestigeState(
     currency: BigNum.fromDouble(37),

@@ -27,7 +27,7 @@ BattleGame gameFor(BattleResult result, {VoidCallback? onFinished}) =>
 
 BattleResult fight({int seed = 1, double monsterHp = 5}) => resolveBattle(
   hero: hero(),
-  monster: monster(hp: monsterHp),
+  monsters: [monster(hp: monsterHp)],
   rng: SeededRandom(seed),
 );
 
@@ -139,7 +139,7 @@ void main() {
         // A fight long enough to have a burst of hits in flight at once.
         final result = resolveBattle(
           hero: hero().copyWith(attacksPerSecond: 20),
-          monster: monster(hp: 400),
+          monsters: [monster(hp: 400)],
           rng: SeededRandom(7),
         );
         return BattleGame(

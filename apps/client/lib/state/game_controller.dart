@@ -275,6 +275,37 @@ class GameController extends Notifier<PlayerState?> {
     return result;
   }
 
+  /// Records the outcome of a fight and moves the player on.
+  ///
+  /// Progression lives here rather than in the battle screen: the server will
+  /// run the same rules in `T-032`, and a screen that decided where the player
+  /// stands would be a second source of truth.
+  void resolveFight({required bool won}) {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return;
+
+    if (!won) {
+      state = afterLoss(current, config);
+      return;
+    }
+
+    final encounter = encounterFor(current, config);
+    final advanced = advanceAfterWin(current, config);
+
+    // The kill reward is paid on the way past, not by the battle scene: the
+    // scene is a recording and must not hand out anything.
+    final resources = Map<String, BigNum>.of(advanced.resources);
+    final earned = Map<String, BigNum>.of(advanced.earnedThisRun);
+    if (encounter != null) {
+      resources['gold'] = (resources['gold'] ?? BigNum.zero) + encounter.reward;
+      earned['gold'] = (earned['gold'] ?? BigNum.zero) + encounter.reward;
+    }
+
+    state = advanced.copyWith(resources: resources, earnedThisRun: earned);
+    unawaited(saveNow());
+  }
+
   /// Called when the app goes to the background.
   ///
   /// Stopping the timer is the whole battery story: a 30 Hz timer that keeps
