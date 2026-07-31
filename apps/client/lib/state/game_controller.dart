@@ -289,6 +289,15 @@ class GameController extends Notifier<PlayerState?> {
     return result;
   }
 
+  /// Turns auto-casting on or off.
+  void toggleAutoCast() {
+    final current = state;
+    if (current == null) return;
+
+    state = current.copyWith(autoCast: !current.autoCast);
+    unawaited(saveNow());
+  }
+
   /// Opens one skill pack.
   SkillPackResult? openSkillPack() {
     final current = state;

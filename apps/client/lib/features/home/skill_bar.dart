@@ -41,7 +41,7 @@ class SkillBar extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          const _AutoBadge(),
+          _AutoToggle(on: state.autoCast),
           for (final id in ids)
             Expanded(
               child: Padding(
@@ -56,35 +56,54 @@ class SkillBar extends ConsumerWidget {
   }
 }
 
-/// Casting is automatic and always has been. The badge says so rather than
-/// looking like a button that does nothing when pressed.
-class _AutoBadge extends StatelessWidget {
-  const _AutoBadge();
+/// Turns auto-casting on and off, and looks like whichever it is.
+///
+/// Lit means skills fire. Unlit means the hero swings on gear alone — the
+/// fight is resolved in one pass before it is drawn, so there is no moment
+/// during it at which a tap could land.
+class _AutoToggle extends ConsumerWidget {
+  const _AutoToggle({required this.on});
+
+  final bool on;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 42,
-      height: 38,
-      decoration: BoxDecoration(
-        color: GamePalette.emberDim,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      alignment: Alignment.center,
-      child: const Text(
-        'AUTO',
-        style: TextStyle(
-          fontSize: 9,
-          letterSpacing: 0.5,
-          fontWeight: FontWeight.w700,
-          color: GamePalette.bone,
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => ref.read(gameControllerProvider.notifier).toggleAutoCast(),
+      child: Container(
+        width: 42,
+        height: 38,
+        decoration: BoxDecoration(
+          color: on ? GamePalette.emberDim : GamePalette.forgeDark,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: on ? GamePalette.emberBright : GamePalette.forgeRaised,
+          ),
+          boxShadow: on
+              ? [
+                  BoxShadow(
+                    color: GamePalette.emberBright.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                  ),
+                ]
+              : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          'AUTO',
+          style: TextStyle(
+            fontSize: 9,
+            letterSpacing: 0.5,
+            fontWeight: FontWeight.w700,
+            color: on ? GamePalette.bone : GamePalette.ash,
+          ),
         ),
       ),
     );
   }
 }
 
-class _Slot extends StatelessWidget {
+class _Slot extends ConsumerWidget {
   const _Slot({
     required this.skillId,
     required this.config,
@@ -96,13 +115,15 @@ class _Slot extends StatelessWidget {
   final PlayerState state;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final skill = config.skills[skillId]!;
     final rank = config.rarities[skill.rarity]?.rank ?? 0;
     final level = state.skills[skillId] ?? 0;
     final learned = level > 0;
     final tooLow = state.heroLevel < skill.unlockAtLevel;
-    final firing = learned && !tooLow;
+    // Auto-cast off means nothing goes off, so nothing may look like it is
+    // about to: a ring still charging beside a dark AUTO is a lie.
+    final firing = learned && !tooLow && state.autoCast;
     final colour = firing ? rarityColour(rank) : GamePalette.ash;
     final icon = !learned
         ? Icons.lock_outline
@@ -127,6 +148,12 @@ class _Slot extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
+              if (firing)
+                _Cooldown(
+                  clock: ref.watch(fightClockProvider),
+                  cooldownMs: skill.cooldownMs,
+                  colour: rarityColour(rank),
+                ),
               Icon(icon, size: 15, color: colour),
               if (firing)
                 Positioned(
@@ -159,6 +186,44 @@ class _Slot extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// How long until this skill fires again.
+///
+/// Read straight off the fight's own clock rather than a timer of its own: the
+/// resolver casts at whole multiples of the cooldown from the start of the
+/// fight, so the same arithmetic here cannot drift away from what the player
+/// is watching.
+class _Cooldown extends StatelessWidget {
+  const _Cooldown({
+    required this.clock,
+    required this.cooldownMs,
+    required this.colour,
+  });
+
+  final ValueNotifier<double> clock;
+  final int cooldownMs;
+  final Color colour;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<double>(
+      valueListenable: clock,
+      builder: (context, elapsedMs, _) {
+        if (cooldownMs <= 0) return const SizedBox.shrink();
+        final charge = (elapsedMs % cooldownMs) / cooldownMs;
+
+        return SizedBox.expand(
+          child: CircularProgressIndicator(
+            value: charge,
+            strokeWidth: 2.5,
+            backgroundColor: Colors.transparent,
+            valueColor: AlwaysStoppedAnimation(colour.withValues(alpha: 0.85)),
+          ),
+        );
+      },
     );
   }
 }

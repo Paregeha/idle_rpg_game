@@ -197,6 +197,20 @@ void main() {
       expect(one.map((s) => s.id), ['cleave', 'jab']);
     });
 
+    test('nothing fires with auto-cast off', () {
+      // The fight is resolved in one pass before it is drawn, so there is no
+      // moment during it at which a tap could land: off means the hero fights
+      // on gear alone, not that casting moves to the player.
+      final off = state(skills: {'jab': 1}).copyWith(autoCast: false);
+
+      expect(activeSkills(off, config()), isEmpty);
+      expect(
+        activeSkills(off.copyWith(autoCast: true), config()),
+        isNotEmpty,
+        reason: 'the same save with it on must cast',
+      );
+    });
+
     test('a higher level casts harder', () {
       final low = activeSkills(state(skills: {'jab': 1}), config()).single;
       final high = activeSkills(state(skills: {'jab': 4}), config()).single;

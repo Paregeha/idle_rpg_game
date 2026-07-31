@@ -85,6 +85,65 @@ void main() {
     expect(find.text('NEEDS MORE COPIES'), findsOneWidget);
   });
 
+  testWidgets('AUTO turns casting off and back on', (tester) async {
+    final controller = await withSkills(tester, skills: {'jab': 1});
+    expect(controller.state!.autoCast, isTrue);
+
+    await tester.tap(find.text('AUTO'));
+    await tester.pumpAndSettle();
+
+    expect(controller.state!.autoCast, isFalse);
+    expect(
+      activeSkills(controller.state!, testBalanceConfig),
+      isEmpty,
+      reason: 'with it off the hero fights on gear alone',
+    );
+
+    await tester.tap(find.text('AUTO'));
+    await tester.pumpAndSettle();
+
+    expect(controller.state!.autoCast, isTrue);
+    expect(activeSkills(controller.state!, testBalanceConfig), isNotEmpty);
+  });
+
+  testWidgets('AUTO is lit when on and not when off', (tester) async {
+    await withSkills(tester);
+
+    Color? colourOfAuto() {
+      final box = tester.widget<Container>(
+        find
+            .ancestor(of: find.text('AUTO'), matching: find.byType(Container))
+            .first,
+      );
+      return (box.decoration! as BoxDecoration).color;
+    }
+
+    final lit = colourOfAuto();
+    await tester.tap(find.text('AUTO'));
+    await tester.pumpAndSettle();
+
+    expect(colourOfAuto(), isNot(lit));
+  });
+
+  testWidgets('a firing skill shows how far off its next cast is', (
+    tester,
+  ) async {
+    await withSkills(tester, skills: {'jab': 1});
+
+    expect(find.byType(CircularProgressIndicator), findsWidgets);
+  });
+
+  testWidgets('with AUTO off no cooldown is charging', (tester) async {
+    // A ring still filling beside a dark AUTO promises a cast that will never
+    // come.
+    await withSkills(tester, skills: {'jab': 1});
+
+    await tester.tap(find.text('AUTO'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
   testWidgets('a pack costs gems and gives a copy', (tester) async {
     final controller = await withSkills(tester, gems: 500);
     final before = controller.state!.resources['gems']!;

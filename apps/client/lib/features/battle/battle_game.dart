@@ -22,6 +22,7 @@ class BattleGame extends FlameGame {
     required this.monsterMaxHp,
     this.monsterCount = 1,
     this.topInset = 0,
+    this.clock,
     this.onFinished,
     this.speed = 1.0,
   });
@@ -40,6 +41,13 @@ class BattleGame extends FlameGame {
   ///
   /// The fight is staged in what is left, so nothing is drawn behind them.
   final double topInset;
+
+  /// Where to publish how far into the fight playback is.
+  ///
+  /// The skill row draws its cooldowns from this. The scene owns the number
+  /// because the scene owns the timeline — a second clock ticking beside it
+  /// would drift away from the fight the player is watching.
+  final ValueNotifier<double>? clock;
 
   /// Called once the last event has been played.
   final VoidCallback? onFinished;
@@ -66,6 +74,7 @@ class BattleGame extends FlameGame {
 
   @override
   Future<void> onLoad() async {
+    clock?.value = 0;
     _heroHp = heroMaxHp;
     _monsterHp = List<BigNum>.filled(monsterCount, monsterMaxHp);
 
@@ -110,6 +119,7 @@ class BattleGame extends FlameGame {
     }
 
     _elapsedMs += dt * 1000 * speed;
+    clock?.value = _elapsedMs;
 
     // Several events can share a timecode, and a slow frame can span many, so
     // this drains everything that is due rather than one per frame. Playing one

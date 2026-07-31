@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
@@ -21,3 +22,18 @@ final balanceConfigProvider = FutureProvider<BalanceConfig>((ref) async {
 /// from server time in `T-032`; the device clock only smooths the local view
 /// between syncs.
 final clockProvider = Provider<Clock>((ref) => const SystemClock());
+
+/// Milliseconds into the fight currently on screen.
+///
+/// A notifier rather than provider state: the battle scene writes it every
+/// frame, and rebuilding the whole skill row sixty times a second to move one
+/// ring would cost more than the ring is worth. Widgets that care listen to it
+/// directly and repaint alone.
+///
+/// Reset to zero when a new fight starts, so a cooldown drawn from it always
+/// matches the fight being watched.
+final fightClockProvider = Provider<ValueNotifier<double>>((ref) {
+  final clock = ValueNotifier<double>(0);
+  ref.onDispose(clock.dispose);
+  return clock;
+});

@@ -125,7 +125,14 @@ SkillUpgradeResult upgradeSkill(
 /// A skill the hero has learned but not reached the level for is left out
 /// rather than cast at reduced effect: a skill that half-works is harder to
 /// reason about than one that is plainly not on yet.
+///
+/// With auto-cast off nothing fires at all. The fight is resolved in one pass
+/// before it is drawn (ADR-001), so there is no moment during it at which a tap
+/// could land — "off" means the hero fights on gear alone, not that casting
+/// moves to the player.
 List<ActiveSkill> activeSkills(PlayerState state, BalanceConfig config) {
+  if (!state.autoCast) return const [];
+
   final active = <ActiveSkill>[];
 
   for (final entry in state.skills.entries) {

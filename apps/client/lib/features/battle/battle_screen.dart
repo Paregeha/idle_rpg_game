@@ -60,6 +60,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
         monsterMaxHp: encounter.monsters.first.maxHp,
         monsterCount: encounter.monsters.length,
         topInset: widget.topInset,
+        clock: ref.read(fightClockProvider),
         onFinished: () => _onFightFinished(won: result.heroWon),
       );
     });

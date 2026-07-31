@@ -73,6 +73,12 @@ abstract class PlayerState with _$PlayerState {
     /// Skill packs opened since the last guaranteed pull.
     @Default(0) int skillPity,
 
+    /// Whether skills fire by themselves.
+    ///
+    /// On by default: an idle game whose skills need a tap is not idle. Off is
+    /// for a player who wants to see what their gear alone is worth.
+    @Default(true) bool autoCast,
+
     /// The hero's own level, earned by killing things.
     @Default(0) int heroLevel,
 
