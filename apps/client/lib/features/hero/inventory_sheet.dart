@@ -126,19 +126,9 @@ class _InventorySheetState extends ConsumerState<InventorySheet> {
     );
   }
 
+  // No message: the list is right there, and the tiles that changed say
+  // EQUIPPED the moment they do.
   void _equipBest() {
-    final changed = ref.read(gameControllerProvider.notifier).equipBest();
-    final plural = changed == 1 ? '' : 's';
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          changed == 0
-              ? 'Already wearing the best you have'
-              : 'Equipped $changed item$plural',
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    ref.read(gameControllerProvider.notifier).equipBest();
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/inventory_sheet.dart';
-import 'package:idle_rpg/features/hero/item_tile.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
 /// The lamp, sitting where the player's thumb already is.
@@ -34,7 +33,7 @@ class LampPanel extends ConsumerWidget {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: affordable ? () => _open(context, ref) : null,
+              onTap: affordable ? () => _open(ref) : null,
               child: Container(
                 height: 60,
                 margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -107,48 +106,23 @@ class LampPanel extends ConsumerWidget {
           _SideButton(
             icon: Icons.auto_fix_high,
             label: 'BEST',
-            onTap: () => _equipBest(context, ref),
+            onTap: () => _equipBest(ref),
           ),
         ],
       ),
     );
   }
 
-  void _equipBest(BuildContext context, WidgetRef ref) {
-    final changed = ref.read(gameControllerProvider.notifier).equipBest();
-    final plural = changed == 1 ? '' : 's';
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: const Duration(seconds: 2),
-        content: Text(
-          changed == 0
-              ? 'Already wearing the best you have'
-              : 'Equipped $changed item$plural',
-        ),
-      ),
-    );
+  // Neither action reports itself in a message. A bar that slides up from the
+  // bottom lands on the two controls the player is holding, and the lamp is
+  // meant to be pressed in a run — the result is on the screen already: the
+  // bag counter moves, and the gear grid fills in.
+  void _equipBest(WidgetRef ref) {
+    ref.read(gameControllerProvider.notifier).equipBest();
   }
 
-  void _open(BuildContext context, WidgetRef ref) {
-    final result = ref.read(gameControllerProvider.notifier).openTheLamp();
-    if (result == null || !result.opened) return;
-
-    final item = config.items[result.item!.configId];
-    final rank = item == null ? 0 : config.rarities[item.rarity]?.rank ?? 0;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: GamePalette.forgeRaised,
-        duration: const Duration(seconds: 2),
-        content: Text(
-          result.wasPity
-              ? '${shortName(result.item!.configId)} — guaranteed'
-              : shortName(result.item!.configId),
-          style: TextStyle(color: rarityColour(rank)),
-        ),
-      ),
-    );
+  void _open(WidgetRef ref) {
+    ref.read(gameControllerProvider.notifier).openTheLamp();
   }
 }
 
