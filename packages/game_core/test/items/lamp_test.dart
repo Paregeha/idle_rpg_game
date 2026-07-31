@@ -13,7 +13,7 @@ BalanceConfig config({
   int pityThreshold = 0,
   Map<String, double>? weights,
 }) => BalanceConfig(
-  slots: const ['weapon'],
+  slots: const [SlotConfig(id: 'weapon')],
   rarities: const {
     'common': RarityConfig(),
     'rare': RarityConfig(statMultiplier: 2, rank: 1),
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('refuses when nothing is configured to drop', () {
-      const empty = BalanceConfig(slots: ['weapon']);
+      const empty = BalanceConfig(slots: [SlotConfig(id: 'weapon')]);
 
       final result = openLamp(state(), empty);
 

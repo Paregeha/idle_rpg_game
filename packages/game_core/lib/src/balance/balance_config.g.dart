@@ -31,12 +31,19 @@ _BalanceConfig _$BalanceConfigFromJson(
   lamp: json['lamp'] == null
       ? const LampConfig()
       : LampConfig.fromJson(json['lamp'] as Map<String, dynamic>),
+  displayedResources:
+      (json['displayedResources'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const <String>[],
   itemUpgrade: json['itemUpgrade'] == null
       ? const ItemUpgradeConfig()
       : ItemUpgradeConfig.fromJson(json['itemUpgrade'] as Map<String, dynamic>),
   slots:
-      (json['slots'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-      const <String>[],
+      (json['slots'] as List<dynamic>?)
+          ?.map((e) => SlotConfig.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const <SlotConfig>[],
   rarities:
       (json['rarities'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(k, RarityConfig.fromJson(e as Map<String, dynamic>)),
@@ -61,8 +68,9 @@ Map<String, dynamic> _$BalanceConfigToJson(_BalanceConfig instance) =>
       'prestige': instance.prestige.toJson(),
       'hero': instance.hero.toJson(),
       'lamp': instance.lamp.toJson(),
+      'displayedResources': instance.displayedResources,
       'itemUpgrade': instance.itemUpgrade.toJson(),
-      'slots': instance.slots,
+      'slots': instance.slots.map((e) => e.toJson()).toList(),
       'rarities': instance.rarities.map((k, e) => MapEntry(k, e.toJson())),
       'items': instance.items.map((k, e) => MapEntry(k, e.toJson())),
       'start': instance.start.toJson(),

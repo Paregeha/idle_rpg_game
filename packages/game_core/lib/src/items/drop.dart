@@ -1,5 +1,6 @@
 import 'package:game_core/src/balance/balance_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
+import 'package:game_core/src/items/lamp.dart';
 import 'package:game_core/src/items/owned_item.dart';
 import 'package:game_core/src/state/player_state.dart';
 import 'package:meta/meta.dart';
@@ -32,7 +33,10 @@ DropResult rollDrop(
   MonsterConfig monster,
   BalanceConfig config,
 ) {
-  if (monster.dropChance <= 0 || config.items.isEmpty) {
+  final droppable = config.items.entries
+      .where((entry) => entry.value.sources.contains(lampSource))
+      .toList();
+  if (monster.dropChance <= 0 || droppable.isEmpty) {
     return DropResult(state: state);
   }
 
@@ -43,8 +47,7 @@ DropResult rollDrop(
     return DropResult(state: state.copyWith(rngState: rng.state));
   }
 
-  final pool = config.items.entries.toList();
-  final drawn = pool[rng.nextInt(pool.length)];
+  final drawn = droppable[rng.nextInt(droppable.length)];
   final id = 'item-${state.itemsCreated}';
 
   return DropResult(

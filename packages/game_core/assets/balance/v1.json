@@ -54,7 +54,8 @@
     },
     "resources": {
       "gold": "0e0",
-      "gems": "1e1"
+      "gems": "0e0",
+      "lamps": "1e1"
     }
   },
   "prestige": {
@@ -106,10 +107,56 @@
     }
   },
   "slots": [
-    "weapon",
-    "armour",
-    "helm",
-    "trinket"
+    {
+      "id": "weapon",
+      "order": 0
+    },
+    {
+      "id": "armour",
+      "order": 1
+    },
+    {
+      "id": "helm",
+      "order": 2
+    },
+    {
+      "id": "gloves",
+      "order": 3
+    },
+    {
+      "id": "boots",
+      "order": 4
+    },
+    {
+      "id": "pants",
+      "order": 5
+    },
+    {
+      "id": "necklace",
+      "order": 6
+    },
+    {
+      "id": "ring1",
+      "order": 7,
+      "accepts": "ring"
+    },
+    {
+      "id": "ring2",
+      "order": 8,
+      "accepts": "ring"
+    },
+    {
+      "id": "wings",
+      "order": 9
+    },
+    {
+      "id": "skin",
+      "order": 10
+    },
+    {
+      "id": "rune",
+      "order": 11
+    }
   ],
   "rarities": {
     "common": {
@@ -133,6 +180,9 @@
     "chipped_blade": {
       "slot": "weapon",
       "rarity": "common",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatAttack": "3e0"
       },
@@ -142,6 +192,9 @@
     "iron_sword": {
       "slot": "weapon",
       "rarity": "rare",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatAttack": "1.2e1",
         "critChance": 0.03
@@ -152,6 +205,9 @@
     "ember_brand": {
       "slot": "weapon",
       "rarity": "epic",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatAttack": "6e1",
         "attackMultiplier": 1.15
@@ -162,6 +218,9 @@
     "wyrmfang": {
       "slot": "weapon",
       "rarity": "legendary",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatAttack": "3e2",
         "attackMultiplier": 1.4,
@@ -173,6 +232,9 @@
     "padded_vest": {
       "slot": "armour",
       "rarity": "common",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatHp": "2e1"
       },
@@ -182,6 +244,9 @@
     "scale_mail": {
       "slot": "armour",
       "rarity": "rare",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatHp": "9e1",
         "mitigation": 0.04
@@ -192,6 +257,9 @@
     "golem_plate": {
       "slot": "armour",
       "rarity": "epic",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatHp": "4e2",
         "mitigation": 0.1,
@@ -203,6 +271,9 @@
     "leather_cap": {
       "slot": "helm",
       "rarity": "common",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatHp": "8e0"
       },
@@ -212,6 +283,9 @@
     "forge_helm": {
       "slot": "helm",
       "rarity": "rare",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatHp": "4e1",
         "mitigation": 0.03
@@ -222,6 +296,9 @@
     "crown_of_ash": {
       "slot": "helm",
       "rarity": "epic",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
         "flatHp": "1.8e2",
         "critFactor": 0.3
@@ -229,38 +306,219 @@
       "levelMultiplier": 1.12,
       "maxLevel": 20
     },
-    "copper_ring": {
-      "slot": "trinket",
+    "work_gloves": {
+      "slot": "gloves",
       "rarity": "common",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
-        "critChance": 0.02
+        "flatAttack": "2e0"
       },
       "levelMultiplier": 1.12,
       "maxLevel": 20
     },
-    "patina_charm": {
-      "slot": "trinket",
+    "grips_of_soot": {
+      "slot": "gloves",
       "rarity": "rare",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
-        "critChance": 0.05,
+        "flatAttack": "9e0",
+        "attacksPerSecond": 0.1
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "gauntlets_of_ember": {
+      "slot": "gloves",
+      "rarity": "epic",
+      "sources": [
+        "lamp"
+      ],
+      "stats": {
+        "flatAttack": "4.5e1",
+        "critChance": 0.05
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "worn_boots": {
+      "slot": "boots",
+      "rarity": "common",
+      "sources": [
+        "lamp"
+      ],
+      "stats": {
+        "flatHp": "6e0"
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "strider_boots": {
+      "slot": "boots",
+      "rarity": "rare",
+      "sources": [
+        "lamp"
+      ],
+      "stats": {
+        "flatHp": "3e1",
         "dodgeChance": 0.03
       },
       "levelMultiplier": 1.12,
       "maxLevel": 20
     },
-    "ember_sigil": {
-      "slot": "trinket",
+    "boots_of_the_wyrm": {
+      "slot": "boots",
       "rarity": "epic",
+      "sources": [
+        "lamp"
+      ],
       "stats": {
-        "critChance": 0.09,
-        "attacksPerSecond": 0.2
+        "flatHp": "1.4e2",
+        "dodgeChance": 0.07
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "canvas_trousers": {
+      "slot": "pants",
+      "rarity": "common",
+      "sources": [
+        "lamp"
+      ],
+      "stats": {
+        "flatHp": "1e1"
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "scaled_leggings": {
+      "slot": "pants",
+      "rarity": "rare",
+      "sources": [
+        "lamp"
+      ],
+      "stats": {
+        "flatHp": "5e1",
+        "mitigation": 0.02
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "legplates_of_ash": {
+      "slot": "pants",
+      "rarity": "epic",
+      "sources": [
+        "lamp"
+      ],
+      "stats": {
+        "flatHp": "2.2e2",
+        "hpMultiplier": 1.1
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "amulet_of_the_forge": {
+      "slot": "necklace",
+      "rarity": "legendary",
+      "sources": [
+        "shop",
+        "event"
+      ],
+      "stats": {
+        "flatAttack": "2e2",
+        "attackMultiplier": 1.25
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "band_of_cinders": {
+      "slot": "ring",
+      "rarity": "epic",
+      "sources": [
+        "shop"
+      ],
+      "stats": {
+        "critChance": 0.06
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "band_of_patina": {
+      "slot": "ring",
+      "rarity": "epic",
+      "sources": [
+        "shop"
+      ],
+      "stats": {
+        "dodgeChance": 0.05,
+        "flatHp": "9e1"
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "ashen_wings": {
+      "slot": "wings",
+      "rarity": "legendary",
+      "sources": [
+        "craft"
+      ],
+      "stats": {
+        "attackMultiplier": 1.3,
+        "hpMultiplier": 1.3
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "skin_apprentice": {
+      "slot": "skin",
+      "rarity": "common",
+      "sources": [
+        "shop"
+      ],
+      "stats": {},
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "skin_forgemaster": {
+      "slot": "skin",
+      "rarity": "epic",
+      "sources": [
+        "shop"
+      ],
+      "stats": {},
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "rune_of_embers": {
+      "slot": "rune",
+      "rarity": "rare",
+      "sources": [
+        "shop"
+      ],
+      "stats": {
+        "flatAttack": "3e1"
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "rune_of_patience": {
+      "slot": "rune",
+      "rarity": "epic",
+      "sources": [
+        "shop"
+      ],
+      "stats": {
+        "flatHp": "2.5e2"
       },
       "levelMultiplier": 1.12,
       "maxLevel": 20
     }
   },
   "lamp": {
-    "costResource": "gems",
+    "costResource": "lamps",
     "costAmount": "1e0",
     "weights": {
       "common": 70.0,
@@ -276,5 +534,10 @@
     "costBase": "5e2",
     "costGrowth": 1.6,
     "duplicatesPerLevel": 1
-  }
+  },
+  "displayedResources": [
+    "gold",
+    "gems",
+    "lamps"
+  ]
 }

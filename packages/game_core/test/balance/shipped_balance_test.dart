@@ -69,6 +69,37 @@ void main() {
     }
   });
 
+  test('the lamp can fill every slot it is meant to', () {
+    // Slots the lamp does not supply (wings, skin, the unique set) are filled
+    // by crafting or the shop; they must not be silently unreachable either,
+    // so each one needs at least one item from some source.
+    for (final slot in config.slots) {
+      final forSlot = config.items.values.where(
+        (item) => item.slot == slot.itemKind,
+      );
+      expect(forSlot, isNotEmpty, reason: 'nothing fits ${slot.id}');
+      expect(
+        forSlot.every((item) => item.sources.isNotEmpty),
+        isTrue,
+        reason: 'an item for ${slot.id} has no way of being obtained',
+      );
+    }
+  });
+
+  test('the shop keeps what the shop sells', () {
+    // A skin or a crafted pair of wings appearing in the lamp would give away
+    // the thing the shop is selling.
+    for (final entry in config.items.entries) {
+      final lampable = entry.value.sources.contains('lamp');
+      final slot = entry.value.slot;
+      expect(
+        lampable && (slot == 'wings' || slot == 'skin'),
+        isFalse,
+        reason: '${entry.key} is meant to be crafted or bought',
+      );
+    }
+  });
+
   test('prestige actually pays off', () {
     expect(config.prestige.bonusPerPoint > BigNum.zero, isTrue);
     expect(config.prestige.currencyExponent, lessThanOrEqualTo(1));
@@ -118,9 +149,9 @@ void main() {
     // empty square the player can never fill.
     for (final slot in config.slots) {
       expect(
-        config.items.values.any((item) => item.slot == slot),
+        config.items.values.any((item) => item.slot == slot.itemKind),
         isTrue,
-        reason: 'nothing can be equipped in the $slot slot',
+        reason: 'nothing can be equipped in the ${slot.id} slot',
       );
     }
   });

@@ -33,6 +33,9 @@ class _HeroScreenState extends ConsumerState<HeroScreen> {
       return config.items[owned.configId]?.slot == _slotFilter;
     }).toList();
 
+    final slotsInOrder = config.slots.toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
@@ -43,7 +46,7 @@ class _HeroScreenState extends ConsumerState<HeroScreen> {
           value: '${(stats.critChance * 100).round()}%',
         ),
         const SizedBox(height: 18),
-        _SlotRow(config: config, state: state),
+        _SlotRow(slots: slotsInOrder, config: config, state: state),
         const SizedBox(height: 16),
         _LampButton(config: config),
         const SizedBox(height: 22),
@@ -65,7 +68,7 @@ class _HeroScreenState extends ConsumerState<HeroScreen> {
         ),
         const SizedBox(height: 10),
         _SlotFilter(
-          slots: config.slots,
+          slots: config.slots.map((slot) => slot.itemKind).toSet().toList(),
           selected: _slotFilter,
           onChanged: (slot) => setState(() => _slotFilter = slot),
         ),
@@ -138,24 +141,38 @@ class _StatLine extends StatelessWidget {
   }
 }
 
+/// The worn items. Wraps, because twelve slots do not fit on one row of a
+/// phone and a horizontal scroller hides half of them behind a gesture.
 class _SlotRow extends StatelessWidget {
-  const _SlotRow({required this.config, required this.state});
+  const _SlotRow({
+    required this.slots,
+    required this.config,
+    required this.state,
+  });
 
+  final List<SlotConfig> slots;
   final BalanceConfig config;
   final PlayerState state;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (final slot in config.slots)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: _Slot(slot: slot, config: config, state: state),
-            ),
-          ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const perRow = 4;
+        final width = (constraints.maxWidth - 8 * (perRow - 1)) / perRow;
+
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final slot in slots)
+              SizedBox(
+                width: width,
+                child: _Slot(slot: slot.id, config: config, state: state),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -271,8 +288,10 @@ class _LampButton extends ConsumerWidget {
           disabledForegroundColor: GamePalette.ash,
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
+        // The currency is named in the top bar, so the button only needs the
+        // number — and "1 lamps" reads as a bug.
         child: Text(
-          'LIGHT THE LAMP  ·  ${cost.format()} ${config.lamp.costResource}',
+          'LIGHT THE LAMP  ·  ${cost.format()}',
           style: const TextStyle(letterSpacing: 0.8),
         ),
       ),

@@ -5,6 +5,9 @@ import 'package:game_core/src/random/seeded_random.dart';
 import 'package:game_core/src/state/player_state.dart';
 import 'package:meta/meta.dart';
 
+/// Source key marking an item as obtainable from the lamp.
+const String lampSource = 'lamp';
+
 /// Why an open did not happen.
 enum LampRefusal { cannotAfford, noItemsConfigured }
 
@@ -50,7 +53,12 @@ LampResult openLamp(PlayerState state, BalanceConfig config) {
   if (balance < lamp.costAmount) {
     return LampResult(state: state, refusal: LampRefusal.cannotAfford);
   }
-  if (config.items.isEmpty || lamp.totalWeight <= 0) {
+  // Only items the config says the lamp can produce. Without this the lamp
+  // hands out wings meant to be crafted and skins meant to be bought.
+  final available = config.items.entries
+      .where((entry) => entry.value.sources.contains(lampSource))
+      .toList();
+  if (available.isEmpty || lamp.totalWeight <= 0) {
     return LampResult(state: state, refusal: LampRefusal.noItemsConfigured);
   }
 
@@ -61,10 +69,10 @@ LampResult openLamp(PlayerState state, BalanceConfig config) {
 
   // A rarity with no items behind it must not swallow the open: fall back to
   // anything rather than charging the player for nothing.
-  final candidates = config.items.entries
+  final candidates = available
       .where((entry) => entry.value.rarity == rarity)
       .toList();
-  final pool = candidates.isEmpty ? config.items.entries.toList() : candidates;
+  final pool = candidates.isEmpty ? available : candidates;
   final drawn = pool[rng.nextInt(pool.length)];
 
   final gotPityRarity = drawn.value.rarity == lamp.pityRarity;

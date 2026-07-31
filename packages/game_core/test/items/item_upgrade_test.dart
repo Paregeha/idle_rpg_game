@@ -10,7 +10,7 @@ Matcher nearly(double expected) => predicate<BigNum>((actual) {
 
 BalanceConfig config({int duplicatesPerLevel = 0, int maxLevel = 20}) =>
     BalanceConfig(
-      slots: const ['weapon'],
+      slots: const [SlotConfig(id: 'weapon')],
       rarities: const {'common': RarityConfig()},
       items: {
         'blade': ItemConfig(

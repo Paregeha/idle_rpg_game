@@ -18,7 +18,10 @@ final testBalanceConfig = BalanceConfig(
       costGrowth: 1.07,
     ),
   },
-  slots: const ['weapon', 'trinket'],
+  slots: const [
+    SlotConfig(id: 'weapon'),
+    SlotConfig(id: 'trinket'),
+  ],
   rarities: const {'common': RarityConfig()},
   items: {
     'blade': ItemConfig(
@@ -27,7 +30,8 @@ final testBalanceConfig = BalanceConfig(
       stats: ItemStats(flatAttack: BigNum.fromDouble(25)),
     ),
   },
-  lamp: const LampConfig(weights: {'common': 1}),
+  lamp: const LampConfig(weights: {'common': 1}, costResource: 'gems'),
+  displayedResources: const ['gold', 'gems'],
   start: StartConfig(
     generators: const {'miner': 1},
     resources: {'gems': BigNum.fromDouble(5)},

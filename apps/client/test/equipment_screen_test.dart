@@ -32,7 +32,7 @@ void main() {
     await openHero(tester);
 
     for (final slot in testBalanceConfig.slots) {
-      expect(find.text(slot.toUpperCase()), findsWidgets, reason: slot);
+      expect(find.text(slot.id.toUpperCase()), findsWidgets, reason: slot.id);
     }
   });
 

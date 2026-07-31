@@ -91,11 +91,22 @@ abstract class ItemStats with _$ItemStats {
 @freezed
 abstract class ItemConfig with _$ItemConfig {
   const factory ItemConfig({
-    /// Which slot it occupies. Free-form so slots stay data.
+    /// Kind of item this is, matched against a slot's `accepts`.
+    ///
+    /// Named `slot` for the common case where the kind and the slot share a
+    /// name (`weapon`, `helm`); a ring is kind `ring` and fits `ring1` or
+    /// `ring2`.
     required String slot,
 
     /// Key into `BalanceConfig.rarities`.
     required String rarity,
+
+    /// Where this item can come from: `lamp`, `craft`, `shop`, `event`.
+    ///
+    /// Without this the lamp can hand out wings that are supposed to be
+    /// crafted and skins that are supposed to be bought — the first pull would
+    /// give away the thing the shop sells.
+    @Default(<String>['lamp']) List<String> sources,
 
     /// Stats at level 0, before the rarity multiplier.
     @Default(ItemStats.empty) ItemStats stats,

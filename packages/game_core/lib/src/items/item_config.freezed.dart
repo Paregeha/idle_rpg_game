@@ -572,9 +572,18 @@ as double,
 /// @nodoc
 mixin _$ItemConfig {
 
-/// Which slot it occupies. Free-form so slots stay data.
+/// Kind of item this is, matched against a slot's `accepts`.
+///
+/// Named `slot` for the common case where the kind and the slot share a
+/// name (`weapon`, `helm`); a ring is kind `ring` and fits `ring1` or
+/// `ring2`.
  String get slot;/// Key into `BalanceConfig.rarities`.
- String get rarity;/// Stats at level 0, before the rarity multiplier.
+ String get rarity;/// Where this item can come from: `lamp`, `craft`, `shop`, `event`.
+///
+/// Without this the lamp can hand out wings that are supposed to be
+/// crafted and skins that are supposed to be bought — the first pull would
+/// give away the thing the shop sells.
+ List<String> get sources;/// Stats at level 0, before the rarity multiplier.
  ItemStats get stats;/// Stats are multiplied by this per upgrade level (`T-083`).
  double get levelMultiplier;/// Highest level this item can reach.
  int get maxLevel;
@@ -590,16 +599,16 @@ $ItemConfigCopyWith<ItemConfig> get copyWith => _$ItemConfigCopyWithImpl<ItemCon
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItemConfig&&(identical(other.slot, slot) || other.slot == slot)&&(identical(other.rarity, rarity) || other.rarity == rarity)&&(identical(other.stats, stats) || other.stats == stats)&&(identical(other.levelMultiplier, levelMultiplier) || other.levelMultiplier == levelMultiplier)&&(identical(other.maxLevel, maxLevel) || other.maxLevel == maxLevel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItemConfig&&(identical(other.slot, slot) || other.slot == slot)&&(identical(other.rarity, rarity) || other.rarity == rarity)&&const DeepCollectionEquality().equals(other.sources, sources)&&(identical(other.stats, stats) || other.stats == stats)&&(identical(other.levelMultiplier, levelMultiplier) || other.levelMultiplier == levelMultiplier)&&(identical(other.maxLevel, maxLevel) || other.maxLevel == maxLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,slot,rarity,stats,levelMultiplier,maxLevel);
+int get hashCode => Object.hash(runtimeType,slot,rarity,const DeepCollectionEquality().hash(sources),stats,levelMultiplier,maxLevel);
 
 @override
 String toString() {
-  return 'ItemConfig(slot: $slot, rarity: $rarity, stats: $stats, levelMultiplier: $levelMultiplier, maxLevel: $maxLevel)';
+  return 'ItemConfig(slot: $slot, rarity: $rarity, sources: $sources, stats: $stats, levelMultiplier: $levelMultiplier, maxLevel: $maxLevel)';
 }
 
 
@@ -610,7 +619,7 @@ abstract mixin class $ItemConfigCopyWith<$Res>  {
   factory $ItemConfigCopyWith(ItemConfig value, $Res Function(ItemConfig) _then) = _$ItemConfigCopyWithImpl;
 @useResult
 $Res call({
- String slot, String rarity, ItemStats stats, double levelMultiplier, int maxLevel
+ String slot, String rarity, List<String> sources, ItemStats stats, double levelMultiplier, int maxLevel
 });
 
 
@@ -627,11 +636,12 @@ class _$ItemConfigCopyWithImpl<$Res>
 
 /// Create a copy of ItemConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? slot = null,Object? rarity = null,Object? stats = null,Object? levelMultiplier = null,Object? maxLevel = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? slot = null,Object? rarity = null,Object? sources = null,Object? stats = null,Object? levelMultiplier = null,Object? maxLevel = null,}) {
   return _then(_self.copyWith(
 slot: null == slot ? _self.slot : slot // ignore: cast_nullable_to_non_nullable
 as String,rarity: null == rarity ? _self.rarity : rarity // ignore: cast_nullable_to_non_nullable
-as String,stats: null == stats ? _self.stats : stats // ignore: cast_nullable_to_non_nullable
+as String,sources: null == sources ? _self.sources : sources // ignore: cast_nullable_to_non_nullable
+as List<String>,stats: null == stats ? _self.stats : stats // ignore: cast_nullable_to_non_nullable
 as ItemStats,levelMultiplier: null == levelMultiplier ? _self.levelMultiplier : levelMultiplier // ignore: cast_nullable_to_non_nullable
 as double,maxLevel: null == maxLevel ? _self.maxLevel : maxLevel // ignore: cast_nullable_to_non_nullable
 as int,
@@ -728,10 +738,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String slot,  String rarity,  ItemStats stats,  double levelMultiplier,  int maxLevel)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String slot,  String rarity,  List<String> sources,  ItemStats stats,  double levelMultiplier,  int maxLevel)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ItemConfig() when $default != null:
-return $default(_that.slot,_that.rarity,_that.stats,_that.levelMultiplier,_that.maxLevel);case _:
+return $default(_that.slot,_that.rarity,_that.sources,_that.stats,_that.levelMultiplier,_that.maxLevel);case _:
   return orElse();
 
 }
@@ -749,10 +759,10 @@ return $default(_that.slot,_that.rarity,_that.stats,_that.levelMultiplier,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String slot,  String rarity,  ItemStats stats,  double levelMultiplier,  int maxLevel)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String slot,  String rarity,  List<String> sources,  ItemStats stats,  double levelMultiplier,  int maxLevel)  $default,) {final _that = this;
 switch (_that) {
 case _ItemConfig():
-return $default(_that.slot,_that.rarity,_that.stats,_that.levelMultiplier,_that.maxLevel);case _:
+return $default(_that.slot,_that.rarity,_that.sources,_that.stats,_that.levelMultiplier,_that.maxLevel);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -769,10 +779,10 @@ return $default(_that.slot,_that.rarity,_that.stats,_that.levelMultiplier,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String slot,  String rarity,  ItemStats stats,  double levelMultiplier,  int maxLevel)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String slot,  String rarity,  List<String> sources,  ItemStats stats,  double levelMultiplier,  int maxLevel)?  $default,) {final _that = this;
 switch (_that) {
 case _ItemConfig() when $default != null:
-return $default(_that.slot,_that.rarity,_that.stats,_that.levelMultiplier,_that.maxLevel);case _:
+return $default(_that.slot,_that.rarity,_that.sources,_that.stats,_that.levelMultiplier,_that.maxLevel);case _:
   return null;
 
 }
@@ -784,13 +794,34 @@ return $default(_that.slot,_that.rarity,_that.stats,_that.levelMultiplier,_that.
 @JsonSerializable()
 
 class _ItemConfig extends ItemConfig {
-  const _ItemConfig({required this.slot, required this.rarity, this.stats = ItemStats.empty, this.levelMultiplier = 1.12, this.maxLevel = 20}): super._();
+  const _ItemConfig({required this.slot, required this.rarity, final  List<String> sources = const <String>['lamp'], this.stats = ItemStats.empty, this.levelMultiplier = 1.12, this.maxLevel = 20}): _sources = sources,super._();
   factory _ItemConfig.fromJson(Map<String, dynamic> json) => _$ItemConfigFromJson(json);
 
-/// Which slot it occupies. Free-form so slots stay data.
+/// Kind of item this is, matched against a slot's `accepts`.
+///
+/// Named `slot` for the common case where the kind and the slot share a
+/// name (`weapon`, `helm`); a ring is kind `ring` and fits `ring1` or
+/// `ring2`.
 @override final  String slot;
 /// Key into `BalanceConfig.rarities`.
 @override final  String rarity;
+/// Where this item can come from: `lamp`, `craft`, `shop`, `event`.
+///
+/// Without this the lamp can hand out wings that are supposed to be
+/// crafted and skins that are supposed to be bought — the first pull would
+/// give away the thing the shop sells.
+ final  List<String> _sources;
+/// Where this item can come from: `lamp`, `craft`, `shop`, `event`.
+///
+/// Without this the lamp can hand out wings that are supposed to be
+/// crafted and skins that are supposed to be bought — the first pull would
+/// give away the thing the shop sells.
+@override@JsonKey() List<String> get sources {
+  if (_sources is EqualUnmodifiableListView) return _sources;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_sources);
+}
+
 /// Stats at level 0, before the rarity multiplier.
 @override@JsonKey() final  ItemStats stats;
 /// Stats are multiplied by this per upgrade level (`T-083`).
@@ -811,16 +842,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItemConfig&&(identical(other.slot, slot) || other.slot == slot)&&(identical(other.rarity, rarity) || other.rarity == rarity)&&(identical(other.stats, stats) || other.stats == stats)&&(identical(other.levelMultiplier, levelMultiplier) || other.levelMultiplier == levelMultiplier)&&(identical(other.maxLevel, maxLevel) || other.maxLevel == maxLevel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItemConfig&&(identical(other.slot, slot) || other.slot == slot)&&(identical(other.rarity, rarity) || other.rarity == rarity)&&const DeepCollectionEquality().equals(other._sources, _sources)&&(identical(other.stats, stats) || other.stats == stats)&&(identical(other.levelMultiplier, levelMultiplier) || other.levelMultiplier == levelMultiplier)&&(identical(other.maxLevel, maxLevel) || other.maxLevel == maxLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,slot,rarity,stats,levelMultiplier,maxLevel);
+int get hashCode => Object.hash(runtimeType,slot,rarity,const DeepCollectionEquality().hash(_sources),stats,levelMultiplier,maxLevel);
 
 @override
 String toString() {
-  return 'ItemConfig(slot: $slot, rarity: $rarity, stats: $stats, levelMultiplier: $levelMultiplier, maxLevel: $maxLevel)';
+  return 'ItemConfig(slot: $slot, rarity: $rarity, sources: $sources, stats: $stats, levelMultiplier: $levelMultiplier, maxLevel: $maxLevel)';
 }
 
 
@@ -831,7 +862,7 @@ abstract mixin class _$ItemConfigCopyWith<$Res> implements $ItemConfigCopyWith<$
   factory _$ItemConfigCopyWith(_ItemConfig value, $Res Function(_ItemConfig) _then) = __$ItemConfigCopyWithImpl;
 @override @useResult
 $Res call({
- String slot, String rarity, ItemStats stats, double levelMultiplier, int maxLevel
+ String slot, String rarity, List<String> sources, ItemStats stats, double levelMultiplier, int maxLevel
 });
 
 
@@ -848,11 +879,12 @@ class __$ItemConfigCopyWithImpl<$Res>
 
 /// Create a copy of ItemConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? slot = null,Object? rarity = null,Object? stats = null,Object? levelMultiplier = null,Object? maxLevel = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? slot = null,Object? rarity = null,Object? sources = null,Object? stats = null,Object? levelMultiplier = null,Object? maxLevel = null,}) {
   return _then(_ItemConfig(
 slot: null == slot ? _self.slot : slot // ignore: cast_nullable_to_non_nullable
 as String,rarity: null == rarity ? _self.rarity : rarity // ignore: cast_nullable_to_non_nullable
-as String,stats: null == stats ? _self.stats : stats // ignore: cast_nullable_to_non_nullable
+as String,sources: null == sources ? _self._sources : sources // ignore: cast_nullable_to_non_nullable
+as List<String>,stats: null == stats ? _self.stats : stats // ignore: cast_nullable_to_non_nullable
 as ItemStats,levelMultiplier: null == levelMultiplier ? _self.levelMultiplier : levelMultiplier // ignore: cast_nullable_to_non_nullable
 as double,maxLevel: null == maxLevel ? _self.maxLevel : maxLevel // ignore: cast_nullable_to_non_nullable
 as int,
