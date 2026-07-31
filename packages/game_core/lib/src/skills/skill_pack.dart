@@ -85,6 +85,63 @@ SkillPackResult openSkillPack(PlayerState state, BalanceConfig config) {
   );
 }
 
+/// Opens [count] packs in a row.
+///
+/// Stops at the first refusal rather than opening what it can afford and
+/// pretending the rest happened: a ten-pull that silently became a four-pull is
+/// the kind of thing a player counts, notices, and does not forgive.
+///
+/// One function rather than the caller looping, because the server has to
+/// arrive at the same draws from the same save — and a loop written twice is a
+/// loop that gets edited once.
+SkillPackBatch openSkillPacks(
+  PlayerState state,
+  BalanceConfig config, {
+  required int count,
+}) {
+  if (count < 1) {
+    throw ArgumentError.value(count, 'count', 'must be at least 1');
+  }
+
+  var current = state;
+  final opened = <SkillPackResult>[];
+
+  for (var i = 0; i < count; i++) {
+    final result = openSkillPack(current, config);
+    if (!result.opened) {
+      return SkillPackBatch(
+        state: current,
+        results: List.unmodifiable(opened),
+        refusal: result.refusal,
+      );
+    }
+    current = result.state;
+    opened.add(result);
+  }
+
+  return SkillPackBatch(state: current, results: List.unmodifiable(opened));
+}
+
+/// What a run of packs produced.
+@immutable
+class SkillPackBatch {
+  const SkillPackBatch({
+    required this.state,
+    required this.results,
+    this.refusal,
+  });
+
+  final PlayerState state;
+
+  /// One entry per pack that actually opened, in the order they were drawn.
+  final List<SkillPackResult> results;
+
+  /// Why the run stopped early, if it did.
+  final SkillPackRefusal? refusal;
+
+  bool get opened => results.isNotEmpty;
+}
+
 /// Rolls whether a kill drops a skill copy.
 ///
 /// Bosses drop often enough to be the reason to reach one; ordinary monsters

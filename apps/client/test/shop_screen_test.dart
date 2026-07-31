@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
+import 'package:idle_rpg/features/shop/pull_results.dart';
 import 'package:idle_rpg/features/shop/shop_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:idle_rpg/features/skills/skill_card.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
@@ -53,30 +55,58 @@ void main() {
     expect(find.textContaining('%'), findsWidgets);
   });
 
-  testWidgets('opening a pack spends the currency and gives a copy', (
+  testWidgets('a single pull spends once and is shown on its own', (
     tester,
   ) async {
     final controller = await openShop(tester);
     final before = controller.state!.resources['gems']!;
 
-    await tester.tap(find.text('OPEN'));
-    await tester.pumpAndSettle();
+    await tester.tap(find.text('OPEN x1'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(controller.state!.resources['gems']! < before, isTrue);
     expect(controller.state!.skills, isNotEmpty);
+    expect(find.byType(PullResults), findsOneWidget);
+    expect(find.text('ONE PULL'), findsOneWidget);
   });
 
-  testWidgets('with nothing to spend it says so instead of doing nothing', (
+  testWidgets('a ten-pull charges ten and shows ten', (tester) async {
+    final controller = await openShop(tester, gems: 500);
+
+    await tester.tap(find.text('OPEN x10'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+
+    expect(controller.state!.resources['gems'], BigNum.zero);
+    expect(find.text('10 PULLS'), findsOneWidget);
+    // Three, four, three — every draw the player paid for is on screen.
+    expect(find.byType(ClipPath), findsNWidgets(10));
+  });
+
+  testWidgets('a ten-pull it cannot pay for is not offered at all', (
+    tester,
+  ) async {
+    // Better than opening four and calling it ten.
+    final controller = await openShop(tester, gems: 60);
+
+    await tester.tap(find.text('OPEN x10'));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.byType(PullResults), findsNothing);
+    expect(controller.state!.resources['gems'], BigNum.fromDouble(60));
+  });
+
+  testWidgets('with nothing to spend neither button does anything', (
     tester,
   ) async {
     final controller = await openShop(tester, gems: 0);
 
-    expect(find.text('NOT ENOUGH'), findsOneWidget);
-
-    await tester.tap(find.text('NOT ENOUGH'));
-    await tester.pumpAndSettle();
+    await tester.tap(find.text('OPEN x1'));
+    await tester.pump(const Duration(seconds: 1));
 
     expect(controller.state!.skills, isEmpty);
+    expect(find.byType(PullResults), findsNothing);
   });
 
   testWidgets('the pool shows every skill, owned or not', (tester) async {

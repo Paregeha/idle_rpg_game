@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/item_visuals.dart';
+import 'package:idle_rpg/features/shop/pull_results.dart';
 import 'package:idle_rpg/features/skills/skill_card.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
@@ -267,65 +268,122 @@ class _PackCard extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 46,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(23),
-                gradient: affordable
-                    ? const LinearGradient(
-                        colors: [GamePalette.emberBright, GamePalette.emberDim],
-                      )
-                    : null,
-                color: affordable ? null : GamePalette.forgeRaised,
-              ),
-              child: TextButton(
-                onPressed: affordable
-                    ? () => ref
-                          .read(gameControllerProvider.notifier)
-                          .openSkillPack()
-                    : null,
-                style: TextButton.styleFrom(
-                  foregroundColor: GamePalette.bone,
-                  disabledForegroundColor: GamePalette.ash,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(23),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      affordable ? 'OPEN' : 'NOT ENOUGH',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      width: 9,
-                      height: 9,
-                      decoration: BoxDecoration(
-                        color: currencyColour(pack.costResource),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      price.format(),
-                      style: counterStyle(context, fontSize: 13),
-                    ),
-                  ],
+          Row(
+            children: [
+              Expanded(
+                child: _OpenButton(
+                  count: 1,
+                  price: price,
+                  costResource: pack.costResource,
+                  affordable: affordable,
+                  config: config,
                 ),
               ),
-            ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _OpenButton(
+                  count: 10,
+                  price: price * BigNum.fromDouble(10),
+                  costResource: pack.costResource,
+                  affordable: balance >= price * BigNum.fromDouble(10),
+                  config: config,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+}
+
+/// One buy button. Ten costs ten times one — there is no hidden discount, and
+/// pretending otherwise is how a shop loses the benefit of the doubt.
+class _OpenButton extends ConsumerWidget {
+  const _OpenButton({
+    required this.count,
+    required this.price,
+    required this.costResource,
+    required this.affordable,
+    required this.config,
+  });
+
+  final int count;
+  final BigNum price;
+  final String costResource;
+  final bool affordable;
+  final BalanceConfig config;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      height: 48,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: affordable
+              ? LinearGradient(
+                  colors: count == 1
+                      ? [GamePalette.emberDim, GamePalette.forgeRaised]
+                      : [GamePalette.emberBright, GamePalette.emberDim],
+                )
+              : null,
+          color: affordable ? null : GamePalette.forgeRaised,
+        ),
+        child: TextButton(
+          onPressed: affordable ? () => _open(context, ref) : null,
+          style: TextButton.styleFrom(
+            foregroundColor: GamePalette.bone,
+            disabledForegroundColor: GamePalette.ash,
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'OPEN x$count',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: currencyColour(costResource),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    price.format(),
+                    style: counterStyle(context, fontSize: 11),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _open(BuildContext context, WidgetRef ref) {
+    final batch = ref
+        .read(gameControllerProvider.notifier)
+        .openSkillPacks(count: count);
+    if (batch == null || !batch.opened) return;
+
+    PullResults.show(context, draws: batch.results, config: config);
   }
 }
 

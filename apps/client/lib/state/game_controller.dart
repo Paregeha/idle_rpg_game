@@ -340,18 +340,22 @@ class GameController extends Notifier<PlayerState?> {
     unawaited(saveNow());
   }
 
-  /// Opens one skill pack.
-  SkillPackResult? openSkillPack() {
+  /// Opens [count] skill packs.
+  ///
+  /// Stops at the first refusal rather than opening what it can afford: a
+  /// ten-pull that quietly became a four-pull is the kind of thing a player
+  /// counts and does not forgive.
+  SkillPackBatch? openSkillPacks({int count = 1}) {
     final current = state;
     final config = _config;
     if (current == null || config == null) return null;
 
-    final result = core.openSkillPack(current, config);
-    if (result.opened) {
-      state = result.state;
+    final batch = core.openSkillPacks(current, config, count: count);
+    if (batch.opened) {
+      state = batch.state;
       unawaited(saveNow());
     }
-    return result;
+    return batch;
   }
 
   /// Records the outcome of a fight and moves the player on.

@@ -254,6 +254,48 @@ void main() {
       expect(drawnA, drawnB);
     });
 
+    test('ten in a row give ten copies and charge for ten', () {
+      final result = openSkillPacks(state(gems: 100), config(), count: 10);
+
+      expect(result.results, hasLength(10));
+      expect(result.state.resources['gems'], BigNum.zero);
+      expect(result.refusal, isNull);
+    });
+
+    test('a run that cannot be paid for stops rather than shrinking', () {
+      // A ten-pull that silently became a four-pull is the kind of thing a
+      // player counts, notices, and does not forgive.
+      final result = openSkillPacks(state(gems: 45), config(), count: 10);
+
+      expect(result.results, hasLength(4));
+      expect(result.refusal, SkillPackRefusal.cannotAfford);
+      expect(result.state.resources['gems'], BigNum.fromDouble(5));
+    });
+
+    test('a run draws the same as the same number of single opens', () {
+      // Otherwise the server, replaying one at a time, would disagree with a
+      // client that pulled ten.
+      var oneByOne = state();
+      final singles = <String>[];
+      for (var i = 0; i < 10; i++) {
+        final result = openSkillPack(oneByOne, config());
+        oneByOne = result.state;
+        singles.add(result.skillId!);
+      }
+
+      final batch = openSkillPacks(state(), config(), count: 10);
+
+      expect(batch.results.map((r) => r.skillId), singles);
+      expect(batch.state, oneByOne);
+    });
+
+    test('a count below one is a programming error, not a no-op', () {
+      expect(
+        () => openSkillPacks(state(), config(), count: 0),
+        throwsArgumentError,
+      );
+    });
+
     test('pity guarantees the rarity once the threshold is reached', () {
       var current = state();
       for (var i = 0; i < 2; i++) {
