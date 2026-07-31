@@ -45,7 +45,10 @@ abstract class MonsterConfig with _$MonsterConfig {
     /// Experience is multiplied by this per level.
     @Default(1.4) double expGrowth,
 
-    /// Probability in `0..1` that a kill drops an item.
+    /// Chance a kill pays a lamp, in `0..1`.
+    ///
+    /// Lamps, not gear: the lamp is where items come from, and a kill that
+    /// handed over an item directly would make the lamp beside the point.
     @Default(0.0) double dropChance,
   }) = _MonsterConfig;
 

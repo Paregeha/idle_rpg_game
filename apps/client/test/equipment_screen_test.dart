@@ -87,18 +87,12 @@ void main() {
       tester,
     ).read(gameControllerProvider.notifier);
 
-    await tapVisible(tester, find.textContaining('LIGHT THE LAMP'));
-
     final before = heroCombatStats(controller.state!, testBalanceConfig).attack;
 
-    await openBag(tester);
-    // The bag is a wall of cells; wearing something goes through its card.
-    await tapVisible(tester, find.text('Blade').first);
-    await tapVisible(tester, find.text('EQUIP'));
-    if (tester.any(find.byType(BackButton))) {
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-    }
+    // The pull itself offers the choice now: the item is shown against what
+    // is worn, and WEAR IT is the whole equip flow.
+    await tapVisible(tester, find.textContaining('LIGHT THE LAMP'));
+    await tapVisible(tester, find.text('WEAR IT'));
 
     expect(controller.state!.equipped, isNotEmpty);
     expect(
@@ -129,6 +123,10 @@ void main() {
     await pumpGame(tester);
 
     await tapVisible(tester, find.textContaining('LIGHT THE LAMP'));
+    // Step past the pull without taking it, then check the empty slot.
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+
     // The drawn item is a weapon, so the trinket square must come up empty.
     await tapVisible(tester, find.text('trinket'));
 

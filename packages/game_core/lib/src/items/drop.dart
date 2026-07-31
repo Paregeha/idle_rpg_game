@@ -1,30 +1,31 @@
 import 'package:game_core/src/balance/balance_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
-import 'package:game_core/src/items/crafting.dart';
-import 'package:game_core/src/items/lamp.dart';
-import 'package:game_core/src/items/owned_item.dart';
+import 'package:game_core/src/math/big_num.dart';
 import 'package:game_core/src/state/player_state.dart';
 import 'package:meta/meta.dart';
 
-/// What a kill produced.
+/// What a kill paid out.
 @immutable
 class DropResult {
-  const DropResult({required this.state, this.item});
+  const DropResult({required this.state, this.lamps = BigNum.zero});
 
   final PlayerState state;
 
-  /// The item that dropped, or null if nothing did.
-  final OwnedItem? item;
+  /// Lamps the kill dropped. Zero when the roll missed.
+  final BigNum lamps;
 
-  bool get dropped => item != null;
+  bool get dropped => lamps > BigNum.zero;
 }
 
 /// Rolls a monster's drop after a kill.
 ///
-/// Shares the item-minting path with the lamp, so an item found in a fight and
-/// an item pulled from the lamp are the same kind of thing, with ids from the
-/// same counter. Two ways to create items would be two places for their ids to
-/// collide.
+/// Kills drop **lamps**, not gear. The lamp is where items come from, so a
+/// kill that handed over an item directly would make the lamp — and the
+/// currency it costs — beside the point.
+///
+/// This is also the only thing that pays lamps at all. Without it the lamp had
+/// no source beyond the handful granted at the start, so a player who spent
+/// them could never get another item as long as they played.
 ///
 /// Uses the RNG carried in the state, so the server reaches the same verdict
 /// from the same save (`T-032`) — a client-rolled drop would be trivial to
@@ -34,12 +35,7 @@ DropResult rollDrop(
   MonsterConfig monster,
   BalanceConfig config,
 ) {
-  final droppable = config.items.entries
-      .where((entry) => entry.value.sources.contains(lampSource))
-      .toList();
-  if (monster.dropChance <= 0 || droppable.isEmpty) {
-    return DropResult(state: state);
-  }
+  if (monster.dropChance <= 0) return DropResult(state: state);
 
   final rng = state.random();
   if (rng.nextDouble() >= monster.dropChance) {
@@ -48,8 +44,14 @@ DropResult rollDrop(
     return DropResult(state: state.copyWith(rngState: rng.state));
   }
 
-  final drawn = droppable[rng.nextInt(droppable.length)];
-  final minted = mintItem(state.copyWith(rngState: rng.state), drawn.key);
+  final resource = config.lamp.costResource;
+  final held = state.resources[resource] ?? BigNum.zero;
 
-  return DropResult(state: minted.state, item: minted.item);
+  return DropResult(
+    state: state.copyWith(
+      resources: {...state.resources, resource: held + BigNum.one},
+      rngState: rng.state,
+    ),
+    lamps: BigNum.one,
+  );
 }

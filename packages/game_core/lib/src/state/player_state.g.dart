@@ -46,6 +46,7 @@ _PlayerState _$PlayerStateFromJson(Map<String, dynamic> json) => _PlayerState(
       ) ??
       const <String, int>{},
   skillPity: (json['skillPity'] as num?)?.toInt() ?? 0,
+  sellReplaced: json['sellReplaced'] as bool? ?? false,
   autoCast: json['autoCast'] as bool? ?? true,
   heroLevel: (json['heroLevel'] as num?)?.toInt() ?? 0,
   heroExperience: json['heroExperience'] == null
@@ -93,6 +94,7 @@ Map<String, dynamic> _$PlayerStateToJson(_PlayerState instance) =>
       'skills': instance.skills,
       'skillCopies': instance.skillCopies,
       'skillPity': instance.skillPity,
+      'sellReplaced': instance.sellReplaced,
       'autoCast': instance.autoCast,
       'heroLevel': instance.heroLevel,
       'heroExperience': const BigNumConverter().toJson(instance.heroExperience),

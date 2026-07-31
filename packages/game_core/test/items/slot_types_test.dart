@@ -125,7 +125,9 @@ void main() {
       );
     });
 
-    test('drops respect sources too', () {
+    test('a kill pays lamps rather than handing over gear', () {
+      // The lamp is where items come from. A kill that dropped an item
+      // directly would make the lamp, and the currency it costs, pointless.
       const monster = MonsterConfig(
         baseHp: BigNum.one,
         hpGrowth: 1.5,
@@ -134,15 +136,15 @@ void main() {
         dropChance: 1,
       );
 
-      var current = state();
-      for (var i = 0; i < 20; i++) {
-        final result = rollDrop(current, monster, config());
-        expect(
-          config().items[result.item!.configId]!.sources,
-          contains('lamp'),
-        );
-        current = result.state;
-      }
+      final before = state();
+      final result = rollDrop(before, monster, config());
+
+      expect(result.dropped, isTrue);
+      expect(result.state.inventory.length, before.inventory.length);
+      expect(
+        result.state.resources[config().lamp.costResource]! > BigNum.zero,
+        isTrue,
+      );
     });
   });
 

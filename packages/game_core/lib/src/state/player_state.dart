@@ -73,6 +73,12 @@ abstract class PlayerState with _$PlayerState {
     /// Skill packs opened since the last guaranteed pull.
     @Default(0) int skillPity,
 
+    /// Whether swapping a new item in also breaks down the one it replaced.
+    ///
+    /// A preference, not a rule that runs on its own: it only ever applies to
+    /// a swap the player just pressed.
+    @Default(false) bool sellReplaced,
+
     /// Whether skills fire by themselves.
     ///
     /// On by default: an idle game whose skills need a tap is not idle. Off is

@@ -331,6 +331,29 @@ class GameController extends Notifier<PlayerState?> {
     return result;
   }
 
+  /// Turns "sell what I replaced" on or off.
+  void toggleSellReplaced() {
+    final current = state;
+    if (current == null) return;
+
+    state = current.copyWith(sellReplaced: !current.sellReplaced);
+    unawaited(saveNow());
+  }
+
+  /// Swaps [itemId] into [slotId], breaking down what came off if the player
+  /// has asked for that.
+  ///
+  /// One call rather than equip-then-salvage from the screen: the two have to
+  /// happen together or the old item is left loose in the bag having been
+  /// promised as sold.
+  String? equipReplacing(String itemId, {required String slotId}) {
+    final replaced = equip(itemId, intoSlot: slotId);
+    if (replaced == null) return null;
+
+    if (state?.sellReplaced ?? false) salvage(replaced);
+    return replaced;
+  }
+
   /// Turns auto-casting on or off.
   void toggleAutoCast() {
     final current = state;
@@ -395,9 +418,9 @@ class GameController extends Notifier<PlayerState?> {
     // recording. Once per monster in the wave, because that is what "a monster
     // drops" means — the group size is already a balance lever.
     //
-    // Item first, then skill, in a fixed order: the server replays these draws
-    // from the same save, and swapping them would produce a different fight's
-    // worth of loot from the same seed.
+    // Lamps first, then skills, in a fixed order: the server replays these
+    // draws from the same save, and swapping them would produce a different
+    // fight's worth of loot from the same seed.
     if (encounter != null) {
       final monster = config.monsters[encounter.monsterId];
       for (var i = 0; i < encounter.monsters.length; i++) {

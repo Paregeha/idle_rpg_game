@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
+import 'package:idle_rpg/features/home/lamp_pull.dart';
 import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/state/game_controller.dart';
@@ -34,7 +35,7 @@ class LampPanel extends ConsumerWidget {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: affordable ? () => _open(ref) : null,
+              onTap: affordable ? () => _open(context, ref) : null,
               child: Container(
                 height: 60,
                 margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -114,16 +115,22 @@ class LampPanel extends ConsumerWidget {
     );
   }
 
-  // Neither action reports itself in a message. A bar that slides up from the
-  // bottom lands on the two controls the player is holding, and the lamp is
-  // meant to be pressed in a run — the result is on the screen already: the
-  // bag counter moves, and the gear grid fills in.
+  // Equipping the best of what is already owned reports nothing: the result
+  // is on screen already, and a bar sliding up from the bottom would land on
+  // the two controls the player is holding.
   void _equipBest(WidgetRef ref) {
     ref.read(gameControllerProvider.notifier).equipBest();
   }
 
-  void _open(WidgetRef ref) {
-    ref.read(gameControllerProvider.notifier).openTheLamp();
+  /// A pull does get a screen. The decision after one is always "is this
+  /// better than what I have", and answering it by memory is what makes a
+  /// player stop opening the bag at all.
+  void _open(BuildContext context, WidgetRef ref) {
+    final result = ref.read(gameControllerProvider.notifier).openTheLamp();
+    final drawn = result?.item;
+    if (drawn == null) return;
+
+    LampPull.show(context, itemId: drawn.id);
   }
 }
 
