@@ -18,7 +18,20 @@ final testBalanceConfig = BalanceConfig(
       costGrowth: 1.07,
     ),
   },
-  start: const StartConfig(generators: {'miner': 1}),
+  slots: const ['weapon', 'trinket'],
+  rarities: const {'common': RarityConfig()},
+  items: {
+    'blade': ItemConfig(
+      slot: 'weapon',
+      rarity: 'common',
+      stats: ItemStats(flatAttack: BigNum.fromDouble(25)),
+    ),
+  },
+  lamp: const LampConfig(weights: {'common': 1}),
+  start: StartConfig(
+    generators: const {'miner': 1},
+    resources: {'gems': BigNum.fromDouble(5)},
+  ),
 );
 
 /// The container behind the running app, for reading controllers in a test.
