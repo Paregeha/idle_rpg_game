@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/shell.dart';
+import 'package:idle_rpg/features/hero/hero_page.dart';
 import 'package:idle_rpg/features/hero/materials_screen.dart';
 import 'package:idle_rpg/features/forge/forge_screen.dart';
 import 'package:idle_rpg/features/home/home_screen.dart';
@@ -14,9 +15,10 @@ abstract final class Routes {
   static const shop = '/shop';
   static const upgrades = '/upgrades';
 
-  /// Materials. Outside the shell, so it covers the tabs and comes back with
-  /// a back button — it is somewhere the player goes, not a fourth tab.
+  /// Materials, and the hero. Outside the shell, so they cover the tabs and
+  /// come back with a back button — somewhere the player goes, not more tabs.
   static const materials = '/materials';
+  static const hero = '/hero';
 
   /// Home first: the fight, the gear and the lamp are all on it, so most
   /// sessions never leave this tab.
@@ -54,6 +56,7 @@ GoRouter buildRouter() {
         path: Routes.materials,
         builder: (context, state) => const MaterialsScreen(),
       ),
+      GoRoute(path: Routes.hero, builder: (context, state) => const HeroPage()),
     ],
   );
 }

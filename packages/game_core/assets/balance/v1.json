@@ -441,6 +441,7 @@
       "slot": "necklace",
       "rarity": "legendary",
       "sources": [
+        "lamp",
         "shop",
         "event"
       ],
@@ -455,6 +456,7 @@
       "slot": "ring",
       "rarity": "epic",
       "sources": [
+        "lamp",
         "shop"
       ],
       "stats": {
@@ -467,6 +469,7 @@
       "slot": "ring",
       "rarity": "epic",
       "sources": [
+        "lamp",
         "shop"
       ],
       "stats": {
