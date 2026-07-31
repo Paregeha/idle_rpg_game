@@ -121,3 +121,24 @@ The cost is that the default local test command does not prove the server works;
 a developer without Docker running will get a green `melos run test` while the
 server is untested. CI is the backstop, and the split keeps the inner loop fast
 enough that the tests actually get run.
+
+## ADR-008 · Home is one screen, not a tab of screens
+
+The player lands on a single screen carrying the whole loop: the fight, the
+skill row, every equipment slot and the lamp. Battle is not a tab of its own.
+
+In an idle game the fight is the thing that is always happening. A fight the
+player has to navigate to see is a fight they stop believing is running, and
+the belief is most of what keeps them opening the app.
+
+The cost is a crowded screen and a vertical budget that runs out on a 360×640
+phone. That is paid for deliberately: the lamp label scales down rather than
+clipping, the gear grid is fixed-height, and a widget test pumps home at the
+smallest size we support so an overflow fails the build rather than reaching a
+device.
+
+Currencies float over the scene rather than sitting in their own strip, and the
+scene is staged below them via an explicit `topInset` — the hero must not trade
+blows behind the gold count. Each currency appears in exactly one place: the
+lamp count lives on the lamp button, beside the tap that spends it, and a
+shipped-config test refuses to let it also appear in the top row.
