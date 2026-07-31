@@ -463,7 +463,6 @@ class _UpgradeBar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 3,
             child: _Button(
               filled: refusal == null,
               onPressed: refusal == null ? () => onUpgrade(wornId!) : null,
@@ -478,11 +477,8 @@ class _UpgradeBar extends StatelessWidget {
               resource: resource,
             ),
           ),
-          _Gain(
-            fraction: wornId == null ? 0 : upgradeGain(state, wornId, config),
-          ),
+          const _Chance(),
           Expanded(
-            flex: 2,
             child: _Button(
               filled: false,
               onPressed: onUpgradeAll,
@@ -580,37 +576,36 @@ class _Button extends StatelessWidget {
   }
 }
 
-/// What the picked upgrade is worth, as a share of the whole hero.
+/// How likely the upgrade is to take.
 ///
-/// Between the two buttons because it belongs to both: it is the reason to
-/// press the first, and the thing the second is doing over and over. Shown
-/// even when the price cannot be met — that is exactly when a player wants to
-/// know what they are saving towards.
-class _Gain extends StatelessWidget {
-  const _Gain({required this.fraction});
-
-  final double fraction;
+/// Between the two buttons because it belongs to both: it is the risk on the
+/// first and the risk the second takes over and over.
+///
+/// A hundred percent, and truthfully so — an upgrade cannot fail today. When
+/// it can, the number comes from the config and the roll goes in `upgradeItem`
+/// against the seeded RNG, so the server can check the outcome. Showing a
+/// config value the rules do not honour would be worse than showing nothing.
+class _Chance extends StatelessWidget {
+  const _Chance();
 
   @override
   Widget build(BuildContext context) {
-    final has = fraction > 0;
-
     return SizedBox(
-      width: 66,
+      width: 62,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            has ? '+${(fraction * 100).toStringAsFixed(1)}%' : '—',
+            '100%',
             style: counterStyle(
               context,
               fontSize: 14,
-              color: has ? GamePalette.patina : GamePalette.ash,
+              color: GamePalette.patina,
             ),
           ),
           const SizedBox(height: 1),
           Text(
-            'POWER',
+            'CHANCE',
             style: Theme.of(
               context,
             ).textTheme.labelSmall?.copyWith(fontSize: 8),

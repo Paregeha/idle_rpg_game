@@ -88,23 +88,16 @@ void main() {
     await openHero(tester);
 
     expect(find.text('PICK A SLOT'), findsOneWidget);
-    expect(find.text('—'), findsOneWidget, reason: 'and promises nothing');
   });
 
-  testWidgets('the gain between the buttons is what the upgrade is worth', (
+  testWidgets('the chance of the upgrade taking sits between the buttons', (
     tester,
   ) async {
-    // Shown even when the price cannot be met: that is exactly when a player
-    // wants to know what they are saving towards.
-    final controller = await openHero(tester);
+    // Truthfully a hundred percent: an upgrade cannot fail today.
+    await openHero(tester);
 
-    await tester.tap(find.text('Blade'));
-    await tester.pumpAndSettle();
-
-    final gain = upgradeGain(controller.state!, 'i0', testBalanceConfig);
-    expect(gain, greaterThan(0));
-    expect(find.text('+${(gain * 100).toStringAsFixed(1)}%'), findsOneWidget);
-    expect(find.text('NOT ENOUGH'), findsOneWidget);
+    expect(find.text('100%'), findsOneWidget);
+    expect(find.text('CHANCE'), findsOneWidget);
   });
 
   testWidgets('UPGRADE ALL lifts the gear and leaves the outfit alone', (

@@ -260,33 +260,3 @@ BigNum heroPower(PlayerState state, BalanceConfig config) {
   final stats = heroCombatStats(state, config);
   return stats.attack + stats.maxHp * BigNum.fromDouble(0.2);
 }
-
-/// How much stronger the hero would be with [itemId] one level higher.
-///
-/// Returned as a fraction: `0.032` is three point two percent. Answered even
-/// when the player cannot pay yet — that is exactly when they want to know
-/// what they are saving towards.
-///
-/// Computed by raising the level and comparing, rather than by a second
-/// formula: a promised gain that disagrees with the result is worse than none.
-double upgradeGain(PlayerState state, String itemId, BalanceConfig config) {
-  final owned = state.inventory[itemId];
-  final item = owned == null ? null : config.items[owned.configId];
-  if (owned == null || item == null) return 0;
-  if (owned.level >= item.maxLevel) return 0;
-
-  final before = heroPower(state, config);
-  if (before.isZero) return 0;
-
-  final raised = heroPower(
-    state.copyWith(
-      inventory: {
-        ...state.inventory,
-        itemId: owned.copyWith(level: owned.level + 1),
-      },
-    ),
-    config,
-  );
-
-  return ((raised - before) / before).toDouble();
-}
