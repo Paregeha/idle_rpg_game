@@ -478,7 +478,9 @@ class _UpgradeBar extends StatelessWidget {
               resource: resource,
             ),
           ),
-          const SizedBox(width: 8),
+          _Gain(
+            fraction: wornId == null ? 0 : upgradeGain(state, wornId, config),
+          ),
           Expanded(
             flex: 2,
             child: _Button(
@@ -573,6 +575,47 @@ class _Button extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// What the picked upgrade is worth, as a share of the whole hero.
+///
+/// Between the two buttons because it belongs to both: it is the reason to
+/// press the first, and the thing the second is doing over and over. Shown
+/// even when the price cannot be met — that is exactly when a player wants to
+/// know what they are saving towards.
+class _Gain extends StatelessWidget {
+  const _Gain({required this.fraction});
+
+  final double fraction;
+
+  @override
+  Widget build(BuildContext context) {
+    final has = fraction > 0;
+
+    return SizedBox(
+      width: 66,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            has ? '+${(fraction * 100).toStringAsFixed(1)}%' : '—',
+            style: counterStyle(
+              context,
+              fontSize: 14,
+              color: has ? GamePalette.patina : GamePalette.ash,
+            ),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            'POWER',
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(fontSize: 8),
+          ),
+        ],
       ),
     );
   }

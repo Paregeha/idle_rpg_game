@@ -32,13 +32,11 @@ class HomeScreen extends ConsumerWidget {
     final state = ref.watch(gameControllerProvider);
     if (config == null || state == null) return const SizedBox.shrink();
 
-    final stats = heroCombatStats(state, config);
-
     return Column(
       children: [
         PlayerBar(
           level: state.heroLevel,
-          power: _power(stats),
+          power: heroPower(state, config),
           progress: levelProgress(state, config),
         ),
         // The scene is the backdrop; currencies and the stage float over it
@@ -74,14 +72,6 @@ class HomeScreen extends ConsumerWidget {
       ],
     );
   }
-
-  /// One number standing in for the whole build.
-  ///
-  /// Attack plus a fraction of health, so a defensive item still moves it. It
-  /// is a comparison handle, not a formula the game uses for anything — the
-  /// fight reads the real stats.
-  BigNum _power(CombatStats stats) =>
-      stats.attack + stats.maxHp * BigNum.fromDouble(0.2);
 }
 
 /// Where the player is, and how far through the stage.
