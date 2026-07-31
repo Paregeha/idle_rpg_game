@@ -109,6 +109,50 @@ void main() {
     expect(find.byType(ItemCard), findsOneWidget);
   });
 
+  testWidgets('the bag is split by what kind of thing it holds', (
+    tester,
+  ) async {
+    await stocked(tester);
+    await openBag(tester);
+
+    for (final tab in BagTab.values) {
+      expect(find.text(tab.label), findsOneWidget, reason: tab.label);
+    }
+  });
+
+  testWidgets('materials say what will fill them rather than nothing', (
+    tester,
+  ) async {
+    // The tab exists before the thing it holds does, so the shape of the bag
+    // does not change under the player the day crafting lands.
+    await stocked(tester);
+    await openBag(tester);
+
+    await tester.tap(find.text('MATERIALS'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Crafting materials'), findsOneWidget);
+    expect(find.text('Blade'), findsNothing);
+    expect(
+      find.text('EQUIP BEST'),
+      findsNothing,
+      reason: 'nothing on this tab can be worn',
+    );
+  });
+
+  testWidgets('switching back brings the gear and its filter', (tester) async {
+    await stocked(tester);
+    await openBag(tester);
+
+    await tester.tap(find.text('MATERIALS'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('GEAR'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Blade'), findsNWidgets(2));
+    expect(find.widgetWithText(ChoiceChip, 'ALL'), findsOneWidget);
+  });
+
   testWidgets('an empty bag says what to do about it', (tester) async {
     await pumpGame(tester);
     await openBag(tester);
