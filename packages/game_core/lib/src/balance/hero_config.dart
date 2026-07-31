@@ -25,6 +25,18 @@ abstract class HeroConfig with _$HeroConfig {
     @Default(2.0) double critFactor,
     @Default(0.0) double mitigation,
     @Default(0.05) double dodgeChance,
+
+    /// Experience needed to reach level 1.
+    @BigNumConverter() @Default(BigNum.one) BigNum expBase,
+
+    /// The requirement is multiplied by this per level already reached.
+    ///
+    /// Above 1 so levels slow down; the curve is what stops a player from
+    /// out-levelling the content in an afternoon.
+    @Default(1.35) double expGrowth,
+
+    /// Attack and health are multiplied by this per hero level.
+    @Default(1.08) double statPerLevel,
   }) = _HeroConfig;
 
   const HeroConfig._();
@@ -32,14 +44,26 @@ abstract class HeroConfig with _$HeroConfig {
   factory HeroConfig.fromJson(Map<String, dynamic> json) =>
       _$HeroConfigFromJson(json);
 
+  /// Experience needed to go from [level] to `level + 1`.
+  ///
+  /// Formula: `expBase * expGrowth^level`.
+  BigNum expForLevel(int level) {
+    if (level < 0) {
+      throw ArgumentError.value(level, 'level', 'must not be negative');
+    }
+    return expBase * BigNum.fromDouble(expGrowth).pow(level);
+  }
+
   /// Combat stats for a hero backed by [unitsOwned] generator units.
   ///
   /// Formula: `baseAttack * perUnitMultiplier^unitsOwned`, and the same for
   /// health. Exponential in units so that building keeps mattering, matched
   /// against monster health that also grows exponentially — the pacing is the
   /// gap between the two rates.
-  CombatStats statsFor({required int unitsOwned}) {
-    final scale = BigNum.fromDouble(perUnitMultiplier).pow(unitsOwned);
+  CombatStats statsFor({required int unitsOwned, int level = 0}) {
+    final scale =
+        BigNum.fromDouble(perUnitMultiplier).pow(unitsOwned) *
+        BigNum.fromDouble(statPerLevel).pow(level);
 
     return CombatStats(
       attack: baseAttack * scale,

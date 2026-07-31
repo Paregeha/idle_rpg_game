@@ -21,6 +21,10 @@ _MonsterConfig _$MonsterConfigFromJson(Map<String, dynamic> json) =>
       attacksPerSecond: (json['attacksPerSecond'] as num?)?.toDouble() ?? 0.8,
       mitigation: (json['mitigation'] as num?)?.toDouble() ?? 0.0,
       dodgeChance: (json['dodgeChance'] as num?)?.toDouble() ?? 0.0,
+      expBase: json['expBase'] == null
+          ? BigNum.one
+          : const BigNumConverter().fromJson(json['expBase'] as String),
+      expGrowth: (json['expGrowth'] as num?)?.toDouble() ?? 1.4,
       dropChance: (json['dropChance'] as num?)?.toDouble() ?? 0.0,
     );
 
@@ -35,5 +39,7 @@ Map<String, dynamic> _$MonsterConfigToJson(_MonsterConfig instance) =>
       'attacksPerSecond': instance.attacksPerSecond,
       'mitigation': instance.mitigation,
       'dodgeChance': instance.dodgeChance,
+      'expBase': const BigNumConverter().toJson(instance.expBase),
+      'expGrowth': instance.expGrowth,
       'dropChance': instance.dropChance,
     };

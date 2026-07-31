@@ -154,9 +154,9 @@ class BattleGame extends FlameGame {
 
     final index = event.targetIndex.clamp(0, _monsterHp.length - 1);
     _monsterHp[index] -= event.damage;
-    _monsterAt(index).setHealthFraction(
-      _fraction(_monsterHp[index], monsterMaxHp),
-    );
+    _monsterAt(
+      index,
+    ).setHealthFraction(_fraction(_monsterHp[index], monsterMaxHp));
   }
 
   /// Health left as a fraction, computed in [BigNum] and only then collapsed to

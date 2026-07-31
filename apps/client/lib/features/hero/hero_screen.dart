@@ -39,12 +39,15 @@ class _HeroScreenState extends ConsumerState<HeroScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
+        _StatLine(label: 'Level', value: '${state.heroLevel}'),
         _StatLine(label: 'Attack', value: stats.attack.format()),
         _StatLine(label: 'Health', value: stats.maxHp.format()),
         _StatLine(
           label: 'Critical',
           value: '${(stats.critChance * 100).round()}%',
         ),
+        const SizedBox(height: 8),
+        _ExperienceBar(progress: levelProgress(state, config)),
         const SizedBox(height: 18),
         _SlotRow(slots: slotsInOrder, config: config, state: state),
         const SizedBox(height: 16),
@@ -110,6 +113,27 @@ class _HeroScreenState extends ConsumerState<HeroScreen> {
               : 'Equipped $changed item$plural',
         ),
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+}
+
+/// How far to the next level. A bare number tells the player nothing about how
+/// close they are; a bar does it without them reading anything.
+class _ExperienceBar extends StatelessWidget {
+  const _ExperienceBar({required this.progress});
+
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: LinearProgressIndicator(
+        value: progress,
+        minHeight: 6,
+        backgroundColor: GamePalette.forgeRaised,
+        valueColor: const AlwaysStoppedAnimation(GamePalette.patina),
       ),
     );
   }
