@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/shell.dart';
 import 'package:idle_rpg/features/hero/hero_screen.dart';
+import 'package:idle_rpg/features/hero/inventory_screen.dart';
 import 'package:idle_rpg/features/home/home_screen.dart';
 import 'package:idle_rpg/features/upgrades/upgrades_screen.dart';
 
@@ -13,9 +14,17 @@ abstract final class Routes {
   static const hero = '/hero';
   static const upgrades = '/upgrades';
 
+  /// The bag. Outside the shell, so it covers the tabs and comes back with a
+  /// back button — it is somewhere the player goes, not a fourth tab.
+  static const inventory = '/bag';
+
   /// Home first: the fight, the gear and the lamp are all on it, so most
   /// sessions never leave this tab.
   static const tabs = [home, hero, upgrades];
+
+  /// The bag, opened already filtered to one slot.
+  static String inventoryFor(String? slotId) =>
+      slotId == null ? inventory : '$inventory?slot=$slotId';
 }
 
 GoRouter buildRouter() {
@@ -45,6 +54,11 @@ GoRouter buildRouter() {
                 const NoTransitionPage(child: UpgradesScreen()),
           ),
         ],
+      ),
+      GoRoute(
+        path: Routes.inventory,
+        builder: (context, state) =>
+            InventoryScreen(slotId: state.uri.queryParameters['slot']),
       ),
     ],
   );

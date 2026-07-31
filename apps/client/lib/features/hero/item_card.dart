@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
-import 'package:idle_rpg/features/hero/inventory_sheet.dart';
+import 'package:go_router/go_router.dart';
+import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_tile.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
@@ -200,21 +201,6 @@ class _Frame extends StatelessWidget {
   final String kind;
   final int level;
 
-  static const _icons = <String, IconData>{
-    'weapon': Icons.hardware,
-    'armour': Icons.shield,
-    'helm': Icons.sports_motorsports,
-    'gloves': Icons.back_hand,
-    'boots': Icons.hiking,
-    'pants': Icons.airline_seat_legroom_normal,
-    'necklace': Icons.diamond,
-    'ring': Icons.circle_outlined,
-    'wings': Icons.flight,
-    'skin': Icons.person,
-    'rune': Icons.auto_awesome,
-    'mount': Icons.pets,
-  };
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -231,13 +217,7 @@ class _Frame extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Center(
-            child: Icon(
-              _icons[kind] ?? Icons.category,
-              size: 34,
-              color: colour,
-            ),
-          ),
+          Center(child: Icon(itemKindIcon(kind), size: 34, color: colour)),
           if (level > 0)
             Positioned(
               right: 4,
@@ -592,7 +572,7 @@ class _Footer extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              InventorySheet.show(context, slot: slot);
+              context.push(Routes.inventoryFor(slot!.id));
             },
             style: TextButton.styleFrom(foregroundColor: GamePalette.patina),
             child: const Text('SWAP'),

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
-import 'package:idle_rpg/features/hero/inventory_sheet.dart';
+import 'package:go_router/go_router.dart';
+import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/item_tile.dart';
 import 'package:idle_rpg/features/home/special_slots.dart';
@@ -112,7 +113,7 @@ class _Cell extends ConsumerWidget {
       // Tapping worn gear and getting a list of everything else is an answer
       // to a question the player did not ask.
       onTap: () => owned == null
-          ? InventorySheet.show(context, slot: slot)
+          ? context.push(Routes.inventoryFor(slot.id))
           : ItemCard.show(context, itemId: owned.id, slot: slot),
       child: Container(
         decoration: BoxDecoration(

@@ -100,6 +100,8 @@ void main() {
     final before = heroCombatStats(controller.state!, testBalanceConfig).attack;
 
     await openBag(tester);
+    // The bag is a wall of cells; wearing something goes through its card.
+    await tapVisible(tester, find.text('Blade').first);
     await tapVisible(tester, find.text('EQUIP'));
     if (tester.any(find.byType(BackButton))) {
       await tester.pageBack();

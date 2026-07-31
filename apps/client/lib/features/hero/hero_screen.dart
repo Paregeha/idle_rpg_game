@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/hero_figure.dart';
-import 'package:idle_rpg/features/hero/inventory_sheet.dart';
+import 'package:go_router/go_router.dart';
+import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/slot_button.dart';
 import 'package:idle_rpg/state/game_controller.dart';
@@ -89,7 +90,7 @@ class _SlotColumn extends StatelessWidget {
                 onTap: () {
                   final wornId = state.equipped[slot.id];
                   if (wornId == null) {
-                    InventorySheet.show(context, slot: slot);
+                    context.push(Routes.inventoryFor(slot.id));
                   } else {
                     ItemCard.show(context, itemId: wornId, slot: slot);
                   }
@@ -181,7 +182,7 @@ class _ActionRow extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         child: OutlinedButton(
-          onPressed: () => InventorySheet.show(context),
+          onPressed: () => context.push(Routes.inventory),
           style: OutlinedButton.styleFrom(
             foregroundColor: GamePalette.bone,
             side: const BorderSide(color: GamePalette.forgeRaised),

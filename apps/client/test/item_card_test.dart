@@ -7,10 +7,7 @@ import 'package:idle_rpg/state/game_controller.dart';
 import 'support/test_app.dart';
 
 /// Gives the player the blade, worn, plus whatever gold is asked for.
-Future<GameController> armed(
-  WidgetTester tester, {
-  double gold = 1e6,
-}) async {
+Future<GameController> armed(WidgetTester tester, {double gold = 1e6}) async {
   await pumpGame(tester);
   final controller = containerOf(tester).read(gameControllerProvider.notifier);
 

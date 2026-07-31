@@ -14,6 +14,27 @@ Color rarityColour(int rank) => switch (rank) {
   _ => GamePalette.ash,
 };
 
+/// A stand-in for the art a slot will eventually have.
+///
+/// Keyed by kind rather than by item, so a config that adds a fifth sword does
+/// not need a new icon. Unknown kinds fall back rather than crash: balance is
+/// data, and data can name a kind this build has never heard of.
+IconData itemKindIcon(String kind) => switch (kind) {
+  'weapon' => Icons.hardware,
+  'armour' => Icons.shield,
+  'helm' => Icons.sports_motorsports,
+  'gloves' => Icons.back_hand,
+  'boots' => Icons.hiking,
+  'pants' => Icons.airline_seat_legroom_normal,
+  'necklace' => Icons.diamond,
+  'ring' => Icons.circle_outlined,
+  'wings' => Icons.flight,
+  'skin' => Icons.person,
+  'rune' => Icons.auto_awesome,
+  'mount' => Icons.pets,
+  _ => Icons.category,
+};
+
 /// "ember_brand" -> "Ember brand".
 String shortName(String configId) {
   final words = configId.replaceAll('_', ' ');
