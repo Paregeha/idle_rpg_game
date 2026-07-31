@@ -36,17 +36,17 @@ void main() {
     expect(find.byType(HeroPage), findsOneWidget);
   });
 
-  testWidgets('the outfit sits along the bottom, without the rune', (
+  testWidgets('wings sit with the gear, skin and mount apart from it', (
     tester,
   ) async {
-    // Wings, skin and mount are worn on the character rather than in their
-    // hands. A rune is not gear and gets its own place.
+    // Wings are worn like the rest of the gear. A skin and a mount are not
+    // equipment — they change how the hero looks and what they ride.
     await openHero(tester);
 
     expect(find.text('WINGS'), findsOneWidget);
     expect(find.text('SKIN'), findsOneWidget);
     expect(find.text('MOUNT'), findsOneWidget);
-    expect(find.text('RUNE'), findsNothing);
+    expect(find.text('RUNE'), findsNothing, reason: 'a rune is not gear');
   });
 
   testWidgets('every slot but the rune is on the page', (tester) async {

@@ -1,3 +1,5 @@
+import 'dart:ui' show PointMode;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
@@ -15,10 +17,10 @@ import 'package:idle_rpg/state/game_providers.dart';
 /// slots frame them — the arrangement a player expects when they go looking
 /// for "my character" rather than "my next tap".
 ///
-/// Wings, skin and mount sit along the bottom: they are worn on the character
-/// rather than in their hands, and they are the three the player is usually
-/// working towards rather than swapping. The rune is deliberately not here —
-/// it is not gear and gets its own place.
+/// Wings join the gear columns — they are worn like the rest of it. The skin
+/// and the mount sit above the stats on their own: neither is equipment, they
+/// change how the hero looks and what they ride. The rune is deliberately not
+/// here at all — it is not gear and gets its own place.
 class HeroPage extends ConsumerWidget {
   const HeroPage({super.key});
 
@@ -34,20 +36,14 @@ class HeroPage extends ConsumerWidget {
 
     // Split by the order the config gives, so adding a slot lands somewhere
     // sensible without a code change.
-    const worn = {'wings', 'skin', 'mount'};
+    const apart = {'skin', 'mount'};
     const elsewhere = {'rune'};
     final gear = slots
-        .where((s) => !worn.contains(s.itemKind))
+        .where((s) => !apart.contains(s.itemKind))
         .where((s) => !elsewhere.contains(s.itemKind))
         .toList();
     final half = (gear.length / 2).ceil();
-    final outfit = slots.where((s) => worn.contains(s.itemKind)).toList()
-      ..sort(
-        (a, b) => worn
-            .toList()
-            .indexOf(a.itemKind)
-            .compareTo(worn.toList().indexOf(b.itemKind)),
-      );
+    final outfit = slots.where((s) => apart.contains(s.itemKind)).toList();
 
     return Scaffold(
       body: SafeArea(
@@ -62,18 +58,7 @@ class HeroPage extends ConsumerWidget {
                     config: config,
                     state: state,
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Column(
-                        children: [
-                          Expanded(child: _Figure(level: state.heroLevel)),
-                          const SizedBox(height: 14),
-                          _Stats(stats: stats),
-                        ],
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _Figure(level: state.heroLevel)),
                   _Column(
                     slots: gear.skip(half).toList(),
                     config: config,
@@ -84,7 +69,7 @@ class HeroPage extends ConsumerWidget {
             ),
             if (outfit.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
+                padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
                 child: Row(
                   children: [
                     for (final slot in outfit)
@@ -101,6 +86,12 @@ class HeroPage extends ConsumerWidget {
                   ],
                 ),
               ),
+            // Full width: the numbers are read across, and a narrow column
+            // squeezed between the gear made every one of them wrap.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              child: _Stats(stats: stats),
+            ),
           ],
         ),
       ),
@@ -282,8 +273,18 @@ class _Stats extends StatelessWidget {
   Widget build(BuildContext context) {
     String percent(double value) => '${(value * 100).toStringAsFixed(1)}%';
 
+    final lines = <(String, String)>[
+      ('ATTACK', stats.attack.format()),
+      ('HEALTH', stats.maxHp.format()),
+      ('SWINGS / SEC', stats.attacksPerSecond.toStringAsFixed(2)),
+      ('CRIT', percent(stats.critChance)),
+      ('CRIT DAMAGE', '\u00d7${stats.critFactor.toStringAsFixed(2)}'),
+      ('DODGE', percent(stats.dodgeChance)),
+      ('ARMOUR', percent(stats.mitigation)),
+    ];
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: GamePalette.forgeSurface,
         borderRadius: BorderRadius.circular(10),
@@ -291,25 +292,18 @@ class _Stats extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _Line(label: 'ATTACK', value: stats.attack.format()),
-          _Line(label: 'HEALTH', value: stats.maxHp.format()),
-          _Line(
-            label: 'SWINGS / SEC',
-            value: stats.attacksPerSecond.toStringAsFixed(2),
-          ),
-          _Line(label: 'CRIT', value: percent(stats.critChance)),
-          _Line(
-            label: 'CRIT DAMAGE',
-            value: '×${stats.critFactor.toStringAsFixed(2)}',
-          ),
-          _Line(label: 'DODGE', value: percent(stats.dodgeChance)),
-          _Line(label: 'ARMOUR', value: percent(stats.mitigation)),
+          for (final line in lines) _Line(label: line.$1, value: line.$2),
         ],
       ),
     );
   }
 }
 
+/// One stat, with a dotted run between the name and the number.
+///
+/// Across a full-width row the eye loses which value belongs to which label;
+/// the dots carry it across. This is why printed tables of contents have had
+/// them for four hundred years.
 class _Line extends StatelessWidget {
   const _Line({required this.label, required this.value});
 
@@ -319,20 +313,48 @@ class _Line extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(fontSize: 9),
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(fontSize: 10),
+          ),
+          const Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: CustomPaint(size: Size.fromHeight(2), painter: _Leader()),
             ),
           ),
-          Text(value, style: counterStyle(context, fontSize: 13)),
+          Text(value, style: counterStyle(context, fontSize: 14)),
         ],
       ),
     );
   }
+}
+
+/// Evenly spaced dots along the middle of whatever room is left.
+class _Leader extends CustomPainter {
+  const _Leader();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = GamePalette.forgeRaised
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    const step = 6.0;
+    // Right to left, so the run always ends flush against the number rather
+    // than leaving a ragged gap that reads as a mistake.
+    for (var x = size.width; x >= 0; x -= step) {
+      canvas.drawPoints(PointMode.points, [Offset(x, size.height / 2)], paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _Leader oldDelegate) => false;
 }
