@@ -27,13 +27,11 @@ BalanceConfig config() => BalanceConfig(
 PlayerState state({
   Map<String, OwnedItem> inventory = const {},
   Map<String, String> equipped = const {},
-  int autoSalvageRank = -1,
 }) => PlayerState(
   lastTickAtMs: 0,
   rngSeed: 1,
   inventory: inventory,
   equipped: equipped,
-  autoSalvageRank: autoSalvageRank,
 );
 
 const stick = OwnedItem(id: 'i0', configId: 'stick');
@@ -184,37 +182,6 @@ void main() {
 
       expect(one.state.inventory.keys, other.state.inventory.keys);
       expect(one.gained, other.gained);
-    });
-  });
-
-  group('the standing rule', () {
-    test('does nothing until the player sets one', () {
-      final before = state(inventory: const {'i0': stick});
-
-      expect(applyAutoSalvage(before, config()).state, before);
-    });
-
-    test('runs at the rank the player chose', () {
-      final result = applyAutoSalvage(
-        state(inventory: const {'i0': stick, 'i1': blade}, autoSalvageRank: 0),
-        config(),
-      );
-
-      expect(result.broken, 1);
-      expect(result.state.inventory.keys, ['i1']);
-    });
-
-    test('a rank that covers everything still spares worn gear', () {
-      final result = applyAutoSalvage(
-        state(
-          inventory: const {'i0': stick, 'i1': blade},
-          equipped: const {'weapon': 'i1'},
-          autoSalvageRank: 9,
-        ),
-        config(),
-      );
-
-      expect(result.state.inventory.keys, ['i1']);
     });
   });
 

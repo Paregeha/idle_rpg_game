@@ -331,20 +331,6 @@ class GameController extends Notifier<PlayerState?> {
     return result;
   }
 
-  /// Sets the standing rule for what dropped gear is broken down on sight.
-  ///
-  /// Applies it immediately as well: a player who turns it on expects the pile
-  /// they were looking at to go, not only the next thing that drops.
-  void setAutoSalvageRank(int rank) {
-    final current = state;
-    final config = _config;
-    if (current == null || config == null) return;
-
-    final next = current.copyWith(autoSalvageRank: rank);
-    state = core.applyAutoSalvage(next, config).state;
-    unawaited(saveNow());
-  }
-
   /// Turns auto-casting on or off.
   void toggleAutoCast() {
     final current = state;
@@ -421,10 +407,6 @@ class GameController extends Notifier<PlayerState?> {
         next = rollSkillDrop(next, config, fromBoss: encounter.isBoss).state;
       }
     }
-
-    // The player's standing salvage rule runs last, so a drop they have told
-    // the game they do not want never has to be looked at.
-    next = applyAutoSalvage(next, config).state;
 
     state = next;
     unawaited(saveNow());

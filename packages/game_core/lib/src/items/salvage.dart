@@ -135,14 +135,6 @@ SalvageResult salvageJunk(
   );
 }
 
-/// Runs the player's standing salvage rule, if they set one.
-///
-/// Called after loot is handed out, so a drop the player has told the game they
-/// do not want never has to be looked at. Off by default: a game that destroys
-/// gear nobody asked it to destroy is a game the player stops trusting.
-SalvageResult applyAutoSalvage(PlayerState state, BalanceConfig config) =>
-    salvageJunk(state, config, maxRank: state.autoSalvageRank);
-
 Map<String, BigNum> _credit(
   Map<String, BigNum> resources,
   Map<String, BigNum> payout,

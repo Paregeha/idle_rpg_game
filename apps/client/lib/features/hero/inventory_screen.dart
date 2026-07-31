@@ -44,6 +44,14 @@ class InventoryScreen extends ConsumerStatefulWidget {
 
 class _InventoryScreenState extends ConsumerState<InventoryScreen> {
   BagTab _tab = BagTab.gear;
+
+  /// Which rarity the salvage button would take, chosen here and now.
+  ///
+  /// Deliberately not in the save. Nothing is broken down unless the player
+  /// presses the button — a game that destroys gear on its own is a game they
+  /// stop trusting, and there is no undo for a broken item.
+  int _salvageRank = -1;
+
   String? _kind;
   bool _startedFiltered = false;
 
@@ -121,6 +129,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 kinds: kinds,
                 kind: _kind,
                 onKind: (kind) => setState(() => _kind = kind),
+                salvageRank: _salvageRank,
+                onSalvageRank: (rank) => setState(() => _salvageRank = rank),
                 config: config,
                 state: state,
                 slot: slot,
@@ -131,14 +141,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
           if (_tab == BagTab.gear)
             _BottomBar(
               enabled: state.inventory.isNotEmpty,
-              junkLabel: _junkLabel(config, state.autoSalvageRank),
+              junkLabel: _junkLabel(config, _salvageRank),
               onEquipBest: () =>
                   ref.read(gameControllerProvider.notifier).equipBest(),
-              onSalvageJunk: state.autoSalvageRank < 0
+              onSalvageJunk: _salvageRank < 0
                   ? null
                   : () => ref
                         .read(gameControllerProvider.notifier)
-                        .salvageJunkUpTo(state.autoSalvageRank),
+                        .salvageJunkUpTo(_salvageRank),
             ),
         ],
       ),
@@ -156,7 +166,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
   /// Names the rank the salvage button will take, so it cannot be pressed
   /// blind. There is no undo for gear that has been broken down.
   String _junkLabel(BalanceConfig config, int rank) {
-    if (rank < 0) return 'SALVAGE';
+    if (rank < 0) return 'PICK A RARITY';
 
     final named = config.rarities.entries
         .where((entry) => entry.value.rank == rank)
@@ -279,6 +289,8 @@ class _GearTab extends StatelessWidget {
     required this.kinds,
     required this.kind,
     required this.onKind,
+    required this.salvageRank,
+    required this.onSalvageRank,
     required this.config,
     required this.state,
     required this.slot,
@@ -288,6 +300,8 @@ class _GearTab extends StatelessWidget {
   final List<String> kinds;
   final String? kind;
   final ValueChanged<String?> onKind;
+  final int salvageRank;
+  final ValueChanged<int> onSalvageRank;
   final BalanceConfig config;
   final PlayerState state;
   final SlotConfig? slot;
@@ -297,7 +311,11 @@ class _GearTab extends StatelessWidget {
     return Column(
       children: [
         _Filters(kinds: kinds, selected: kind, onSelected: onKind),
-        _AutoSalvageRule(config: config, chosen: state.autoSalvageRank),
+        _SalvagePicker(
+          config: config,
+          chosen: salvageRank,
+          onChosen: onSalvageRank,
+        ),
         Expanded(
           child: items.isEmpty
               ? _Empty(bagIsEmpty: state.inventory.isEmpty)
@@ -531,20 +549,24 @@ class _Empty extends StatelessWidget {
   }
 }
 
-/// The standing rule: what gets broken down the moment it drops.
+/// Aims the salvage button. Nothing happens until it is pressed.
 ///
-/// Off by default, and off is a real option rather than a hidden one. A game
-/// that destroys gear nobody asked it to destroy is a game the player stops
-/// trusting, so the rule names the rarity in full — COMMON means common and
-/// everything below it.
-class _AutoSalvageRule extends ConsumerWidget {
-  const _AutoSalvageRule({required this.config, required this.chosen});
+/// Not a standing rule and not stored in the save: a game that destroys gear
+/// nobody asked it to destroy is a game the player stops trusting, and a
+/// broken item cannot be got back.
+class _SalvagePicker extends StatelessWidget {
+  const _SalvagePicker({
+    required this.config,
+    required this.chosen,
+    required this.onChosen,
+  });
 
   final BalanceConfig config;
   final int chosen;
+  final ValueChanged<int> onChosen;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final ranks = config.rarities.entries.toList()
       ..sort((a, b) => a.value.rank.compareTo(b.value.rank));
 
@@ -553,7 +575,7 @@ class _AutoSalvageRule extends ConsumerWidget {
       child: Row(
         children: [
           Text(
-            'AUTO SALVAGE',
+            'SALVAGE UP TO',
             style: Theme.of(
               context,
             ).textTheme.labelSmall?.copyWith(fontSize: 9),
@@ -565,22 +587,16 @@ class _AutoSalvageRule extends ConsumerWidget {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _RulePill(
-                    label: 'OFF',
-                    active: chosen < 0,
-                    colour: GamePalette.ash,
-                    onTap: () => ref
-                        .read(gameControllerProvider.notifier)
-                        .setAutoSalvageRank(-1),
-                  ),
                   for (final entry in ranks)
                     _RulePill(
                       label: entry.key.toUpperCase(),
                       active: chosen == entry.value.rank,
                       colour: rarityColour(entry.value.rank),
-                      onTap: () => ref
-                          .read(gameControllerProvider.notifier)
-                          .setAutoSalvageRank(entry.value.rank),
+                      // Tapping the chosen one again clears it, so the button
+                      // can be disarmed without leaving the screen.
+                      onTap: () => onChosen(
+                        chosen == entry.value.rank ? -1 : entry.value.rank,
+                      ),
                     ),
                 ],
               ),

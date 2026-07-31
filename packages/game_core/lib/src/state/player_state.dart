@@ -73,12 +73,6 @@ abstract class PlayerState with _$PlayerState {
     /// Skill packs opened since the last guaranteed pull.
     @Default(0) int skillPity,
 
-    /// Rarity rank at or below which dropped gear is broken down on sight.
-    ///
-    /// `-1` is off, and is the default: a game that destroys gear nobody asked
-    /// it to destroy is a game the player stops trusting.
-    @Default(-1) int autoSalvageRank,
-
     /// Whether skills fire by themselves.
     ///
     /// On by default: an idle game whose skills need a tap is not idle. Off is

@@ -87,50 +87,31 @@ void main() {
     expect(controller.state!.equipped, isEmpty);
   });
 
-  testWidgets('the standing rule starts off', (tester) async {
-    final controller = await withBag(tester);
-
-    expect(controller.state!.autoSalvageRank, -1);
-  });
-
-  testWidgets('choosing a rank clears the pile already sitting there', (
+  testWidgets('nothing is broken down until the button is pressed', (
     tester,
   ) async {
-    // A player who turns it on expects the pile they were looking at to go,
-    // not only the next thing that drops.
+    // No standing rule, and no rule stored in the save. A game that destroys
+    // gear nobody asked it to destroy is a game the player stops trusting.
     final controller = await withBag(tester);
     await openBag(tester);
 
     await tester.tap(find.widgetWithText(Container, 'COMMON').first);
     await tester.pumpAndSettle();
 
-    expect(controller.state!.autoSalvageRank, 0);
-    expect(controller.state!.inventory, isEmpty);
-  });
-
-  testWidgets('the rule keeps running as loot arrives', (tester) async {
-    final controller = await withBag(tester, inventory: const {});
-    controller.state = controller.state!.copyWith(autoSalvageRank: 0);
-
-    controller.state = controller.state!.copyWith(
-      inventory: const {'i9': OwnedItem(id: 'i9', configId: 'blade')},
+    expect(
+      controller.state!.inventory,
+      isNotEmpty,
+      reason: 'picking a rarity aims the button, it does not fire it',
     );
-    controller.resolveFight(won: true);
+
+    await tester.tap(find.textContaining('SALVAGE COMMON'));
     await tester.pumpAndSettle();
 
     expect(controller.state!.inventory, isEmpty);
   });
 
-  testWidgets('OFF means nothing is destroyed', (tester) async {
-    final controller = await withBag(tester);
-    await openBag(tester);
-
-    await tester.tap(find.widgetWithText(Container, 'COMMON').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(Container, 'OFF').first);
-    await tester.pumpAndSettle();
-
-    expect(controller.state!.autoSalvageRank, -1);
+  testWidgets('loot that arrives is left alone', (tester) async {
+    final controller = await withBag(tester, inventory: const {});
 
     controller.state = controller.state!.copyWith(
       inventory: const {'i9': OwnedItem(id: 'i9', configId: 'blade')},
@@ -141,13 +122,27 @@ void main() {
     expect(controller.state!.inventory, isNotEmpty);
   });
 
-  testWidgets('the salvage button names the rank it will take', (tester) async {
-    // There is no undo for gear that has been broken down, so it must not be
-    // pressable blind.
+  testWidgets('the choice can be cleared by tapping it again', (tester) async {
     await withBag(tester);
     await openBag(tester);
 
-    expect(find.text('SALVAGE'), findsOneWidget);
+    await tester.tap(find.widgetWithText(Container, 'COMMON').first);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('SALVAGE COMMON'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(Container, 'COMMON').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('PICK A RARITY'), findsOneWidget);
+  });
+
+  testWidgets('the salvage button names the rank it will take', (tester) async {
+    // There is no undo for gear that has been broken down, so it must not be
+    // pressable blind — and with nothing chosen it says what it is waiting for.
+    await withBag(tester);
+    await openBag(tester);
+
+    expect(find.text('PICK A RARITY'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(Container, 'COMMON').first);
     await tester.pumpAndSettle();
