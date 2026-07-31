@@ -35,10 +35,10 @@ class MaterialsScreen extends ConsumerWidget {
                   // rather than at the far end of a row.
                   child: GridView.count(
                     padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 0.82,
+                    crossAxisCount: 6,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 0.78,
                     children: [
                       for (final key in config.materialResources)
                         _MaterialCell(resourceKey: key),
@@ -92,13 +92,13 @@ class _MaterialCell extends ConsumerWidget {
                   child: Icon(Icons.hexagon_outlined, size: 26, color: colour),
                 ),
                 Positioned(
-                  right: 4,
-                  bottom: 3,
+                  right: 3,
+                  bottom: 2,
                   child: Text(
                     held.format(),
                     style: counterStyle(
                       context,
-                      fontSize: 12,
+                      fontSize: 10,
                       color: has ? GamePalette.bone : GamePalette.ash,
                     ),
                   ),
