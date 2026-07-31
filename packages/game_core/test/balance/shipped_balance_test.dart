@@ -100,6 +100,24 @@ void main() {
     }
   });
 
+  test('the top row shows currencies the lamp button does not', () {
+    // The lamp button already carries its own balance, right under the tap
+    // that spends it. Repeating it in the top row spends the little space the
+    // scene has on a number the player is already looking at.
+    expect(
+      config.displayedResources,
+      isNot(contains(config.lamp.costResource)),
+    );
+    expect(config.displayedResources, isNotEmpty);
+    for (final key in config.displayedResources) {
+      expect(
+        config.start.resources.containsKey(key),
+        isTrue,
+        reason: '$key is displayed but never starts at a value',
+      );
+    }
+  });
+
   test('prestige actually pays off', () {
     expect(config.prestige.bonusPerPoint > BigNum.zero, isTrue);
     expect(config.prestige.currencyExponent, lessThanOrEqualTo(1));

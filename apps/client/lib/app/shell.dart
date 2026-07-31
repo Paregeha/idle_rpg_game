@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/app/theme.dart';
-import 'package:idle_rpg/widgets/resource_bar.dart';
 
-/// The frame every screen sits inside: resources on top, tabs at the bottom.
+/// The frame every screen sits inside: the screen, and tabs at the bottom.
 ///
-/// The resource bar is part of the shell rather than of each screen because in
-/// an idle game the numbers going up *are* the game. They must stay visible and
-/// keep counting while the player is reading anything else.
+/// The shell holds no counters of its own. Home floats its currencies over the
+/// battle scene, and a second copy in a strip above would say the same numbers
+/// twice while stealing height from the fight.
 class GameShell extends StatelessWidget {
   const GameShell({required this.location, required this.child, super.key});
 
@@ -23,24 +22,15 @@ class GameShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            const ResourceBar(),
-            const Divider(),
-            Expanded(child: child),
-          ],
-        ),
-      ),
+      body: SafeArea(bottom: false, child: child),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) => context.go(Routes.tabs[index]),
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.gps_fixed_outlined),
-            selectedIcon: Icon(Icons.gps_fixed),
-            label: 'BATTLE',
+            icon: Icon(Icons.cottage_outlined),
+            selectedIcon: Icon(Icons.cottage),
+            label: 'HOME',
           ),
           NavigationDestination(
             icon: Icon(Icons.shield_outlined),

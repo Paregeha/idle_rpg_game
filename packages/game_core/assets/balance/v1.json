@@ -58,6 +58,7 @@
     "resources": {
       "gold": "0e0",
       "gems": "0e0",
+      "premiumGems": "0e0",
       "lamps": "1e1"
     }
   },
@@ -167,6 +168,10 @@
     {
       "id": "rune",
       "order": 11
+    },
+    {
+      "id": "mount",
+      "order": 12
     }
   ],
   "rarities": {
@@ -526,6 +531,34 @@
       },
       "levelMultiplier": 1.12,
       "maxLevel": 20
+    },
+    "ashen_ram": {
+      "slot": "mount",
+      "rarity": "epic",
+      "sources": [
+        "shop",
+        "event"
+      ],
+      "stats": {
+        "flatHp": "3e2",
+        "attacksPerSecond": 0.15
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
+    },
+    "cinder_stag": {
+      "slot": "mount",
+      "rarity": "legendary",
+      "sources": [
+        "event"
+      ],
+      "stats": {
+        "flatAttack": "2.5e2",
+        "hpMultiplier": 1.25,
+        "attacksPerSecond": 0.3
+      },
+      "levelMultiplier": 1.12,
+      "maxLevel": 20
     }
   },
   "lamp": {
@@ -549,7 +582,7 @@
   "displayedResources": [
     "gold",
     "gems",
-    "lamps"
+    "premiumGems"
   ],
   "progression": {
     "wavesPerStage": 5,

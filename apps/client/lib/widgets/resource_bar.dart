@@ -9,8 +9,18 @@ import 'package:idle_rpg/state/game_providers.dart';
 Color currencyColour(String key) => switch (key) {
   'gold' => GamePalette.gold,
   'gems' => GamePalette.patina,
+  // Bought with money, so it gets a colour nothing else uses — a premium
+  // currency that looks like the free one is a refund request waiting to
+  // happen.
+  'premiumGems' => const Color(0xFFB07BD8),
   'lamps' => GamePalette.emberBright,
   _ => GamePalette.bone,
+};
+
+/// Short label for a currency, for places too narrow for the raw key.
+String currencyLabel(String key) => switch (key) {
+  'premiumGems' => 'CRYSTALS',
+  _ => key.toUpperCase(),
 };
 
 /// The strip of currencies that stays on screen wherever the player goes.
@@ -57,7 +67,7 @@ class _Currency extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          resourceKey.toUpperCase(),
+          currencyLabel(resourceKey),
           style: Theme.of(context).textTheme.labelSmall,
         ),
         const SizedBox(height: 2),

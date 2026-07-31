@@ -173,12 +173,12 @@ class GameController extends Notifier<PlayerState?> {
   }
 
   /// Puts an item on. Returns what came off, if anything.
-  String? equip(String itemId) {
+  String? equip(String itemId, {String? intoSlot}) {
     final current = state;
     final config = _config;
     if (current == null || config == null) return null;
 
-    final result = core.equipItem(current, itemId, config);
+    final result = core.equipItem(current, itemId, config, intoSlot: intoSlot);
     if (!result.equipped) return null;
 
     state = result.state;

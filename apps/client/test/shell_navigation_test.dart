@@ -3,15 +3,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/battle/battle_screen.dart';
 import 'package:idle_rpg/features/hero/hero_screen.dart';
+import 'package:idle_rpg/features/home/home_screen.dart';
+import 'package:idle_rpg/features/home/resource_overlay.dart';
 import 'package:idle_rpg/features/upgrades/upgrades_screen.dart';
-import 'package:idle_rpg/widgets/resource_bar.dart';
 
 import 'support/test_app.dart';
 
 void main() {
-  testWidgets('opens on the battle tab', (tester) async {
+  testWidgets('opens on home, with the fight already running', (tester) async {
+    // In an idle game the fight is the thing that is always happening. A
+    // player who has to navigate to see it stops believing it is running.
     await pumpGame(tester);
 
+    expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.byType(BattleScreen), findsOneWidget);
   });
 
@@ -26,26 +30,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(UpgradesScreen), findsOneWidget);
 
-    await tester.tap(find.text('BATTLE'));
+    await tester.tap(find.text('HOME'));
     await tester.pumpAndSettle();
-    expect(find.byType(BattleScreen), findsOneWidget);
+    expect(find.byType(HomeScreen), findsOneWidget);
   });
 
-  testWidgets('the resource bar survives switching tabs', (tester) async {
-    // It lives in the shell, so the counters keep running instead of being
-    // torn down and rebuilt every time the player looks at another screen.
+  testWidgets('the currencies are shown once, over the scene', (tester) async {
+    // They belong to home, not to the shell: two copies of the same number is
+    // how a player starts wondering which of them is the real balance.
     await pumpGame(tester);
-    final barBefore = tester.widget<ResourceBar>(find.byType(ResourceBar));
+    expect(find.byType(ResourceOverlay), findsOneWidget);
 
     await tester.tap(find.text('FORGE'));
     await tester.pumpAndSettle();
-
-    expect(find.byType(ResourceBar), findsOneWidget);
-    expect(
-      tester.widget<ResourceBar>(find.byType(ResourceBar)),
-      same(barBefore),
-      reason: 'the bar must not be rebuilt when the tab changes',
-    );
+    expect(find.byType(ResourceOverlay), findsNothing);
   });
 
   testWidgets('uses the forge palette, not stock Material', (tester) async {
@@ -61,9 +59,9 @@ void main() {
     expect(theme.colorScheme.primary, GamePalette.emberBright);
   });
 
-  testWidgets('an extreme system font size does not break the layout', (
-    tester,
-  ) async {
+  testWidgets('a small phone does not break the layout', (tester) async {
+    // 360×640 is the floor we support. Home stacks a scene, a skill row, the
+    // gear grid and the lamp, so it is the screen that runs out of room first.
     tester.view.physicalSize = const Size(360 * 3, 640 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);

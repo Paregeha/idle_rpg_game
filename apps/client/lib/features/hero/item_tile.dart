@@ -26,6 +26,7 @@ class ItemTile extends ConsumerWidget {
     required this.config,
     required this.state,
     required this.isEquipped,
+    this.intoSlot,
     super.key,
   });
 
@@ -33,6 +34,12 @@ class ItemTile extends ConsumerWidget {
   final BalanceConfig config;
   final PlayerState state;
   final bool isEquipped;
+
+  /// Which slot to equip into, when the sheet was opened from one.
+  ///
+  /// Without it, tapping a ring from the `ring2` panel could land it on the
+  /// other finger, which is not what the player pointed at.
+  final String? intoSlot;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -93,8 +100,9 @@ class ItemTile extends ConsumerWidget {
           if (!isEquipped)
             _SmallButton(
               label: 'EQUIP',
-              onPressed: () =>
-                  ref.read(gameControllerProvider.notifier).equip(owned.id),
+              onPressed: () => ref
+                  .read(gameControllerProvider.notifier)
+                  .equip(owned.id, intoSlot: intoSlot),
             ),
           const SizedBox(width: 6),
           _SmallButton(
@@ -120,7 +128,7 @@ class ItemTile extends ConsumerWidget {
   ({String label, bool better}) _preview() {
     final before = heroCombatStats(state, config);
     final after = heroCombatStats(
-      equipItem(state, owned.id, config).state,
+      equipItem(state, owned.id, config, intoSlot: intoSlot).state,
       config,
     );
 

@@ -8,6 +8,16 @@ import 'package:meta/meta.dart';
 /// Source key marking an item as obtainable from the lamp.
 const String lampSource = 'lamp';
 
+/// Source key for items that only appear during an event.
+///
+/// Mounts and the unique set live here: an item the lamp could produce is one
+/// the shop cannot meaningfully sell, and an event reward that drops freely is
+/// not a reward.
+const String eventSource = 'event';
+
+/// Source key for items sold rather than found.
+const String shopSource = 'shop';
+
 /// Why an open did not happen.
 enum LampRefusal { cannotAfford, noItemsConfigured }
 

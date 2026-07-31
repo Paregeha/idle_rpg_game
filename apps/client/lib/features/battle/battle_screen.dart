@@ -1,8 +1,7 @@
-import 'package:flame/game.dart';
+﻿import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
-import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/battle/battle_game.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
@@ -13,7 +12,14 @@ import 'package:idle_rpg/state/game_providers.dart';
 /// round (rule 7): only this panel is a game engine, everything around it stays
 /// ordinary Flutter.
 class BattleScreen extends ConsumerStatefulWidget {
-  const BattleScreen({super.key});
+  const BattleScreen({this.topInset = 0, super.key});
+
+  /// Height at the top of the panel that something else is drawing over.
+  ///
+  /// Home floats the currencies and the stage over the scene, so the fight has
+  /// to be staged below them — otherwise the hero trades blows behind the
+  /// gold count and damage numbers land on the stage name.
+  final double topInset;
 
   @override
   ConsumerState<BattleScreen> createState() => _BattleScreenState();
@@ -21,11 +27,7 @@ class BattleScreen extends ConsumerStatefulWidget {
 
 class _BattleScreenState extends ConsumerState<BattleScreen> {
   BattleGame? _game;
-  String _monsterId = '';
-  String _stage = '';
-  bool _isBoss = false;
   int _fightNumber = 0;
-  int _victories = 0;
 
   void _startFight() {
     final config = ref.read(balanceConfigProvider).value;
@@ -49,15 +51,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
 
     setState(() {
       _fightNumber++;
-      _monsterId = encounter.monsterId;
-      _isBoss = encounter.isBoss;
-      _stage = stageLabel(state);
-      if (result.heroWon) _victories++;
       _game = BattleGame(
         result: result,
         heroMaxHp: heroStats.maxHp,
         monsterMaxHp: encounter.monsters.first.maxHp,
         monsterCount: encounter.monsters.length,
+        topInset: widget.topInset,
         onFinished: () => _onFightFinished(won: result.heroWon),
       );
     });
@@ -85,12 +84,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
 
     return Column(
       children: [
-        _FightHeader(
-          monsterId: _monsterId,
-          stage: _stage,
-          isBoss: _isBoss,
-          victories: _victories,
-        ),
         Expanded(
           child: GameWidget(key: ValueKey(_game), game: _game!),
         ),
@@ -104,42 +97,3 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
 /// Deliberately not the last fight's outcome: the next fight starts as soon as
 /// the previous one ends, so a "VICTORY" label would describe a fight that is
 /// no longer on screen.
-class _FightHeader extends StatelessWidget {
-  const _FightHeader({
-    required this.monsterId,
-    required this.stage,
-    required this.isBoss,
-    required this.victories,
-  });
-
-  final String monsterId;
-  final String stage;
-  final bool isBoss;
-  final int victories;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            isBoss
-                ? '$stage  ·  ${monsterId.toUpperCase()}  ·  BOSS'
-                : '$stage  ·  ${monsterId.toUpperCase()}',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: isBoss ? GamePalette.emberBright : null,
-            ),
-          ),
-          Text(
-            'SLAIN $victories',
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall?.copyWith(color: GamePalette.emberDim),
-          ),
-        ],
-      ),
-    );
-  }
-}

@@ -21,6 +21,7 @@ class BattleGame extends FlameGame {
     required this.heroMaxHp,
     required this.monsterMaxHp,
     this.monsterCount = 1,
+    this.topInset = 0,
     this.onFinished,
     this.speed = 1.0,
   });
@@ -34,6 +35,11 @@ class BattleGame extends FlameGame {
   /// How many monsters are in this wave. The scene has to show all of them, or
   /// the player watches a different fight from the one being resolved.
   final int monsterCount;
+
+  /// Height at the top of the panel that widgets above the scene occupy.
+  ///
+  /// The fight is staged in what is left, so nothing is drawn behind them.
+  final double topInset;
 
   /// Called once the last event has been played.
   final VoidCallback? onFinished;
@@ -63,23 +69,31 @@ class BattleGame extends FlameGame {
     _heroHp = heroMaxHp;
     _monsterHp = List<BigNum>.filled(monsterCount, monsterMaxHp);
 
-    final centre = size / 2;
+    // The stage is what is left below whatever floats over the scene.
+    final stageHeight = (size.y - topInset).clamp(1.0, size.y);
+    final centre = Vector2(size.x / 2, topInset + stageHeight / 2);
+
     _hero = CombatantComponent(
       colour: GamePalette.emberBright,
       facingRight: true,
       position: Vector2(centre.x - size.x * 0.26, centre.y),
     );
 
-    // Stacked vertically rather than side by side: a phone is tall, and three
-    // silhouettes in a row would each be too narrow to read.
+    // Spread across whatever height the stage actually has. A fixed spacing
+    // pushed the outer monsters off the panel and over the rest of the screen
+    // once the scene stopped being full-height.
+    final spread = monsterCount <= 1
+        ? 0.0
+        : (stageHeight * 0.55) / (monsterCount - 1);
+
     _monsters = [
       for (var i = 0; i < monsterCount; i++)
         CombatantComponent(
           colour: GamePalette.patina,
           facingRight: false,
           position: Vector2(
-            centre.x + size.x * (monsterCount == 1 ? 0.26 : 0.22),
-            centre.y + (i - (monsterCount - 1) / 2) * 120,
+            centre.x + size.x * (monsterCount == 1 ? 0.26 : 0.2),
+            centre.y + (i - (monsterCount - 1) / 2) * spread,
           ),
         ),
     ];
@@ -171,14 +185,24 @@ class BattleGame extends FlameGame {
     BigNum damage, {
     required bool crit,
   }) {
-    // Spread the numbers so a burst does not stack into an unreadable pile.
+    // Spread the numbers so a burst does not stack into an unreadable pile,
+    // and keep them inside the panel: a number that floats out of the scene
+    // lands on whatever widget is above it.
     final jitter = (_nextEvent % 5 - 2) * 14.0;
+    final wanted = target.position + Vector2(jitter, -target.size.y * 0.6);
+    // On a panel too short to hold both margins the bottom one wins, so the
+    // clamp always gets a range it can satisfy.
+    final lowest = size.y - 24;
+    final highest = (topInset + 12).clamp(0.0, lowest);
 
     add(
       DamageNumber(
         text: damage.format(),
         crit: crit,
-        position: target.position + Vector2(jitter, -target.size.y * 0.6),
+        position: Vector2(
+          wanted.x.clamp(30.0, size.x - 30),
+          wanted.y.clamp(highest, lowest),
+        ),
       ),
     );
   }
