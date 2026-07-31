@@ -302,7 +302,11 @@ class GameController extends Notifier<PlayerState?> {
       earned['gold'] = (earned['gold'] ?? BigNum.zero) + encounter.reward;
     }
 
-    state = advanced.copyWith(resources: resources, earnedThisRun: earned);
+    final paid = advanced.copyWith(resources: resources, earnedThisRun: earned);
+
+    state = encounter == null
+        ? paid
+        : grantExperience(paid, encounter.experience, config).state;
     unawaited(saveNow());
   }
 

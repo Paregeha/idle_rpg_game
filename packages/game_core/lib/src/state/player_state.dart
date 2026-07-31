@@ -66,6 +66,16 @@ abstract class PlayerState with _$PlayerState {
     /// the server owns this state.
     @Default(<String, int>{}) Map<String, int> skills,
 
+    /// The hero's own level, earned by killing things.
+    @Default(0) int heroLevel,
+
+    /// Experience banked towards the next level.
+    ///
+    /// Only the remainder is kept, not a lifetime total: the total would be a
+    /// second number saying the same thing, and the two would drift apart the
+    /// first time a level formula changes.
+    @BigNumConverter() @Default(BigNum.zero) BigNum heroExperience,
+
     /// Every item the player owns, by its instance id.
     @Default(<String, OwnedItem>{}) Map<String, OwnedItem> inventory,
 

@@ -19,6 +19,11 @@ _HeroConfig _$HeroConfigFromJson(Map<String, dynamic> json) => _HeroConfig(
   critFactor: (json['critFactor'] as num?)?.toDouble() ?? 2.0,
   mitigation: (json['mitigation'] as num?)?.toDouble() ?? 0.0,
   dodgeChance: (json['dodgeChance'] as num?)?.toDouble() ?? 0.05,
+  expBase: json['expBase'] == null
+      ? BigNum.one
+      : const BigNumConverter().fromJson(json['expBase'] as String),
+  expGrowth: (json['expGrowth'] as num?)?.toDouble() ?? 1.35,
+  statPerLevel: (json['statPerLevel'] as num?)?.toDouble() ?? 1.08,
 );
 
 Map<String, dynamic> _$HeroConfigToJson(_HeroConfig instance) =>
@@ -31,4 +36,7 @@ Map<String, dynamic> _$HeroConfigToJson(_HeroConfig instance) =>
       'critFactor': instance.critFactor,
       'mitigation': instance.mitigation,
       'dodgeChance': instance.dodgeChance,
+      'expBase': const BigNumConverter().toJson(instance.expBase),
+      'expGrowth': instance.expGrowth,
+      'statPerLevel': instance.statPerLevel,
     };

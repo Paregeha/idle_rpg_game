@@ -36,6 +36,15 @@ abstract class MonsterConfig with _$MonsterConfig {
     /// Probability in `0..1` of dodging a swing.
     @Default(0.0) double dodgeChance,
 
+    /// Experience for a kill at level 0.
+    ///
+    /// Separate from the gold reward: levelling and earning are different
+    /// pacing levers, and tying them together removes one of them.
+    @BigNumConverter() @Default(BigNum.one) BigNum expBase,
+
+    /// Experience is multiplied by this per level.
+    @Default(1.4) double expGrowth,
+
     /// Probability in `0..1` that a kill drops an item.
     @Default(0.0) double dropChance,
   }) = _MonsterConfig;
@@ -65,6 +74,14 @@ abstract class MonsterConfig with _$MonsterConfig {
   BigNum attackFor(int level) {
     _requireNonNegative(level);
     return baseAttack * BigNum.fromDouble(attackGrowth).pow(level);
+  }
+
+  /// Experience for killing a monster at [level].
+  ///
+  /// Formula: `expBase * expGrowth^level`.
+  BigNum expFor(int level) {
+    _requireNonNegative(level);
+    return expBase * BigNum.fromDouble(expGrowth).pow(level);
   }
 
   /// Reward for killing a monster at [level].

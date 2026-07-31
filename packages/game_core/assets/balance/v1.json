@@ -46,7 +46,10 @@
     "attacksPerSecond": 1.2,
     "critChance": 0.12,
     "critFactor": 2.0,
-    "dodgeChance": 0.05
+    "dodgeChance": 0.05,
+    "expBase": "2e1",
+    "expGrowth": 1.35,
+    "statPerLevel": 1.08
   },
   "start": {
     "generators": {
@@ -73,7 +76,9 @@
       "baseAttack": "1e0",
       "attackGrowth": 1.4,
       "attacksPerSecond": 0.7,
-      "dropChance": 0.05
+      "dropChance": 0.05,
+      "expBase": "5e0",
+      "expGrowth": 1.4
     },
     "wolf": {
       "baseHp": "1.4e2",
@@ -83,7 +88,9 @@
       "baseAttack": "8e0",
       "attackGrowth": 1.4,
       "attacksPerSecond": 1.0,
-      "dropChance": 0.08
+      "dropChance": 0.08,
+      "expBase": "2.2e1",
+      "expGrowth": 1.4
     },
     "golem": {
       "baseHp": "3.2e3",
@@ -93,7 +100,9 @@
       "baseAttack": "5e1",
       "attackGrowth": 1.4,
       "attacksPerSecond": 0.6,
-      "dropChance": 0.12
+      "dropChance": 0.12,
+      "expBase": "1.1e2",
+      "expGrowth": 1.4
     },
     "wyrm": {
       "baseHp": "9e4",
@@ -103,7 +112,9 @@
       "baseAttack": "3e2",
       "attackGrowth": 1.4,
       "attacksPerSecond": 0.9,
-      "dropChance": 0.18
+      "dropChance": 0.18,
+      "expBase": "6e2",
+      "expGrowth": 1.4
     }
   },
   "slots": [

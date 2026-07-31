@@ -392,6 +392,26 @@ abstract class BalanceConfig with _$BalanceConfig {
         field: 'hero.perUnitMultiplier',
       );
     }
+    if (hero.expGrowth < 1) {
+      throw const BalanceConfigException(
+        'below 1 makes each level cheaper than the last, so the hero levels '
+        'forever on one kill',
+        field: 'hero.expGrowth',
+      );
+    }
+    if (hero.expBase.isNegative || hero.expBase.isZero) {
+      throw const BalanceConfigException(
+        'must be positive, or the first level costs nothing',
+        field: 'hero.expBase',
+      );
+    }
+    if (hero.statPerLevel < 1) {
+      throw const BalanceConfigException(
+        'below 1 means levelling up makes the hero weaker',
+        field: 'hero.statPerLevel',
+      );
+    }
+
     if (hero.attacksPerSecond <= 0) {
       throw const BalanceConfigException(
         'must be positive, or the hero never swings',

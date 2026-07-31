@@ -145,7 +145,10 @@ CombatStats heroCombatStats(PlayerState state, BalanceConfig config) {
     0,
     (sum, generator) => sum + generator.owned,
   );
-  final base = config.hero.statsFor(unitsOwned: units);
+  final base = config.hero.statsFor(
+    unitsOwned: units,
+    level: state.heroLevel,
+  );
   final gear = equippedStats(state, config);
 
   return base.copyWith(

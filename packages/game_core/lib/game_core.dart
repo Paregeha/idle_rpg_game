@@ -28,6 +28,7 @@ export 'src/items/lamp.dart';
 export 'src/items/owned_item.dart';
 export 'src/math/big_num.dart';
 export 'src/random/seeded_random.dart';
+export 'src/sim/hero_level.dart';
 export 'src/sim/offline_progress.dart';
 export 'src/sim/offline_report.dart';
 export 'src/sim/prestige.dart';

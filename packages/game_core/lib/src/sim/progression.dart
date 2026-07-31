@@ -13,6 +13,7 @@ class Encounter {
     required this.monsters,
     required this.isBoss,
     required this.reward,
+    required this.experience,
   });
 
   final String monsterId;
@@ -25,6 +26,9 @@ class Encounter {
 
   /// Paid out for clearing the wave.
   final BigNum reward;
+
+  /// Experience for clearing the wave.
+  final BigNum experience;
 }
 
 /// Builds the encounter for wherever the player currently is.
@@ -56,7 +60,9 @@ Encounter? encounterFor(PlayerState state, BalanceConfig config) {
   // A boss stands alone; ordinary waves come as a group, which is what gives
   // an area skill something to hit.
   final count = onBoss ? 1 : progression.monstersPerWave;
-  final reward = monster.rewardFor(level) * BigNum.fromDouble(count.toDouble());
+  final group = BigNum.fromDouble(count.toDouble());
+  final reward = monster.rewardFor(level) * group;
+  final experience = monster.expFor(level) * group;
 
   return Encounter(
     monsterId: monsterId!,
@@ -64,6 +70,7 @@ Encounter? encounterFor(PlayerState state, BalanceConfig config) {
     monsters: List<CombatStats>.filled(count, stats),
     isBoss: onBoss,
     reward: reward,
+    experience: experience,
   );
 }
 
