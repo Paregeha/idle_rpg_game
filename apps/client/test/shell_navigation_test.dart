@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/battle/battle_screen.dart';
-import 'package:idle_rpg/features/hero/hero_screen.dart';
 import 'package:idle_rpg/features/home/home_screen.dart';
 import 'package:idle_rpg/features/home/resource_overlay.dart';
 import 'package:idle_rpg/features/upgrades/upgrades_screen.dart';
@@ -21,10 +20,6 @@ void main() {
 
   testWidgets('every tab is reachable', (tester) async {
     await pumpGame(tester);
-
-    await tester.tap(find.text('HERO'));
-    await tester.pumpAndSettle();
-    expect(find.byType(HeroScreen), findsOneWidget);
 
     await tester.tap(find.text('FORGE'));
     await tester.pumpAndSettle();

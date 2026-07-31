@@ -5,12 +5,6 @@ import 'package:idle_rpg/state/game_controller.dart';
 
 import 'support/test_app.dart';
 
-/// The app opens on home; the hero screen is a tab away.
-Future<void> openHero(WidgetTester tester) async {
-  await tester.tap(find.text('HERO'));
-  await tester.pumpAndSettle();
-}
-
 /// Opens the bag from home, where it sits beside the lamp.
 Future<void> openBag(WidgetTester tester) async {
   await tapVisible(tester, find.byIcon(Icons.inventory_2_outlined));
@@ -35,14 +29,14 @@ void main() {
     expect(find.textContaining('Light the lamp'), findsOneWidget);
   });
 
-  testWidgets('every slot is shown, empty or not', (tester) async {
+  testWidgets('every slot is shown on home, empty or not', (tester) async {
+    // There is no hero tab to hide them behind: the grid on home is the only
+    // place gear is worn, so a slot missing from it cannot be filled at all.
     await pumpGame(tester);
-    await openHero(tester);
 
     for (final slot in testBalanceConfig.slots) {
-      expect(find.text(slot.id.toUpperCase()), findsWidgets, reason: slot.id);
+      expect(find.text(slot.id), findsWidgets, reason: slot.id);
     }
-    expect(find.text('LEVEL'), findsOneWidget);
   });
 
   testWidgets('the lamp gives an item and it appears in the inventory', (
@@ -78,13 +72,11 @@ void main() {
   });
 
   testWidgets('the lamp is only offered in one place', (tester) async {
-    // Home owns the loop button. A second copy on the hero screen would leave
-    // the player wondering whether the two do the same thing.
+    // Home owns the loop button. A second copy anywhere else would leave the
+    // player wondering whether the two do the same thing.
     await pumpGame(tester);
-    expect(find.textContaining('LIGHT THE LAMP'), findsOneWidget);
 
-    await openHero(tester);
-    expect(find.textContaining('LIGHT THE LAMP'), findsNothing);
+    expect(find.textContaining('LIGHT THE LAMP'), findsOneWidget);
   });
 
   testWidgets('equipping an item fills its slot and raises attack', (
