@@ -4,7 +4,7 @@ import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/router.dart';
-import 'package:idle_rpg/features/hero/item_tile.dart';
+import 'package:idle_rpg/features/hero/item_visuals.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 import 'package:idle_rpg/widgets/resource_bar.dart';

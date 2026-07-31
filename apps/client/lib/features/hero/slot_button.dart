@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
-import 'package:idle_rpg/features/hero/item_tile.dart';
+import 'package:idle_rpg/features/hero/item_visuals.dart';
 
 /// One equipment slot, sized to sit in a column beside the hero.
 ///

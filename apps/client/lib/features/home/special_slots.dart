@@ -5,7 +5,7 @@ import 'package:idle_rpg/app/theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
-import 'package:idle_rpg/features/hero/item_tile.dart';
+import 'package:idle_rpg/features/hero/item_visuals.dart';
 
 /// The special slots, each sized to what it holds.
 ///

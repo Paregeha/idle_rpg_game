@@ -5,7 +5,7 @@ import 'package:idle_rpg/app/theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
-import 'package:idle_rpg/features/hero/item_tile.dart';
+import 'package:idle_rpg/features/hero/item_visuals.dart';
 import 'package:idle_rpg/features/home/special_slots.dart';
 
 /// The equipment panel: gear on the left, the special slots on the right.
