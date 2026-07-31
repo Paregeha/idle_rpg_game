@@ -4,7 +4,6 @@ import 'package:game_core/src/math/big_num.dart';
 import 'package:game_core/src/random/seeded_random.dart';
 import 'package:game_core/src/state/big_num_converter.dart';
 import 'package:game_core/src/state/generator_state.dart';
-import 'package:game_core/src/state/hero_state.dart';
 import 'package:game_core/src/state/prestige_state.dart';
 
 part 'player_state.freezed.dart';
@@ -52,7 +51,20 @@ abstract class PlayerState with _$PlayerState {
     @BigNumConverter()
     @Default(<String, BigNum>{})
     Map<String, BigNum> earnedThisRun,
-    @Default(<HeroState>[]) List<HeroState> heroes,
+
+    /// Chapter, stage and wave: where the player is in the world.
+    @Default(1) int chapter,
+    @Default(1) int stage,
+
+    /// Waves cleared in this stage. At `wavesPerStage` the boss is next.
+    @Default(0) int wave,
+
+    /// Skill levels, by skill id.
+    ///
+    /// Reserved now and filled in with the skill system later. Adding a field
+    /// to the save format is a JSON edit today and a database migration once
+    /// the server owns this state.
+    @Default(<String, int>{}) Map<String, int> skills,
 
     /// Every item the player owns, by its instance id.
     @Default(<String, OwnedItem>{}) Map<String, OwnedItem> inventory,

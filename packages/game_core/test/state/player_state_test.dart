@@ -10,10 +10,6 @@ PlayerState sample() => PlayerState(
     'smelter': const GeneratorState(level: 3, owned: 2),
   },
   upgrades: {'pickaxe': 3, 'cart': 1},
-  heroes: [
-    const HeroState(id: 'knight', level: 7, experience: 1200),
-    const HeroState(id: 'mage', level: 4, experience: 300),
-  ],
   prestige: PrestigeState(
     currency: BigNum(9.87, 5),
     resets: 3,
@@ -31,7 +27,6 @@ void main() {
       expect(s.resources['gold'], BigNum(1.5, 12));
       expect(s.generators['miner']!.level, 12);
       expect(s.upgrades['pickaxe'], 3);
-      expect(s.heroes.first.id, 'knight');
       expect(s.prestige.resets, 3);
     });
 
@@ -64,7 +59,6 @@ void main() {
       expect(fresh.resources, isEmpty);
       expect(fresh.generators, isEmpty);
       expect(fresh.upgrades, isEmpty);
-      expect(fresh.heroes, isEmpty);
       expect(fresh.prestige, const PrestigeState());
       expect(fresh.version, stateSchemaVersion);
     });
@@ -110,10 +104,6 @@ void main() {
         restored.generators['smelter'],
         const GeneratorState(level: 3, owned: 2),
       );
-      expect(
-        restored.heroes.last,
-        const HeroState(id: 'mage', level: 4, experience: 300),
-      );
       expect(restored.prestige.currency, BigNum(9.87, 5));
     });
   });
@@ -125,12 +115,6 @@ void main() {
       expect(GeneratorState.fromJson(g.toJson()), g);
       expect(g.copyWith(level: 6).level, 6);
       expect(g.level, 5);
-    });
-
-    test('HeroState round-trips', () {
-      const h = HeroState(id: 'rogue', level: 2, experience: 45);
-
-      expect(HeroState.fromJson(h.toJson()), h);
     });
 
     test('PrestigeState round-trips and defaults to empty', () {

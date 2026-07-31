@@ -20,6 +20,7 @@ class BattleGame extends FlameGame {
     required this.result,
     required this.heroMaxHp,
     required this.monsterMaxHp,
+    this.monsterCount = 1,
     this.onFinished,
     this.speed = 1.0,
   });
@@ -30,6 +31,10 @@ class BattleGame extends FlameGame {
   final BigNum heroMaxHp;
   final BigNum monsterMaxHp;
 
+  /// How many monsters are in this wave. The scene has to show all of them, or
+  /// the player watches a different fight from the one being resolved.
+  final int monsterCount;
+
   /// Called once the last event has been played.
   final VoidCallback? onFinished;
 
@@ -37,12 +42,12 @@ class BattleGame extends FlameGame {
   final double speed;
 
   late final CombatantComponent _hero;
-  late final CombatantComponent _monster;
+  late final List<CombatantComponent> _monsters;
 
   double _elapsedMs = 0;
   int _nextEvent = 0;
   BigNum _heroHp = BigNum.zero;
-  BigNum _monsterHp = BigNum.zero;
+  late final List<BigNum> _monsterHp;
   bool _finishedAnnounced = false;
 
   /// Events played so far. Exposed so tests can assert playback progress.
@@ -56,21 +61,30 @@ class BattleGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     _heroHp = heroMaxHp;
-    _monsterHp = monsterMaxHp;
+    _monsterHp = List<BigNum>.filled(monsterCount, monsterMaxHp);
 
     final centre = size / 2;
     _hero = CombatantComponent(
       colour: GamePalette.emberBright,
       facingRight: true,
-      position: Vector2(centre.x - size.x * 0.22, centre.y),
-    );
-    _monster = CombatantComponent(
-      colour: GamePalette.patina,
-      facingRight: false,
-      position: Vector2(centre.x + size.x * 0.22, centre.y),
+      position: Vector2(centre.x - size.x * 0.26, centre.y),
     );
 
-    await addAll([_hero, _monster]);
+    // Stacked vertically rather than side by side: a phone is tall, and three
+    // silhouettes in a row would each be too narrow to read.
+    _monsters = [
+      for (var i = 0; i < monsterCount; i++)
+        CombatantComponent(
+          colour: GamePalette.patina,
+          facingRight: false,
+          position: Vector2(
+            centre.x + size.x * (monsterCount == 1 ? 0.26 : 0.22),
+            centre.y + (i - (monsterCount - 1) / 2) * 120,
+          ),
+        ),
+    ];
+
+    await addAll([_hero, ..._monsters]);
   }
 
   @override
@@ -101,9 +115,16 @@ class BattleGame extends FlameGame {
     onFinished?.call();
   }
 
+  CombatantComponent _monsterAt(int index) =>
+      _monsters[index.clamp(0, _monsters.length - 1)];
+
   void _play(BattleEvent event) {
-    final attacker = event.source == BattleSide.hero ? _hero : _monster;
-    final defender = event.target == BattleSide.hero ? _hero : _monster;
+    final attacker = event.source == BattleSide.hero
+        ? _hero
+        : _monsterAt(event.targetIndex);
+    final defender = event.target == BattleSide.hero
+        ? _hero
+        : _monsterAt(event.targetIndex);
 
     switch (event.kind) {
       case BattleEventKind.hit:
@@ -128,10 +149,14 @@ class BattleGame extends FlameGame {
     if (event.target == BattleSide.hero) {
       _heroHp -= event.damage;
       _hero.setHealthFraction(_fraction(_heroHp, heroMaxHp));
-    } else {
-      _monsterHp -= event.damage;
-      _monster.setHealthFraction(_fraction(_monsterHp, monsterMaxHp));
+      return;
     }
+
+    final index = event.targetIndex.clamp(0, _monsterHp.length - 1);
+    _monsterHp[index] -= event.damage;
+    _monsterAt(index).setHealthFraction(
+      _fraction(_monsterHp[index], monsterMaxHp),
+    );
   }
 
   /// Health left as a fraction, computed in [BigNum] and only then collapsed to

@@ -36,7 +36,6 @@ void main() {
     final state = newGame(nowMs: 0, rngSeed: 1, config: config);
 
     expect(state.upgrades, isEmpty);
-    expect(state.heroes, isEmpty);
     expect(state.earnedThisRun, isEmpty);
     expect(state.prestige, const PrestigeState());
     expect(state.carryOverMs, 0);

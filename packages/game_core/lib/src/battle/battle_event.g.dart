@@ -11,6 +11,7 @@ _BattleEvent _$BattleEventFromJson(Map<String, dynamic> json) => _BattleEvent(
   kind: $enumDecode(_$BattleEventKindEnumMap, json['kind']),
   source: $enumDecode(_$BattleSideEnumMap, json['source']),
   target: $enumDecode(_$BattleSideEnumMap, json['target']),
+  targetIndex: (json['targetIndex'] as num?)?.toInt() ?? 0,
   damage: json['damage'] == null
       ? BigNum.zero
       : const BigNumConverter().fromJson(json['damage'] as String),
@@ -22,6 +23,7 @@ Map<String, dynamic> _$BattleEventToJson(_BattleEvent instance) =>
       'kind': _$BattleEventKindEnumMap[instance.kind]!,
       'source': _$BattleSideEnumMap[instance.source]!,
       'target': _$BattleSideEnumMap[instance.target]!,
+      'targetIndex': instance.targetIndex,
       'damage': const BigNumConverter().toJson(instance.damage),
     };
 

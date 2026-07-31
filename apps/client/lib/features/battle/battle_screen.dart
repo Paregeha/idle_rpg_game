@@ -22,6 +22,8 @@ class BattleScreen extends ConsumerStatefulWidget {
 class _BattleScreenState extends ConsumerState<BattleScreen> {
   BattleGame? _game;
   String _monsterId = '';
+  String _stage = '';
+  bool _isBoss = false;
   int _fightNumber = 0;
   int _victories = 0;
 
@@ -30,42 +32,40 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
     final state = ref.read(gameControllerProvider);
     if (config == null || state == null || config.monsters.isEmpty) return;
 
-    final monsterId = config.monsters.keys.first;
-    final monster = config.monsters[monsterId]!;
+    final encounter = encounterFor(state, config);
+    if (encounter == null) return;
     // One function answers "how strong is the hero", so this screen, the hero
     // screen and the server cannot drift apart.
     final heroStats = heroCombatStats(state, config);
-    final monsterStats = CombatStats(
-      attack: monster.attackFor(0),
-      maxHp: monster.hpFor(0),
-      attacksPerSecond: monster.attacksPerSecond,
-      mitigation: monster.mitigation,
-      dodgeChance: monster.dodgeChance,
-    );
 
     // Seeded from the player's own state, so the same save replays the same
     // fight and the server can recompute it later (`T-032`).
     final result = resolveBattle(
       hero: heroStats,
-      monster: monsterStats,
+      monsters: encounter.monsters,
       rng: SeededRandom(state.rngSeed ^ (state.lastTickAtMs + _fightNumber)),
       maxDuration: const Duration(seconds: 30),
     );
 
     setState(() {
       _fightNumber++;
-      _monsterId = monsterId;
+      _monsterId = encounter.monsterId;
+      _isBoss = encounter.isBoss;
+      _stage = stageLabel(state);
       if (result.heroWon) _victories++;
       _game = BattleGame(
         result: result,
         heroMaxHp: heroStats.maxHp,
-        monsterMaxHp: monsterStats.maxHp,
-        onFinished: _onFightFinished,
+        monsterMaxHp: encounter.monsters.first.maxHp,
+        monsterCount: encounter.monsters.length,
+        onFinished: () => _onFightFinished(won: result.heroWon),
       );
     });
   }
 
-  void _onFightFinished() {
+  void _onFightFinished({required bool won}) {
+    ref.read(gameControllerProvider.notifier).resolveFight(won: won);
+
     // Let the death animation land before the next fight starts.
     Future<void>.delayed(const Duration(milliseconds: 900), () {
       if (mounted) _startFight();
@@ -85,7 +85,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
 
     return Column(
       children: [
-        _FightHeader(monsterId: _monsterId, victories: _victories),
+        _FightHeader(
+          monsterId: _monsterId,
+          stage: _stage,
+          isBoss: _isBoss,
+          victories: _victories,
+        ),
         Expanded(
           child: GameWidget(key: ValueKey(_game), game: _game!),
         ),
@@ -100,9 +105,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
 /// the previous one ends, so a "VICTORY" label would describe a fight that is
 /// no longer on screen.
 class _FightHeader extends StatelessWidget {
-  const _FightHeader({required this.monsterId, required this.victories});
+  const _FightHeader({
+    required this.monsterId,
+    required this.stage,
+    required this.isBoss,
+    required this.victories,
+  });
 
   final String monsterId;
+  final String stage;
+  final bool isBoss;
   final int victories;
 
   @override
@@ -113,8 +125,12 @@ class _FightHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            monsterId.toUpperCase(),
-            style: Theme.of(context).textTheme.labelSmall,
+            isBoss
+                ? '$stage  ·  ${monsterId.toUpperCase()}  ·  BOSS'
+                : '$stage  ·  ${monsterId.toUpperCase()}',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: isBoss ? GamePalette.emberBright : null,
+            ),
           ),
           Text(
             'SLAIN $victories',

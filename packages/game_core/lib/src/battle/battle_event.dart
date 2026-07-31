@@ -29,6 +29,13 @@ abstract class BattleEvent with _$BattleEvent {
     /// Who it landed on. For a death, the side that died.
     required BattleSide target,
 
+    /// Which monster in the group, when [target] is the monster side.
+    ///
+    /// A fight is against a group, so "the monster was hit" is not enough for
+    /// the scene to know which shape to flinch — and a skill that hits three
+    /// at once produces three events at the same timecode.
+    @Default(0) int targetIndex,
+
     /// Damage dealt. Zero for a dodge or a death marker.
     @BigNumConverter() @Default(BigNum.zero) BigNum damage,
   }) = _BattleEvent;
