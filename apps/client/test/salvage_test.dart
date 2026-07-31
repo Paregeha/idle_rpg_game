@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
+import 'package:idle_rpg/features/hero/materials_screen.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
 import 'support/test_app.dart';
 
-Future<GameController> withBag(
+Future<GameController> withGear(
   WidgetTester tester, {
   Map<String, OwnedItem> inventory = const {
     'i0': OwnedItem(id: 'i0', configId: 'blade'),
   },
-  Map<String, String> equipped = const {},
+  Map<String, String> equipped = const {'weapon': 'i0'},
 }) async {
   await pumpGame(tester);
   final controller = containerOf(tester).read(gameControllerProvider.notifier);
@@ -25,33 +26,40 @@ Future<GameController> withBag(
   return controller;
 }
 
-Future<void> openBag(WidgetTester tester) async {
-  await tester.tap(find.byIcon(Icons.inventory_2_outlined));
-  await tester.pumpAndSettle();
-}
-
-/// The card's own salvage button. The bag screen also says SALVAGE, twice.
+/// The card's own salvage button.
 Finder get cardSalvage => find.descendant(
   of: find.byType(ItemCard),
   matching: find.textContaining('SALVAGE'),
 );
 
-Future<void> openCard(WidgetTester tester) async {
-  await tester.tap(find.text('Blade').first);
-  await tester.pumpAndSettle();
-}
-
 void main() {
-  testWidgets('the card breaks an item down and says what it pays', (
+  testWidgets('worn gear is not offered for salvage', (tester) async {
+    // Stripping a slot as a side effect is how a player finds out from a
+    // weaker hero instead of from the game.
+    await withGear(tester);
+
+    await tester.tap(find.text('Blade'));
+    await tester.pumpAndSettle();
+
+    expect(cardSalvage, findsNothing);
+    expect(find.text('TAKE OFF'), findsOneWidget);
+  });
+
+  testWidgets('gear taken off is asked about, then broken down', (
     tester,
   ) async {
-    final controller = await withBag(tester);
-    await openBag(tester);
-    await openCard(tester);
+    final controller = await withGear(tester);
 
-    expect(cardSalvage, findsOneWidget);
+    await tester.tap(find.text('Blade'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('TAKE OFF'));
+    await tester.pumpAndSettle();
 
-    await tester.tap(cardSalvage);
+    // It is now waiting on a decision, and the lamp asks about it.
+    await tester.tap(find.byIcon(Icons.light_mode));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.textContaining('SELL'));
     await tester.pumpAndSettle();
 
     expect(controller.state!.inventory, isEmpty);
@@ -62,115 +70,30 @@ void main() {
     );
   });
 
-  testWidgets('worn gear is not offered for salvage', (tester) async {
-    // Stripping a slot as a side effect is how a player finds out from a
-    // weaker hero instead of from the game.
-    await withBag(tester, equipped: const {'weapon': 'i0'});
-    await openBag(tester);
-    await openCard(tester);
+  testWidgets('materials are a screen of their own', (tester) async {
+    // Gear does not live anywhere: it is on the hero or sold. What is worth
+    // keeping is what breaking it down paid.
+    await withGear(tester);
 
-    expect(cardSalvage, findsNothing);
-  });
-
-  testWidgets('a worn item opened from the bag can still be taken off', (
-    tester,
-  ) async {
-    // Opened from the bag there is no slot to hand in, so the card has to work
-    // out which slot is wearing it. Before that it offered only CLOSE.
-    final controller = await withBag(tester, equipped: const {'weapon': 'i0'});
-    await openBag(tester);
-    await openCard(tester);
-
-    await tester.tap(find.text('TAKE OFF'));
+    await tester.tap(find.byIcon(Icons.hexagon_outlined));
     await tester.pumpAndSettle();
 
-    expect(controller.state!.equipped, isEmpty);
+    expect(find.byType(MaterialsScreen), findsOneWidget);
+    for (final material in testBalanceConfig.materialResources) {
+      expect(find.text(material.toUpperCase()), findsOneWidget);
+    }
   });
 
-  testWidgets('nothing is broken down until the button is pressed', (
-    tester,
-  ) async {
-    // No standing rule, and no rule stored in the save. A game that destroys
-    // gear nobody asked it to destroy is a game the player stops trusting.
-    final controller = await withBag(tester);
-    await openBag(tester);
-
-    await tester.tap(find.widgetWithText(Container, 'COMMON').first);
-    await tester.pumpAndSettle();
-
-    expect(
-      controller.state!.inventory,
-      isNotEmpty,
-      reason: 'picking a rarity aims the button, it does not fire it',
-    );
-
-    await tester.tap(find.textContaining('SALVAGE COMMON'));
-    await tester.pumpAndSettle();
-
-    expect(controller.state!.inventory, isEmpty);
-  });
-
-  testWidgets('loot that arrives is left alone', (tester) async {
-    final controller = await withBag(tester, inventory: const {});
-
+  testWidgets('it shows how much of each is banked', (tester) async {
+    final controller = await withGear(tester);
     controller.state = controller.state!.copyWith(
-      inventory: const {'i9': OwnedItem(id: 'i9', configId: 'blade')},
+      resources: {'scrap': BigNum.fromDouble(42)},
     );
-    controller.resolveFight(won: true);
     await tester.pumpAndSettle();
 
-    expect(controller.state!.inventory, isNotEmpty);
-  });
-
-  testWidgets('the choice can be cleared by tapping it again', (tester) async {
-    await withBag(tester);
-    await openBag(tester);
-
-    await tester.tap(find.widgetWithText(Container, 'COMMON').first);
-    await tester.pumpAndSettle();
-    expect(find.textContaining('SALVAGE COMMON'), findsOneWidget);
-
-    await tester.tap(find.widgetWithText(Container, 'COMMON').first);
+    await tester.tap(find.byIcon(Icons.hexagon_outlined));
     await tester.pumpAndSettle();
 
-    expect(find.text('PICK A RARITY'), findsOneWidget);
-  });
-
-  testWidgets('the salvage button names the rank it will take', (tester) async {
-    // There is no undo for gear that has been broken down, so it must not be
-    // pressable blind — and with nothing chosen it says what it is waiting for.
-    await withBag(tester);
-    await openBag(tester);
-
-    expect(find.text('PICK A RARITY'), findsOneWidget);
-
-    await tester.tap(find.widgetWithText(Container, 'COMMON').first);
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('SALVAGE COMMON'), findsOneWidget);
-  });
-
-  testWidgets('materials are a tab of the bag, not a currency on top', (
-    tester,
-  ) async {
-    final controller = await withBag(tester);
-    await openBag(tester);
-    await openCard(tester);
-    await tester.tap(cardSalvage);
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('MATERIALS'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('SCRAP'), findsOneWidget);
-    // Scoped to the row: the tab header carries a count of its own, and a
-    // bare text finder would happily match that instead.
-    expect(
-      find.descendant(
-        of: find.ancestor(of: find.text('SCRAP'), matching: find.byType(Row)),
-        matching: find.text(controller.state!.resources['scrap']!.format()),
-      ),
-      findsOneWidget,
-    );
+    expect(find.text(BigNum.fromDouble(42).format()), findsOneWidget);
   });
 }

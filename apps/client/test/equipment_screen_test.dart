@@ -1,14 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
 import 'support/test_app.dart';
-
-/// Opens the bag from home, where it sits beside the lamp.
-Future<void> openBag(WidgetTester tester) async {
-  await tapVisible(tester, find.byIcon(Icons.inventory_2_outlined));
-}
 
 /// Scrolls a control into view before tapping it, and lets any snack bar clear
 /// first — one left on screen silently swallows the next tap.
@@ -22,13 +16,6 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
-  testWidgets('the bag says what to do when it is empty', (tester) async {
-    await pumpGame(tester);
-    await openBag(tester);
-
-    expect(find.textContaining('Light the lamp'), findsOneWidget);
-  });
-
   testWidgets('every slot is shown on home, empty or not', (tester) async {
     // There is no hero tab to hide them behind: the grid on home is the only
     // place gear is worn, so a slot missing from it cannot be filled at all.
@@ -115,23 +102,5 @@ void main() {
       0,
       reason: 'the second pass has nothing better to put on',
     );
-  });
-
-  testWidgets('tapping a slot opens the bag already filtered to it', (
-    tester,
-  ) async {
-    await pumpGame(tester);
-
-    await tapVisible(tester, find.textContaining('LIGHT THE LAMP'));
-    // The pull has to be answered — the bag holds decisions, not gear.
-    await tapVisible(tester, find.textContaining('SELL'));
-
-    await tapVisible(tester, find.text('trinket'));
-
-    // The bag opens on that slot: its name is the title, and the filter is
-    // already set to what fits there.
-    // Twice: once as the screen title, once as the chip already selected.
-    expect(find.text('TRINKET'), findsNWidgets(2));
-    expect(find.widgetWithText(ChoiceChip, 'TRINKET'), findsOneWidget);
   });
 }

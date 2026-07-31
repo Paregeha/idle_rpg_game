@@ -105,19 +105,20 @@ void main() {
     );
   });
 
-  testWidgets('an item in the bag is offered EQUIP, not TAKE OFF', (
+  testWidgets('an undecided item is offered EQUIP, not TAKE OFF', (
     tester,
   ) async {
     final controller = await armed(tester);
     controller.state = controller.state!.copyWith(equipped: const {});
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('weapon'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Blade').first);
-    await tester.pumpAndSettle();
+    // Nothing is worn, so the item is waiting on a decision and the lamp is
+    // where it is asked about.
+    await tester.tap(find.byIcon(Icons.light_mode));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
 
-    expect(find.text('EQUIP'), findsOneWidget);
+    expect(find.text('WEAR IT'), findsOneWidget);
     expect(find.text('TAKE OFF'), findsNothing);
   });
 

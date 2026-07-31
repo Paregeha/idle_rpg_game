@@ -32,12 +32,9 @@ class LampPanel extends ConsumerWidget {
       child: Row(
         children: [
           _SideButton(
-            icon: Icons.inventory_2_outlined,
-            // What is still undecided, not what is owned: everything else is
-            // on the hero, and counting that here would read as clutter the
-            // player has to clear.
-            label: '$waiting',
-            onTap: () => context.push(Routes.inventory),
+            icon: Icons.hexagon_outlined,
+            label: 'MATS',
+            onTap: () => context.push(Routes.materials),
           ),
           Expanded(
             child: GestureDetector(

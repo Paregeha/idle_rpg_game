@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
-import 'package:go_router/go_router.dart';
-import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/item_visuals.dart';
 import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
@@ -111,9 +109,9 @@ class SpecialCell extends ConsumerWidget {
     final better = hasUpgradeFor(state, slot.id, config);
 
     return GestureDetector(
-      onTap: () => owned == null
-          ? context.push(Routes.inventoryFor(slot.id))
-          : ItemCard.show(context, itemId: owned.id, slot: slot),
+      onTap: owned == null
+          ? null
+          : () => ItemCard.show(context, itemId: owned.id, slot: slot),
       child: Container(
         decoration: BoxDecoration(
           color: filled

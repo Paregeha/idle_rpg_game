@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
-import 'package:go_router/go_router.dart';
-import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_visuals.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
@@ -610,14 +608,6 @@ class _Footer extends StatelessWidget {
             onPressed: () {
               onUnequip();
               Navigator.of(context).pop();
-            },
-          ),
-          _Action(
-            label: 'SWAP',
-            colour: GamePalette.patina,
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.push(Routes.inventoryFor(wornSlotId));
             },
           ),
         ] else ...[
