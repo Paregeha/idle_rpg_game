@@ -9,7 +9,11 @@ part 'battle_event.g.dart';
 enum BattleSide { hero, monster }
 
 /// What happened on one swing.
-enum BattleEventKind { hit, crit, dodge, death }
+///
+/// A skill cast is its own kind rather than a hit with a big number: the scene
+/// should be able to draw it differently, and a player who cannot tell a cast
+/// from a lucky crit has no reason to believe the skill does anything.
+enum BattleEventKind { hit, crit, dodge, death, skill }
 
 /// One entry in the battle journal.
 ///
@@ -38,6 +42,9 @@ abstract class BattleEvent with _$BattleEvent {
 
     /// Damage dealt. Zero for a dodge or a death marker.
     @BigNumConverter() @Default(BigNum.zero) BigNum damage,
+
+    /// Which skill fired, for [BattleEventKind.skill]. Empty otherwise.
+    @Default('') String skillId,
   }) = _BattleEvent;
 
   factory BattleEvent.fromJson(Map<String, dynamic> json) =>

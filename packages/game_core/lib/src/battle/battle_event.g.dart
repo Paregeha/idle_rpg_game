@@ -15,6 +15,7 @@ _BattleEvent _$BattleEventFromJson(Map<String, dynamic> json) => _BattleEvent(
   damage: json['damage'] == null
       ? BigNum.zero
       : const BigNumConverter().fromJson(json['damage'] as String),
+  skillId: json['skillId'] as String? ?? '',
 );
 
 Map<String, dynamic> _$BattleEventToJson(_BattleEvent instance) =>
@@ -25,6 +26,7 @@ Map<String, dynamic> _$BattleEventToJson(_BattleEvent instance) =>
       'target': _$BattleSideEnumMap[instance.target]!,
       'targetIndex': instance.targetIndex,
       'damage': const BigNumConverter().toJson(instance.damage),
+      'skillId': instance.skillId,
     };
 
 const _$BattleEventKindEnumMap = {
@@ -32,6 +34,7 @@ const _$BattleEventKindEnumMap = {
   BattleEventKind.crit: 'crit',
   BattleEventKind.dodge: 'dodge',
   BattleEventKind.death: 'death',
+  BattleEventKind.skill: 'skill',
 };
 
 const _$BattleSideEnumMap = {

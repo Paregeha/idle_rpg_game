@@ -46,6 +46,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
       hero: heroStats,
       monsters: encounter.monsters,
       rng: SeededRandom(state.rngSeed ^ (state.lastTickAtMs + _fightNumber)),
+      // Which skills fire is a function of the save, like everything else the
+      // fight reads — the scene never decides what the hero knows.
+      skills: activeSkills(state, config),
       maxDuration: const Duration(seconds: 30),
     );
 

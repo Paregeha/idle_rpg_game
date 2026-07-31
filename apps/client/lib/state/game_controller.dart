@@ -275,6 +275,34 @@ class GameController extends Notifier<PlayerState?> {
     return result;
   }
 
+  /// Raises a skill one level, paying in duplicate copies.
+  SkillUpgradeResult? upgradeSkillById(String skillId) {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return null;
+
+    final result = core.upgradeSkill(current, skillId, config);
+    if (result.upgraded) {
+      state = result.state;
+      unawaited(saveNow());
+    }
+    return result;
+  }
+
+  /// Opens one skill pack.
+  SkillPackResult? openSkillPack() {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return null;
+
+    final result = core.openSkillPack(current, config);
+    if (result.opened) {
+      state = result.state;
+      unawaited(saveNow());
+    }
+    return result;
+  }
+
   /// Records the outcome of a fight and moves the player on.
   ///
   /// Progression lives here rather than in the battle screen: the server will
@@ -304,9 +332,28 @@ class GameController extends Notifier<PlayerState?> {
 
     final paid = advanced.copyWith(resources: resources, earnedThisRun: earned);
 
-    state = encounter == null
+    var next = encounter == null
         ? paid
         : grantExperience(paid, encounter.experience, config).state;
+
+    // Loot is rolled here for the same reason the reward is: the scene is a
+    // recording. Once per monster in the wave, because that is what "a monster
+    // drops" means — the group size is already a balance lever.
+    //
+    // Item first, then skill, in a fixed order: the server replays these draws
+    // from the same save, and swapping them would produce a different fight's
+    // worth of loot from the same seed.
+    if (encounter != null) {
+      final monster = config.monsters[encounter.monsterId];
+      for (var i = 0; i < encounter.monsters.length; i++) {
+        if (monster != null) {
+          next = rollDrop(next, monster, config).state;
+        }
+        next = rollSkillDrop(next, config, fromBoss: encounter.isBoss).state;
+      }
+    }
+
+    state = next;
     unawaited(saveNow());
   }
 

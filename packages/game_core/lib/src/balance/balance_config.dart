@@ -9,6 +9,7 @@ import 'package:game_core/src/balance/lamp_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
 import 'package:game_core/src/balance/progression_config.dart';
+import 'package:game_core/src/balance/skill_config.dart';
 import 'package:game_core/src/balance/slot_config.dart';
 import 'package:game_core/src/balance/start_config.dart';
 import 'package:game_core/src/items/item_config.dart';
@@ -65,6 +66,12 @@ abstract class BalanceConfig with _$BalanceConfig {
     @Default(<String, RarityConfig>{}) Map<String, RarityConfig> rarities,
 
     @Default(<String, ItemConfig>{}) Map<String, ItemConfig> items,
+
+    /// Skills the hero can learn, by id.
+    @Default(<String, SkillConfig>{}) Map<String, SkillConfig> skills,
+
+    /// Where skill copies come from: the pack, bosses and monsters.
+    @Default(SkillPackConfig()) SkillPackConfig skillPack,
 
     @Default(StartConfig()) StartConfig start,
 
@@ -319,6 +326,100 @@ abstract class BalanceConfig with _$BalanceConfig {
         'guarantees "${lamp.pityRarity}", which no rarity defines',
         field: 'lamp.pityRarity',
       );
+    }
+
+    for (final entry in skills.entries) {
+      final path = 'skills.${entry.key}';
+      final skill = entry.value;
+
+      if (skill.cooldownSeconds <= 0) {
+        throw BalanceConfigException(
+          'must be positive, or the skill would fire every frame',
+          field: '$path.cooldownSeconds',
+        );
+      }
+      if (skill.damageMultiplier <= 0) {
+        throw BalanceConfigException(
+          'must be positive, or casting the skill would do nothing',
+          field: '$path.damageMultiplier',
+        );
+      }
+      if (skill.levelMultiplier < 1) {
+        throw BalanceConfigException(
+          'must be at least 1, or levelling the skill would weaken it',
+          field: '$path.levelMultiplier',
+        );
+      }
+      if (skill.maxLevel < 1) {
+        throw BalanceConfigException(
+          'must be at least 1, or the skill could never be used',
+          field: '$path.maxLevel',
+        );
+      }
+      if (skill.copiesBase < 1) {
+        throw BalanceConfigException(
+          'must be at least 1: a free upgrade is not an upgrade',
+          field: '$path.copiesBase',
+        );
+      }
+      if (skill.copiesGrowth < 1) {
+        throw BalanceConfigException(
+          'must be at least 1, or later levels would cost fewer copies than '
+          'earlier ones',
+          field: '$path.copiesGrowth',
+        );
+      }
+      if (skill.unlockAtLevel < 0) {
+        throw BalanceConfigException(
+          'must not be negative',
+          field: '$path.unlockAtLevel',
+        );
+      }
+      if (!rarities.containsKey(skill.rarity)) {
+        throw BalanceConfigException(
+          'is "${skill.rarity}", which no rarity defines',
+          field: '$path.rarity',
+        );
+      }
+    }
+
+    for (final entry in skillPack.weights.entries) {
+      if (!rarities.containsKey(entry.key)) {
+        throw BalanceConfigException(
+          'weighs "${entry.key}", which no rarity defines',
+          field: 'skillPack.weights',
+        );
+      }
+      if (entry.value < 0) {
+        throw BalanceConfigException(
+          'must not be negative',
+          field: 'skillPack.weights.${entry.key}',
+        );
+      }
+    }
+    if (skillPack.weights.isNotEmpty && skillPack.totalWeight <= 0) {
+      throw const BalanceConfigException(
+        'sum to zero, so a pack could never pick anything',
+        field: 'skillPack.weights',
+      );
+    }
+    if (skillPack.pityRarity.isNotEmpty &&
+        !rarities.containsKey(skillPack.pityRarity)) {
+      throw BalanceConfigException(
+        'guarantees "${skillPack.pityRarity}", which no rarity defines',
+        field: 'skillPack.pityRarity',
+      );
+    }
+    for (final chance in {
+      'bossDropChance': skillPack.bossDropChance,
+      'monsterDropChance': skillPack.monsterDropChance,
+    }.entries) {
+      if (chance.value < 0 || chance.value > 1) {
+        throw BalanceConfigException(
+          'must be a probability in 0..1',
+          field: 'skillPack.${chance.key}',
+        );
+      }
     }
 
     for (final entry in rarities.entries) {

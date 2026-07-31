@@ -142,3 +142,25 @@ scene is staged below them via an explicit `topInset` — the hero must not trad
 blows behind the gold count. Each currency appears in exactly one place: the
 lamp count lives on the lamp button, beside the tap that spends it, and a
 shipped-config test refuses to let it also appear in the top row.
+
+## ADR-009 · A skill cast consumes no randomness
+
+Skills fire on their own cooldowns inside `resolveBattle`, but a cast rolls
+neither dodge nor crit. It is a certainty whose power comes from its multiplier.
+
+The alternative — rolling a cast like a swing — would mean that learning a skill
+changes how many draws the fight consumes, and therefore re-rolls every swing
+after it. Two players with the same save and the same seed would then see
+different fights depending on which skills they happened to own, and the server
+could not check a claim without knowing the skill list exactly. The property is
+pinned by a test that resolves the same fight with and without a skill and
+compares every non-cast event.
+
+The cost is that skills cannot crit or be dodged, which removes a source of
+variety from the fight. That is a real loss and a deliberate one: determinism is
+what makes the server able to recompute a fight at all (ADR-001), and variety
+can come from what skills do rather than from whether they land.
+
+Ties are broken in a fixed order — hero swing, then skills, then monsters —
+because a tie broken by map iteration order is a fight the server cannot
+reproduce. `activeSkills` sorts by id for the same reason.

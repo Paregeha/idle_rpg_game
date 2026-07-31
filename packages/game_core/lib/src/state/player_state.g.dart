@@ -40,6 +40,12 @@ _PlayerState _$PlayerStateFromJson(Map<String, dynamic> json) => _PlayerState(
         (k, e) => MapEntry(k, (e as num).toInt()),
       ) ??
       const <String, int>{},
+  skillCopies:
+      (json['skillCopies'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, (e as num).toInt()),
+      ) ??
+      const <String, int>{},
+  skillPity: (json['skillPity'] as num?)?.toInt() ?? 0,
   heroLevel: (json['heroLevel'] as num?)?.toInt() ?? 0,
   heroExperience: json['heroExperience'] == null
       ? BigNum.zero
@@ -84,6 +90,8 @@ Map<String, dynamic> _$PlayerStateToJson(_PlayerState instance) =>
       'stage': instance.stage,
       'wave': instance.wave,
       'skills': instance.skills,
+      'skillCopies': instance.skillCopies,
+      'skillPity': instance.skillPity,
       'heroLevel': instance.heroLevel,
       'heroExperience': const BigNumConverter().toJson(instance.heroExperience),
       'inventory': instance.inventory.map((k, e) => MapEntry(k, e.toJson())),

@@ -599,5 +599,65 @@
     ],
     "levelPerStage": 1,
     "bossLevelBonus": 2
+  },
+  "skills": {
+    "cinder_slash": {
+      "rarity": "common",
+      "unlockAtLevel": 1,
+      "cooldownSeconds": 6.0,
+      "damageMultiplier": 2.2,
+      "levelMultiplier": 1.18,
+      "targets": 1,
+      "maxLevel": 10,
+      "copiesBase": 2,
+      "copiesGrowth": 1.6
+    },
+    "hammer_fall": {
+      "rarity": "rare",
+      "unlockAtLevel": 5,
+      "cooldownSeconds": 9.0,
+      "damageMultiplier": 3.6,
+      "levelMultiplier": 1.2,
+      "targets": 1,
+      "maxLevel": 10,
+      "copiesBase": 2,
+      "copiesGrowth": 1.7
+    },
+    "ember_wave": {
+      "rarity": "epic",
+      "unlockAtLevel": 12,
+      "cooldownSeconds": 12.0,
+      "damageMultiplier": 2.0,
+      "levelMultiplier": 1.22,
+      "targets": 0,
+      "maxLevel": 10,
+      "copiesBase": 3,
+      "copiesGrowth": 1.8
+    },
+    "forge_brand": {
+      "rarity": "legendary",
+      "unlockAtLevel": 25,
+      "cooldownSeconds": 15.0,
+      "damageMultiplier": 3.4,
+      "levelMultiplier": 1.25,
+      "targets": 0,
+      "maxLevel": 10,
+      "copiesBase": 3,
+      "copiesGrowth": 1.9
+    }
+  },
+  "skillPack": {
+    "costResource": "gems",
+    "costAmount": 50.0,
+    "weights": {
+      "common": 70.0,
+      "rare": 22.0,
+      "epic": 7.0,
+      "legendary": 1.0
+    },
+    "pityThreshold": 40,
+    "pityRarity": "legendary",
+    "bossDropChance": 0.15,
+    "monsterDropChance": 0.004
   }
 }

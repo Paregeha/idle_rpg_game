@@ -118,6 +118,56 @@ void main() {
     }
   });
 
+  test('the skill track is reachable without paying', () {
+    // Packs are the fast lane, not the only lane. A skill that can only be
+    // bought is a skill a non-paying player never learns exists.
+    expect(config.skills, isNotEmpty);
+    expect(
+      config.skillPack.bossDropChance,
+      greaterThan(0),
+      reason: 'bosses must be a reason to push deeper',
+    );
+    expect(
+      config.skillPack.monsterDropChance,
+      greaterThan(0),
+      reason: 'ordinary kills must pay something, however rarely',
+    );
+    expect(
+      config.skillPack.bossDropChance,
+      greaterThan(config.skillPack.monsterDropChance),
+      reason: 'a boss that drops no better than a slime is not a boss',
+    );
+  });
+
+  test('every skill rarity is one the pack can actually draw', () {
+    // A skill of a rarity the pack never rolls could still drop from a kill,
+    // but its pity guarantee would be a lie.
+    for (final entry in config.skills.entries) {
+      expect(
+        config.skillPack.weights[entry.value.rarity],
+        isNotNull,
+        reason: '${entry.key} is ${entry.value.rarity}, which is never weighed',
+      );
+    }
+  });
+
+  test('skills unlock across the levels rather than all at once', () {
+    // Four skills that all switch on at level 1 is one skill with four names.
+    final unlocks = config.skills.values
+        .map((skill) => skill.unlockAtLevel)
+        .toSet();
+
+    expect(unlocks.length, config.skills.length);
+  });
+
+  test('the pack is priced in something a generator produces', () {
+    expect(
+      config.generators.values.map((g) => g.produces),
+      contains(config.skillPack.costResource),
+      reason: 'a pack priced in a currency nothing pays out is unbuyable',
+    );
+  });
+
   test('prestige actually pays off', () {
     expect(config.prestige.bonusPerPoint > BigNum.zero, isTrue);
     expect(config.prestige.currencyExponent, lessThanOrEqualTo(1));

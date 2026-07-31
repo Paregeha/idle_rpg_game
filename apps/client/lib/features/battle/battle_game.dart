@@ -151,6 +151,13 @@ class BattleGame extends FlameGame {
           event.damage,
           crit: event.kind == BattleEventKind.crit,
         );
+      case BattleEventKind.skill:
+        // The hero always casts, so the attacker is the hero regardless of
+        // which monster the event names.
+        _hero.lunge();
+        defender.flinch();
+        _applyDamage(event);
+        _showDamage(defender, event.damage, crit: false, fromSkill: true);
       case BattleEventKind.dodge:
         attacker.lunge();
         defender.dodge();
@@ -184,6 +191,7 @@ class BattleGame extends FlameGame {
     CombatantComponent target,
     BigNum damage, {
     required bool crit,
+    bool fromSkill = false,
   }) {
     // Spread the numbers so a burst does not stack into an unreadable pile,
     // and keep them inside the panel: a number that floats out of the scene
@@ -199,6 +207,7 @@ class BattleGame extends FlameGame {
       DamageNumber(
         text: damage.format(),
         crit: crit,
+        fromSkill: fromSkill,
         position: Vector2(
           wanted.x.clamp(30.0, size.x - 30),
           wanted.y.clamp(highest, lowest),

@@ -14,19 +14,28 @@ class DamageNumber extends TextComponent {
     required String text,
     required bool crit,
     required Vector2 position,
+    this.fromSkill = false,
   }) : super(
          text: text,
          position: position,
          anchor: Anchor.center,
          textRenderer: TextPaint(
            style: TextStyle(
-             fontSize: crit ? 26 : 18,
-             fontWeight: crit ? FontWeight.w800 : FontWeight.w600,
-             color: crit ? GamePalette.emberBright : GamePalette.bone,
+             fontSize: fromSkill ? 24 : (crit ? 26 : 18),
+             fontWeight: fromSkill || crit ? FontWeight.w800 : FontWeight.w600,
+             // A cast reads as the hero's own colour rather than the crit
+             // colour: a player who cannot tell a skill from a lucky crit has
+             // no reason to believe the skill does anything.
+             color: fromSkill
+                 ? GamePalette.patina
+                 : (crit ? GamePalette.emberBright : GamePalette.bone),
              fontFeatures: const [FontFeature.tabularFigures()],
            ),
          ),
        );
+
+  /// Whether this number came from a skill rather than a swing.
+  final bool fromSkill;
 
   static const _lifetime = 0.8;
 

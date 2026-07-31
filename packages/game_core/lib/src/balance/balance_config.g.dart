@@ -57,6 +57,14 @@ _BalanceConfig _$BalanceConfigFromJson(
         (k, e) => MapEntry(k, ItemConfig.fromJson(e as Map<String, dynamic>)),
       ) ??
       const <String, ItemConfig>{},
+  skills:
+      (json['skills'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, SkillConfig.fromJson(e as Map<String, dynamic>)),
+      ) ??
+      const <String, SkillConfig>{},
+  skillPack: json['skillPack'] == null
+      ? const SkillPackConfig()
+      : SkillPackConfig.fromJson(json['skillPack'] as Map<String, dynamic>),
   start: json['start'] == null
       ? const StartConfig()
       : StartConfig.fromJson(json['start'] as Map<String, dynamic>),
@@ -77,6 +85,8 @@ Map<String, dynamic> _$BalanceConfigToJson(_BalanceConfig instance) =>
       'slots': instance.slots.map((e) => e.toJson()).toList(),
       'rarities': instance.rarities.map((k, e) => MapEntry(k, e.toJson())),
       'items': instance.items.map((k, e) => MapEntry(k, e.toJson())),
+      'skills': instance.skills.map((k, e) => MapEntry(k, e.toJson())),
+      'skillPack': instance.skillPack.toJson(),
       'start': instance.start.toJson(),
       'offlineCapMs': instance.offlineCapMs,
     };

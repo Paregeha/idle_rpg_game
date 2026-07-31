@@ -29,12 +29,15 @@ mixin _$PlayerState {
 /// the upgrades the run exists to buy.
 @BigNumConverter() Map<String, BigNum> get earnedThisRun;/// Chapter, stage and wave: where the player is in the world.
  int get chapter; int get stage;/// Waves cleared in this stage. At `wavesPerStage` the boss is next.
- int get wave;/// Skill levels, by skill id.
+ int get wave;/// Skill levels, by skill id. A skill absent here is one the player has
+/// never seen.
+ Map<String, int> get skills;/// Unspent duplicate copies, by skill id.
 ///
-/// Reserved now and filled in with the skill system later. Adding a field
-/// to the save format is a JSON edit today and a database migration once
-/// the server owns this state.
- Map<String, int> get skills;/// The hero's own level, earned by killing things.
+/// Skills are not instanced the way items are — a second copy of the same
+/// skill is a number, not another object — so duplicates live in their own
+/// map rather than as entries in the inventory.
+ Map<String, int> get skillCopies;/// Skill packs opened since the last guaranteed pull.
+ int get skillPity;/// The hero's own level, earned by killing things.
  int get heroLevel;/// Experience banked towards the next level.
 ///
 /// Only the remainder is kept, not a lifetime total: the total would be a
@@ -69,16 +72,16 @@ $PlayerStateCopyWith<PlayerState> get copyWith => _$PlayerStateCopyWithImpl<Play
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlayerState&&(identical(other.lastTickAtMs, lastTickAtMs) || other.lastTickAtMs == lastTickAtMs)&&(identical(other.rngSeed, rngSeed) || other.rngSeed == rngSeed)&&(identical(other.version, version) || other.version == version)&&(identical(other.carryOverMs, carryOverMs) || other.carryOverMs == carryOverMs)&&const DeepCollectionEquality().equals(other.resources, resources)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.upgrades, upgrades)&&const DeepCollectionEquality().equals(other.earnedThisRun, earnedThisRun)&&(identical(other.chapter, chapter) || other.chapter == chapter)&&(identical(other.stage, stage) || other.stage == stage)&&(identical(other.wave, wave) || other.wave == wave)&&const DeepCollectionEquality().equals(other.skills, skills)&&(identical(other.heroLevel, heroLevel) || other.heroLevel == heroLevel)&&(identical(other.heroExperience, heroExperience) || other.heroExperience == heroExperience)&&const DeepCollectionEquality().equals(other.inventory, inventory)&&const DeepCollectionEquality().equals(other.equipped, equipped)&&const DeepCollectionEquality().equals(other.rngState, rngState)&&(identical(other.itemsCreated, itemsCreated) || other.itemsCreated == itemsCreated)&&(identical(other.pityCounter, pityCounter) || other.pityCounter == pityCounter)&&(identical(other.prestige, prestige) || other.prestige == prestige));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlayerState&&(identical(other.lastTickAtMs, lastTickAtMs) || other.lastTickAtMs == lastTickAtMs)&&(identical(other.rngSeed, rngSeed) || other.rngSeed == rngSeed)&&(identical(other.version, version) || other.version == version)&&(identical(other.carryOverMs, carryOverMs) || other.carryOverMs == carryOverMs)&&const DeepCollectionEquality().equals(other.resources, resources)&&const DeepCollectionEquality().equals(other.generators, generators)&&const DeepCollectionEquality().equals(other.upgrades, upgrades)&&const DeepCollectionEquality().equals(other.earnedThisRun, earnedThisRun)&&(identical(other.chapter, chapter) || other.chapter == chapter)&&(identical(other.stage, stage) || other.stage == stage)&&(identical(other.wave, wave) || other.wave == wave)&&const DeepCollectionEquality().equals(other.skills, skills)&&const DeepCollectionEquality().equals(other.skillCopies, skillCopies)&&(identical(other.skillPity, skillPity) || other.skillPity == skillPity)&&(identical(other.heroLevel, heroLevel) || other.heroLevel == heroLevel)&&(identical(other.heroExperience, heroExperience) || other.heroExperience == heroExperience)&&const DeepCollectionEquality().equals(other.inventory, inventory)&&const DeepCollectionEquality().equals(other.equipped, equipped)&&const DeepCollectionEquality().equals(other.rngState, rngState)&&(identical(other.itemsCreated, itemsCreated) || other.itemsCreated == itemsCreated)&&(identical(other.pityCounter, pityCounter) || other.pityCounter == pityCounter)&&(identical(other.prestige, prestige) || other.prestige == prestige));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,lastTickAtMs,rngSeed,version,carryOverMs,const DeepCollectionEquality().hash(resources),const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(upgrades),const DeepCollectionEquality().hash(earnedThisRun),chapter,stage,wave,const DeepCollectionEquality().hash(skills),heroLevel,heroExperience,const DeepCollectionEquality().hash(inventory),const DeepCollectionEquality().hash(equipped),const DeepCollectionEquality().hash(rngState),itemsCreated,pityCounter,prestige]);
+int get hashCode => Object.hashAll([runtimeType,lastTickAtMs,rngSeed,version,carryOverMs,const DeepCollectionEquality().hash(resources),const DeepCollectionEquality().hash(generators),const DeepCollectionEquality().hash(upgrades),const DeepCollectionEquality().hash(earnedThisRun),chapter,stage,wave,const DeepCollectionEquality().hash(skills),const DeepCollectionEquality().hash(skillCopies),skillPity,heroLevel,heroExperience,const DeepCollectionEquality().hash(inventory),const DeepCollectionEquality().hash(equipped),const DeepCollectionEquality().hash(rngState),itemsCreated,pityCounter,prestige]);
 
 @override
 String toString() {
-  return 'PlayerState(lastTickAtMs: $lastTickAtMs, rngSeed: $rngSeed, version: $version, carryOverMs: $carryOverMs, resources: $resources, generators: $generators, upgrades: $upgrades, earnedThisRun: $earnedThisRun, chapter: $chapter, stage: $stage, wave: $wave, skills: $skills, heroLevel: $heroLevel, heroExperience: $heroExperience, inventory: $inventory, equipped: $equipped, rngState: $rngState, itemsCreated: $itemsCreated, pityCounter: $pityCounter, prestige: $prestige)';
+  return 'PlayerState(lastTickAtMs: $lastTickAtMs, rngSeed: $rngSeed, version: $version, carryOverMs: $carryOverMs, resources: $resources, generators: $generators, upgrades: $upgrades, earnedThisRun: $earnedThisRun, chapter: $chapter, stage: $stage, wave: $wave, skills: $skills, skillCopies: $skillCopies, skillPity: $skillPity, heroLevel: $heroLevel, heroExperience: $heroExperience, inventory: $inventory, equipped: $equipped, rngState: $rngState, itemsCreated: $itemsCreated, pityCounter: $pityCounter, prestige: $prestige)';
 }
 
 
@@ -89,7 +92,7 @@ abstract mixin class $PlayerStateCopyWith<$Res>  {
   factory $PlayerStateCopyWith(PlayerState value, $Res Function(PlayerState) _then) = _$PlayerStateCopyWithImpl;
 @useResult
 $Res call({
- int lastTickAtMs, int rngSeed, int version, int carryOverMs,@BigNumConverter() Map<String, BigNum> resources, Map<String, GeneratorState> generators, Map<String, int> upgrades,@BigNumConverter() Map<String, BigNum> earnedThisRun, int chapter, int stage, int wave, Map<String, int> skills, int heroLevel,@BigNumConverter() BigNum heroExperience, Map<String, OwnedItem> inventory, Map<String, String> equipped, List<int> rngState, int itemsCreated, int pityCounter, PrestigeState prestige
+ int lastTickAtMs, int rngSeed, int version, int carryOverMs,@BigNumConverter() Map<String, BigNum> resources, Map<String, GeneratorState> generators, Map<String, int> upgrades,@BigNumConverter() Map<String, BigNum> earnedThisRun, int chapter, int stage, int wave, Map<String, int> skills, Map<String, int> skillCopies, int skillPity, int heroLevel,@BigNumConverter() BigNum heroExperience, Map<String, OwnedItem> inventory, Map<String, String> equipped, List<int> rngState, int itemsCreated, int pityCounter, PrestigeState prestige
 });
 
 
@@ -106,7 +109,7 @@ class _$PlayerStateCopyWithImpl<$Res>
 
 /// Create a copy of PlayerState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? lastTickAtMs = null,Object? rngSeed = null,Object? version = null,Object? carryOverMs = null,Object? resources = null,Object? generators = null,Object? upgrades = null,Object? earnedThisRun = null,Object? chapter = null,Object? stage = null,Object? wave = null,Object? skills = null,Object? heroLevel = null,Object? heroExperience = null,Object? inventory = null,Object? equipped = null,Object? rngState = null,Object? itemsCreated = null,Object? pityCounter = null,Object? prestige = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? lastTickAtMs = null,Object? rngSeed = null,Object? version = null,Object? carryOverMs = null,Object? resources = null,Object? generators = null,Object? upgrades = null,Object? earnedThisRun = null,Object? chapter = null,Object? stage = null,Object? wave = null,Object? skills = null,Object? skillCopies = null,Object? skillPity = null,Object? heroLevel = null,Object? heroExperience = null,Object? inventory = null,Object? equipped = null,Object? rngState = null,Object? itemsCreated = null,Object? pityCounter = null,Object? prestige = null,}) {
   return _then(_self.copyWith(
 lastTickAtMs: null == lastTickAtMs ? _self.lastTickAtMs : lastTickAtMs // ignore: cast_nullable_to_non_nullable
 as int,rngSeed: null == rngSeed ? _self.rngSeed : rngSeed // ignore: cast_nullable_to_non_nullable
@@ -120,7 +123,9 @@ as Map<String, BigNum>,chapter: null == chapter ? _self.chapter : chapter // ign
 as int,stage: null == stage ? _self.stage : stage // ignore: cast_nullable_to_non_nullable
 as int,wave: null == wave ? _self.wave : wave // ignore: cast_nullable_to_non_nullable
 as int,skills: null == skills ? _self.skills : skills // ignore: cast_nullable_to_non_nullable
-as Map<String, int>,heroLevel: null == heroLevel ? _self.heroLevel : heroLevel // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,skillCopies: null == skillCopies ? _self.skillCopies : skillCopies // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,skillPity: null == skillPity ? _self.skillPity : skillPity // ignore: cast_nullable_to_non_nullable
+as int,heroLevel: null == heroLevel ? _self.heroLevel : heroLevel // ignore: cast_nullable_to_non_nullable
 as int,heroExperience: null == heroExperience ? _self.heroExperience : heroExperience // ignore: cast_nullable_to_non_nullable
 as BigNum,inventory: null == inventory ? _self.inventory : inventory // ignore: cast_nullable_to_non_nullable
 as Map<String, OwnedItem>,equipped: null == equipped ? _self.equipped : equipped // ignore: cast_nullable_to_non_nullable
@@ -222,10 +227,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  int chapter,  int stage,  int wave,  Map<String, int> skills,  int heroLevel, @BigNumConverter()  BigNum heroExperience,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  List<int> rngState,  int itemsCreated,  int pityCounter,  PrestigeState prestige)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  int chapter,  int stage,  int wave,  Map<String, int> skills,  Map<String, int> skillCopies,  int skillPity,  int heroLevel, @BigNumConverter()  BigNum heroExperience,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  List<int> rngState,  int itemsCreated,  int pityCounter,  PrestigeState prestige)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlayerState() when $default != null:
-return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.chapter,_that.stage,_that.wave,_that.skills,_that.heroLevel,_that.heroExperience,_that.inventory,_that.equipped,_that.rngState,_that.itemsCreated,_that.pityCounter,_that.prestige);case _:
+return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.chapter,_that.stage,_that.wave,_that.skills,_that.skillCopies,_that.skillPity,_that.heroLevel,_that.heroExperience,_that.inventory,_that.equipped,_that.rngState,_that.itemsCreated,_that.pityCounter,_that.prestige);case _:
   return orElse();
 
 }
@@ -243,10 +248,10 @@ return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  int chapter,  int stage,  int wave,  Map<String, int> skills,  int heroLevel, @BigNumConverter()  BigNum heroExperience,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  List<int> rngState,  int itemsCreated,  int pityCounter,  PrestigeState prestige)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  int chapter,  int stage,  int wave,  Map<String, int> skills,  Map<String, int> skillCopies,  int skillPity,  int heroLevel, @BigNumConverter()  BigNum heroExperience,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  List<int> rngState,  int itemsCreated,  int pityCounter,  PrestigeState prestige)  $default,) {final _that = this;
 switch (_that) {
 case _PlayerState():
-return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.chapter,_that.stage,_that.wave,_that.skills,_that.heroLevel,_that.heroExperience,_that.inventory,_that.equipped,_that.rngState,_that.itemsCreated,_that.pityCounter,_that.prestige);case _:
+return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.chapter,_that.stage,_that.wave,_that.skills,_that.skillCopies,_that.skillPity,_that.heroLevel,_that.heroExperience,_that.inventory,_that.equipped,_that.rngState,_that.itemsCreated,_that.pityCounter,_that.prestige);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -263,10 +268,10 @@ return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  int chapter,  int stage,  int wave,  Map<String, int> skills,  int heroLevel, @BigNumConverter()  BigNum heroExperience,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  List<int> rngState,  int itemsCreated,  int pityCounter,  PrestigeState prestige)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int lastTickAtMs,  int rngSeed,  int version,  int carryOverMs, @BigNumConverter()  Map<String, BigNum> resources,  Map<String, GeneratorState> generators,  Map<String, int> upgrades, @BigNumConverter()  Map<String, BigNum> earnedThisRun,  int chapter,  int stage,  int wave,  Map<String, int> skills,  Map<String, int> skillCopies,  int skillPity,  int heroLevel, @BigNumConverter()  BigNum heroExperience,  Map<String, OwnedItem> inventory,  Map<String, String> equipped,  List<int> rngState,  int itemsCreated,  int pityCounter,  PrestigeState prestige)?  $default,) {final _that = this;
 switch (_that) {
 case _PlayerState() when $default != null:
-return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.chapter,_that.stage,_that.wave,_that.skills,_that.heroLevel,_that.heroExperience,_that.inventory,_that.equipped,_that.rngState,_that.itemsCreated,_that.pityCounter,_that.prestige);case _:
+return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs,_that.resources,_that.generators,_that.upgrades,_that.earnedThisRun,_that.chapter,_that.stage,_that.wave,_that.skills,_that.skillCopies,_that.skillPity,_that.heroLevel,_that.heroExperience,_that.inventory,_that.equipped,_that.rngState,_that.itemsCreated,_that.pityCounter,_that.prestige);case _:
   return null;
 
 }
@@ -278,7 +283,7 @@ return $default(_that.lastTickAtMs,_that.rngSeed,_that.version,_that.carryOverMs
 @JsonSerializable()
 
 class _PlayerState extends PlayerState {
-  const _PlayerState({required this.lastTickAtMs, required this.rngSeed, this.version = stateSchemaVersion, this.carryOverMs = 0, @BigNumConverter() final  Map<String, BigNum> resources = const <String, BigNum>{}, final  Map<String, GeneratorState> generators = const <String, GeneratorState>{}, final  Map<String, int> upgrades = const <String, int>{}, @BigNumConverter() final  Map<String, BigNum> earnedThisRun = const <String, BigNum>{}, this.chapter = 1, this.stage = 1, this.wave = 0, final  Map<String, int> skills = const <String, int>{}, this.heroLevel = 0, @BigNumConverter() this.heroExperience = BigNum.zero, final  Map<String, OwnedItem> inventory = const <String, OwnedItem>{}, final  Map<String, String> equipped = const <String, String>{}, final  List<int> rngState = const <int>[], this.itemsCreated = 0, this.pityCounter = 0, this.prestige = const PrestigeState()}): _resources = resources,_generators = generators,_upgrades = upgrades,_earnedThisRun = earnedThisRun,_skills = skills,_inventory = inventory,_equipped = equipped,_rngState = rngState,super._();
+  const _PlayerState({required this.lastTickAtMs, required this.rngSeed, this.version = stateSchemaVersion, this.carryOverMs = 0, @BigNumConverter() final  Map<String, BigNum> resources = const <String, BigNum>{}, final  Map<String, GeneratorState> generators = const <String, GeneratorState>{}, final  Map<String, int> upgrades = const <String, int>{}, @BigNumConverter() final  Map<String, BigNum> earnedThisRun = const <String, BigNum>{}, this.chapter = 1, this.stage = 1, this.wave = 0, final  Map<String, int> skills = const <String, int>{}, final  Map<String, int> skillCopies = const <String, int>{}, this.skillPity = 0, this.heroLevel = 0, @BigNumConverter() this.heroExperience = BigNum.zero, final  Map<String, OwnedItem> inventory = const <String, OwnedItem>{}, final  Map<String, String> equipped = const <String, String>{}, final  List<int> rngState = const <int>[], this.itemsCreated = 0, this.pityCounter = 0, this.prestige = const PrestigeState()}): _resources = resources,_generators = generators,_upgrades = upgrades,_earnedThisRun = earnedThisRun,_skills = skills,_skillCopies = skillCopies,_inventory = inventory,_equipped = equipped,_rngState = rngState,super._();
   factory _PlayerState.fromJson(Map<String, dynamic> json) => _$PlayerStateFromJson(json);
 
 @override final  int lastTickAtMs;
@@ -336,23 +341,36 @@ class _PlayerState extends PlayerState {
 @override@JsonKey() final  int stage;
 /// Waves cleared in this stage. At `wavesPerStage` the boss is next.
 @override@JsonKey() final  int wave;
-/// Skill levels, by skill id.
-///
-/// Reserved now and filled in with the skill system later. Adding a field
-/// to the save format is a JSON edit today and a database migration once
-/// the server owns this state.
+/// Skill levels, by skill id. A skill absent here is one the player has
+/// never seen.
  final  Map<String, int> _skills;
-/// Skill levels, by skill id.
-///
-/// Reserved now and filled in with the skill system later. Adding a field
-/// to the save format is a JSON edit today and a database migration once
-/// the server owns this state.
+/// Skill levels, by skill id. A skill absent here is one the player has
+/// never seen.
 @override@JsonKey() Map<String, int> get skills {
   if (_skills is EqualUnmodifiableMapView) return _skills;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableMapView(_skills);
 }
 
+/// Unspent duplicate copies, by skill id.
+///
+/// Skills are not instanced the way items are — a second copy of the same
+/// skill is a number, not another object — so duplicates live in their own
+/// map rather than as entries in the inventory.
+ final  Map<String, int> _skillCopies;
+/// Unspent duplicate copies, by skill id.
+///
+/// Skills are not instanced the way items are — a second copy of the same
+/// skill is a number, not another object — so duplicates live in their own
+/// map rather than as entries in the inventory.
+@override@JsonKey() Map<String, int> get skillCopies {
+  if (_skillCopies is EqualUnmodifiableMapView) return _skillCopies;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_skillCopies);
+}
+
+/// Skill packs opened since the last guaranteed pull.
+@override@JsonKey() final  int skillPity;
 /// The hero's own level, earned by killing things.
 @override@JsonKey() final  int heroLevel;
 /// Experience banked towards the next level.
@@ -426,16 +444,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlayerState&&(identical(other.lastTickAtMs, lastTickAtMs) || other.lastTickAtMs == lastTickAtMs)&&(identical(other.rngSeed, rngSeed) || other.rngSeed == rngSeed)&&(identical(other.version, version) || other.version == version)&&(identical(other.carryOverMs, carryOverMs) || other.carryOverMs == carryOverMs)&&const DeepCollectionEquality().equals(other._resources, _resources)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._upgrades, _upgrades)&&const DeepCollectionEquality().equals(other._earnedThisRun, _earnedThisRun)&&(identical(other.chapter, chapter) || other.chapter == chapter)&&(identical(other.stage, stage) || other.stage == stage)&&(identical(other.wave, wave) || other.wave == wave)&&const DeepCollectionEquality().equals(other._skills, _skills)&&(identical(other.heroLevel, heroLevel) || other.heroLevel == heroLevel)&&(identical(other.heroExperience, heroExperience) || other.heroExperience == heroExperience)&&const DeepCollectionEquality().equals(other._inventory, _inventory)&&const DeepCollectionEquality().equals(other._equipped, _equipped)&&const DeepCollectionEquality().equals(other._rngState, _rngState)&&(identical(other.itemsCreated, itemsCreated) || other.itemsCreated == itemsCreated)&&(identical(other.pityCounter, pityCounter) || other.pityCounter == pityCounter)&&(identical(other.prestige, prestige) || other.prestige == prestige));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlayerState&&(identical(other.lastTickAtMs, lastTickAtMs) || other.lastTickAtMs == lastTickAtMs)&&(identical(other.rngSeed, rngSeed) || other.rngSeed == rngSeed)&&(identical(other.version, version) || other.version == version)&&(identical(other.carryOverMs, carryOverMs) || other.carryOverMs == carryOverMs)&&const DeepCollectionEquality().equals(other._resources, _resources)&&const DeepCollectionEquality().equals(other._generators, _generators)&&const DeepCollectionEquality().equals(other._upgrades, _upgrades)&&const DeepCollectionEquality().equals(other._earnedThisRun, _earnedThisRun)&&(identical(other.chapter, chapter) || other.chapter == chapter)&&(identical(other.stage, stage) || other.stage == stage)&&(identical(other.wave, wave) || other.wave == wave)&&const DeepCollectionEquality().equals(other._skills, _skills)&&const DeepCollectionEquality().equals(other._skillCopies, _skillCopies)&&(identical(other.skillPity, skillPity) || other.skillPity == skillPity)&&(identical(other.heroLevel, heroLevel) || other.heroLevel == heroLevel)&&(identical(other.heroExperience, heroExperience) || other.heroExperience == heroExperience)&&const DeepCollectionEquality().equals(other._inventory, _inventory)&&const DeepCollectionEquality().equals(other._equipped, _equipped)&&const DeepCollectionEquality().equals(other._rngState, _rngState)&&(identical(other.itemsCreated, itemsCreated) || other.itemsCreated == itemsCreated)&&(identical(other.pityCounter, pityCounter) || other.pityCounter == pityCounter)&&(identical(other.prestige, prestige) || other.prestige == prestige));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,lastTickAtMs,rngSeed,version,carryOverMs,const DeepCollectionEquality().hash(_resources),const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_upgrades),const DeepCollectionEquality().hash(_earnedThisRun),chapter,stage,wave,const DeepCollectionEquality().hash(_skills),heroLevel,heroExperience,const DeepCollectionEquality().hash(_inventory),const DeepCollectionEquality().hash(_equipped),const DeepCollectionEquality().hash(_rngState),itemsCreated,pityCounter,prestige]);
+int get hashCode => Object.hashAll([runtimeType,lastTickAtMs,rngSeed,version,carryOverMs,const DeepCollectionEquality().hash(_resources),const DeepCollectionEquality().hash(_generators),const DeepCollectionEquality().hash(_upgrades),const DeepCollectionEquality().hash(_earnedThisRun),chapter,stage,wave,const DeepCollectionEquality().hash(_skills),const DeepCollectionEquality().hash(_skillCopies),skillPity,heroLevel,heroExperience,const DeepCollectionEquality().hash(_inventory),const DeepCollectionEquality().hash(_equipped),const DeepCollectionEquality().hash(_rngState),itemsCreated,pityCounter,prestige]);
 
 @override
 String toString() {
-  return 'PlayerState(lastTickAtMs: $lastTickAtMs, rngSeed: $rngSeed, version: $version, carryOverMs: $carryOverMs, resources: $resources, generators: $generators, upgrades: $upgrades, earnedThisRun: $earnedThisRun, chapter: $chapter, stage: $stage, wave: $wave, skills: $skills, heroLevel: $heroLevel, heroExperience: $heroExperience, inventory: $inventory, equipped: $equipped, rngState: $rngState, itemsCreated: $itemsCreated, pityCounter: $pityCounter, prestige: $prestige)';
+  return 'PlayerState(lastTickAtMs: $lastTickAtMs, rngSeed: $rngSeed, version: $version, carryOverMs: $carryOverMs, resources: $resources, generators: $generators, upgrades: $upgrades, earnedThisRun: $earnedThisRun, chapter: $chapter, stage: $stage, wave: $wave, skills: $skills, skillCopies: $skillCopies, skillPity: $skillPity, heroLevel: $heroLevel, heroExperience: $heroExperience, inventory: $inventory, equipped: $equipped, rngState: $rngState, itemsCreated: $itemsCreated, pityCounter: $pityCounter, prestige: $prestige)';
 }
 
 
@@ -446,7 +464,7 @@ abstract mixin class _$PlayerStateCopyWith<$Res> implements $PlayerStateCopyWith
   factory _$PlayerStateCopyWith(_PlayerState value, $Res Function(_PlayerState) _then) = __$PlayerStateCopyWithImpl;
 @override @useResult
 $Res call({
- int lastTickAtMs, int rngSeed, int version, int carryOverMs,@BigNumConverter() Map<String, BigNum> resources, Map<String, GeneratorState> generators, Map<String, int> upgrades,@BigNumConverter() Map<String, BigNum> earnedThisRun, int chapter, int stage, int wave, Map<String, int> skills, int heroLevel,@BigNumConverter() BigNum heroExperience, Map<String, OwnedItem> inventory, Map<String, String> equipped, List<int> rngState, int itemsCreated, int pityCounter, PrestigeState prestige
+ int lastTickAtMs, int rngSeed, int version, int carryOverMs,@BigNumConverter() Map<String, BigNum> resources, Map<String, GeneratorState> generators, Map<String, int> upgrades,@BigNumConverter() Map<String, BigNum> earnedThisRun, int chapter, int stage, int wave, Map<String, int> skills, Map<String, int> skillCopies, int skillPity, int heroLevel,@BigNumConverter() BigNum heroExperience, Map<String, OwnedItem> inventory, Map<String, String> equipped, List<int> rngState, int itemsCreated, int pityCounter, PrestigeState prestige
 });
 
 
@@ -463,7 +481,7 @@ class __$PlayerStateCopyWithImpl<$Res>
 
 /// Create a copy of PlayerState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? lastTickAtMs = null,Object? rngSeed = null,Object? version = null,Object? carryOverMs = null,Object? resources = null,Object? generators = null,Object? upgrades = null,Object? earnedThisRun = null,Object? chapter = null,Object? stage = null,Object? wave = null,Object? skills = null,Object? heroLevel = null,Object? heroExperience = null,Object? inventory = null,Object? equipped = null,Object? rngState = null,Object? itemsCreated = null,Object? pityCounter = null,Object? prestige = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? lastTickAtMs = null,Object? rngSeed = null,Object? version = null,Object? carryOverMs = null,Object? resources = null,Object? generators = null,Object? upgrades = null,Object? earnedThisRun = null,Object? chapter = null,Object? stage = null,Object? wave = null,Object? skills = null,Object? skillCopies = null,Object? skillPity = null,Object? heroLevel = null,Object? heroExperience = null,Object? inventory = null,Object? equipped = null,Object? rngState = null,Object? itemsCreated = null,Object? pityCounter = null,Object? prestige = null,}) {
   return _then(_PlayerState(
 lastTickAtMs: null == lastTickAtMs ? _self.lastTickAtMs : lastTickAtMs // ignore: cast_nullable_to_non_nullable
 as int,rngSeed: null == rngSeed ? _self.rngSeed : rngSeed // ignore: cast_nullable_to_non_nullable
@@ -477,7 +495,9 @@ as Map<String, BigNum>,chapter: null == chapter ? _self.chapter : chapter // ign
 as int,stage: null == stage ? _self.stage : stage // ignore: cast_nullable_to_non_nullable
 as int,wave: null == wave ? _self.wave : wave // ignore: cast_nullable_to_non_nullable
 as int,skills: null == skills ? _self._skills : skills // ignore: cast_nullable_to_non_nullable
-as Map<String, int>,heroLevel: null == heroLevel ? _self.heroLevel : heroLevel // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,skillCopies: null == skillCopies ? _self._skillCopies : skillCopies // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,skillPity: null == skillPity ? _self.skillPity : skillPity // ignore: cast_nullable_to_non_nullable
+as int,heroLevel: null == heroLevel ? _self.heroLevel : heroLevel // ignore: cast_nullable_to_non_nullable
 as int,heroExperience: null == heroExperience ? _self.heroExperience : heroExperience // ignore: cast_nullable_to_non_nullable
 as BigNum,inventory: null == inventory ? _self._inventory : inventory // ignore: cast_nullable_to_non_nullable
 as Map<String, OwnedItem>,equipped: null == equipped ? _self._equipped : equipped // ignore: cast_nullable_to_non_nullable

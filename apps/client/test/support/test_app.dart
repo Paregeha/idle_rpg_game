@@ -30,6 +30,11 @@ final testBalanceConfig = BalanceConfig(
       stats: ItemStats(flatAttack: BigNum.fromDouble(25)),
     ),
   },
+  skills: const {
+    'jab': SkillConfig(copiesBase: 2, copiesGrowth: 2),
+    'wave': SkillConfig(unlockAtLevel: 12, targets: 0),
+  },
+  skillPack: const SkillPackConfig(costAmount: 50, weights: {'common': 1}),
   lamp: const LampConfig(weights: {'common': 1}, costResource: 'gems'),
   displayedResources: const ['gold', 'gems'],
   start: StartConfig(

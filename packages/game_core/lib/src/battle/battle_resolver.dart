@@ -3,6 +3,7 @@ import 'package:game_core/src/battle/battle_result.dart';
 import 'package:game_core/src/battle/combat_stats.dart';
 import 'package:game_core/src/math/big_num.dart';
 import 'package:game_core/src/random/seeded_random.dart';
+import 'package:game_core/src/skills/skills.dart';
 
 /// Damage of one swing.
 ///
@@ -38,11 +39,17 @@ BigNum damageOf({
 /// Randomness comes from [rng], whose state travels with the player's save, so
 /// the same fight replays identically anywhere (rule 5).
 ///
+/// [skills] fire on their own cooldowns alongside the hero's swings. A cast is
+/// a certainty — it rolls neither dodge nor crit — so adding one to a fight
+/// cannot shift where every later swing lands in the random sequence. Its power
+/// comes from the multiplier, not from luck.
+///
 /// [maxDuration] stops a fight that cannot end.
 BattleResult resolveBattle({
   required CombatStats hero,
   required List<CombatStats> monsters,
   required SeededRandom rng,
+  List<ActiveSkill> skills = const [],
   Duration maxDuration = const Duration(minutes: 2),
 }) {
   if (monsters.isEmpty) {
@@ -65,6 +72,9 @@ BattleResult resolveBattle({
 
   var nextHeroSwingMs = heroIntervalMs;
   final nextMonsterSwingMs = [...monsterIntervals];
+  // Casts start one cooldown in, like swings do: a fight that opens with every
+  // skill already firing would make the cooldown itself meaningless.
+  final nextCastMs = [for (final skill in skills) skill.cooldownMs];
   var outcome = BattleOutcome.timeout;
   var atMs = 0;
 
@@ -81,12 +91,25 @@ BattleResult resolveBattle({
     // matters when both would land a killing blow on the same tick.
     var soonest = nextHeroSwingMs;
     var attackerIndex = -1;
+    var castIndex = -1;
+
+    // Strict `<`, checked in a fixed order, so ties resolve the same way every
+    // time: hero swing, then skills, then monsters. A tie broken by map order
+    // would be a fight the server could not reproduce.
+    for (var i = 0; i < nextCastMs.length; i++) {
+      if (nextCastMs[i] < soonest) {
+        soonest = nextCastMs[i];
+        castIndex = i;
+        attackerIndex = -1;
+      }
+    }
 
     for (var i = 0; i < monsters.length; i++) {
       if (!alive(i)) continue;
       if (nextMonsterSwingMs[i] < soonest) {
         soonest = nextMonsterSwingMs[i];
         attackerIndex = i;
+        castIndex = -1;
       }
     }
 
@@ -96,7 +119,60 @@ BattleResult resolveBattle({
       break;
     }
 
-    if (attackerIndex == -1) {
+    if (castIndex != -1) {
+      final skill = skills[castIndex];
+      nextCastMs[castIndex] += skill.cooldownMs;
+
+      final targets = <int>[];
+      for (var i = 0; i < monsterHp.length; i++) {
+        if (!alive(i)) continue;
+        targets.add(i);
+        if (!skill.hitsEveryone && targets.length >= skill.targets) break;
+      }
+
+      if (targets.isEmpty) {
+        outcome = BattleOutcome.heroWon;
+        break;
+      }
+
+      for (final target in targets) {
+        final damage = damageOf(
+          attack: hero.attack * BigNum.fromDouble(skill.damageMultiplier),
+          critFactor: 1,
+          mitigation: monsters[target].mitigation,
+        );
+
+        events.add(
+          BattleEvent(
+            atMs: atMs,
+            kind: BattleEventKind.skill,
+            source: BattleSide.hero,
+            target: BattleSide.monster,
+            targetIndex: target,
+            damage: damage,
+            skillId: skill.id,
+          ),
+        );
+
+        monsterHp[target] -= damage;
+        if (monsterHp[target] <= BigNum.zero) {
+          events.add(
+            BattleEvent(
+              atMs: atMs,
+              kind: BattleEventKind.death,
+              source: BattleSide.hero,
+              target: BattleSide.monster,
+              targetIndex: target,
+            ),
+          );
+        }
+      }
+
+      if (firstAlive() == null) {
+        outcome = BattleOutcome.heroWon;
+        break;
+      }
+    } else if (attackerIndex == -1) {
       nextHeroSwingMs += heroIntervalMs;
 
       final target = firstAlive();

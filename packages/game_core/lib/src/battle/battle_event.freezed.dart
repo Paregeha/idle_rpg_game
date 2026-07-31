@@ -24,7 +24,8 @@ mixin _$BattleEvent {
 /// the scene to know which shape to flinch — and a skill that hits three
 /// at once produces three events at the same timecode.
  int get targetIndex;/// Damage dealt. Zero for a dodge or a death marker.
-@BigNumConverter() BigNum get damage;
+@BigNumConverter() BigNum get damage;/// Which skill fired, for [BattleEventKind.skill]. Empty otherwise.
+ String get skillId;
 /// Create a copy of BattleEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -37,16 +38,16 @@ $BattleEventCopyWith<BattleEvent> get copyWith => _$BattleEventCopyWithImpl<Batt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BattleEvent&&(identical(other.atMs, atMs) || other.atMs == atMs)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.source, source) || other.source == source)&&(identical(other.target, target) || other.target == target)&&(identical(other.targetIndex, targetIndex) || other.targetIndex == targetIndex)&&(identical(other.damage, damage) || other.damage == damage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BattleEvent&&(identical(other.atMs, atMs) || other.atMs == atMs)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.source, source) || other.source == source)&&(identical(other.target, target) || other.target == target)&&(identical(other.targetIndex, targetIndex) || other.targetIndex == targetIndex)&&(identical(other.damage, damage) || other.damage == damage)&&(identical(other.skillId, skillId) || other.skillId == skillId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,atMs,kind,source,target,targetIndex,damage);
+int get hashCode => Object.hash(runtimeType,atMs,kind,source,target,targetIndex,damage,skillId);
 
 @override
 String toString() {
-  return 'BattleEvent(atMs: $atMs, kind: $kind, source: $source, target: $target, targetIndex: $targetIndex, damage: $damage)';
+  return 'BattleEvent(atMs: $atMs, kind: $kind, source: $source, target: $target, targetIndex: $targetIndex, damage: $damage, skillId: $skillId)';
 }
 
 
@@ -57,7 +58,7 @@ abstract mixin class $BattleEventCopyWith<$Res>  {
   factory $BattleEventCopyWith(BattleEvent value, $Res Function(BattleEvent) _then) = _$BattleEventCopyWithImpl;
 @useResult
 $Res call({
- int atMs, BattleEventKind kind, BattleSide source, BattleSide target, int targetIndex,@BigNumConverter() BigNum damage
+ int atMs, BattleEventKind kind, BattleSide source, BattleSide target, int targetIndex,@BigNumConverter() BigNum damage, String skillId
 });
 
 
@@ -74,7 +75,7 @@ class _$BattleEventCopyWithImpl<$Res>
 
 /// Create a copy of BattleEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? atMs = null,Object? kind = null,Object? source = null,Object? target = null,Object? targetIndex = null,Object? damage = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? atMs = null,Object? kind = null,Object? source = null,Object? target = null,Object? targetIndex = null,Object? damage = null,Object? skillId = null,}) {
   return _then(_self.copyWith(
 atMs: null == atMs ? _self.atMs : atMs // ignore: cast_nullable_to_non_nullable
 as int,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
@@ -82,7 +83,8 @@ as BattleEventKind,source: null == source ? _self.source : source // ignore: cas
 as BattleSide,target: null == target ? _self.target : target // ignore: cast_nullable_to_non_nullable
 as BattleSide,targetIndex: null == targetIndex ? _self.targetIndex : targetIndex // ignore: cast_nullable_to_non_nullable
 as int,damage: null == damage ? _self.damage : damage // ignore: cast_nullable_to_non_nullable
-as BigNum,
+as BigNum,skillId: null == skillId ? _self.skillId : skillId // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -167,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int atMs,  BattleEventKind kind,  BattleSide source,  BattleSide target,  int targetIndex, @BigNumConverter()  BigNum damage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int atMs,  BattleEventKind kind,  BattleSide source,  BattleSide target,  int targetIndex, @BigNumConverter()  BigNum damage,  String skillId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BattleEvent() when $default != null:
-return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetIndex,_that.damage);case _:
+return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetIndex,_that.damage,_that.skillId);case _:
   return orElse();
 
 }
@@ -188,10 +190,10 @@ return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetInde
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int atMs,  BattleEventKind kind,  BattleSide source,  BattleSide target,  int targetIndex, @BigNumConverter()  BigNum damage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int atMs,  BattleEventKind kind,  BattleSide source,  BattleSide target,  int targetIndex, @BigNumConverter()  BigNum damage,  String skillId)  $default,) {final _that = this;
 switch (_that) {
 case _BattleEvent():
-return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetIndex,_that.damage);case _:
+return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetIndex,_that.damage,_that.skillId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +210,10 @@ return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetInde
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int atMs,  BattleEventKind kind,  BattleSide source,  BattleSide target,  int targetIndex, @BigNumConverter()  BigNum damage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int atMs,  BattleEventKind kind,  BattleSide source,  BattleSide target,  int targetIndex, @BigNumConverter()  BigNum damage,  String skillId)?  $default,) {final _that = this;
 switch (_that) {
 case _BattleEvent() when $default != null:
-return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetIndex,_that.damage);case _:
+return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetIndex,_that.damage,_that.skillId);case _:
   return null;
 
 }
@@ -223,7 +225,7 @@ return $default(_that.atMs,_that.kind,_that.source,_that.target,_that.targetInde
 @JsonSerializable()
 
 class _BattleEvent implements BattleEvent {
-  const _BattleEvent({required this.atMs, required this.kind, required this.source, required this.target, this.targetIndex = 0, @BigNumConverter() this.damage = BigNum.zero});
+  const _BattleEvent({required this.atMs, required this.kind, required this.source, required this.target, this.targetIndex = 0, @BigNumConverter() this.damage = BigNum.zero, this.skillId = ''});
   factory _BattleEvent.fromJson(Map<String, dynamic> json) => _$BattleEventFromJson(json);
 
 /// Milliseconds since the fight began.
@@ -241,6 +243,8 @@ class _BattleEvent implements BattleEvent {
 @override@JsonKey() final  int targetIndex;
 /// Damage dealt. Zero for a dodge or a death marker.
 @override@JsonKey()@BigNumConverter() final  BigNum damage;
+/// Which skill fired, for [BattleEventKind.skill]. Empty otherwise.
+@override@JsonKey() final  String skillId;
 
 /// Create a copy of BattleEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -255,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BattleEvent&&(identical(other.atMs, atMs) || other.atMs == atMs)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.source, source) || other.source == source)&&(identical(other.target, target) || other.target == target)&&(identical(other.targetIndex, targetIndex) || other.targetIndex == targetIndex)&&(identical(other.damage, damage) || other.damage == damage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BattleEvent&&(identical(other.atMs, atMs) || other.atMs == atMs)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.source, source) || other.source == source)&&(identical(other.target, target) || other.target == target)&&(identical(other.targetIndex, targetIndex) || other.targetIndex == targetIndex)&&(identical(other.damage, damage) || other.damage == damage)&&(identical(other.skillId, skillId) || other.skillId == skillId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,atMs,kind,source,target,targetIndex,damage);
+int get hashCode => Object.hash(runtimeType,atMs,kind,source,target,targetIndex,damage,skillId);
 
 @override
 String toString() {
-  return 'BattleEvent(atMs: $atMs, kind: $kind, source: $source, target: $target, targetIndex: $targetIndex, damage: $damage)';
+  return 'BattleEvent(atMs: $atMs, kind: $kind, source: $source, target: $target, targetIndex: $targetIndex, damage: $damage, skillId: $skillId)';
 }
 
 
@@ -275,7 +279,7 @@ abstract mixin class _$BattleEventCopyWith<$Res> implements $BattleEventCopyWith
   factory _$BattleEventCopyWith(_BattleEvent value, $Res Function(_BattleEvent) _then) = __$BattleEventCopyWithImpl;
 @override @useResult
 $Res call({
- int atMs, BattleEventKind kind, BattleSide source, BattleSide target, int targetIndex,@BigNumConverter() BigNum damage
+ int atMs, BattleEventKind kind, BattleSide source, BattleSide target, int targetIndex,@BigNumConverter() BigNum damage, String skillId
 });
 
 
@@ -292,7 +296,7 @@ class __$BattleEventCopyWithImpl<$Res>
 
 /// Create a copy of BattleEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? atMs = null,Object? kind = null,Object? source = null,Object? target = null,Object? targetIndex = null,Object? damage = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? atMs = null,Object? kind = null,Object? source = null,Object? target = null,Object? targetIndex = null,Object? damage = null,Object? skillId = null,}) {
   return _then(_BattleEvent(
 atMs: null == atMs ? _self.atMs : atMs // ignore: cast_nullable_to_non_nullable
 as int,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
@@ -300,7 +304,8 @@ as BattleEventKind,source: null == source ? _self.source : source // ignore: cas
 as BattleSide,target: null == target ? _self.target : target // ignore: cast_nullable_to_non_nullable
 as BattleSide,targetIndex: null == targetIndex ? _self.targetIndex : targetIndex // ignore: cast_nullable_to_non_nullable
 as int,damage: null == damage ? _self.damage : damage // ignore: cast_nullable_to_non_nullable
-as BigNum,
+as BigNum,skillId: null == skillId ? _self.skillId : skillId // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

@@ -59,12 +59,19 @@ abstract class PlayerState with _$PlayerState {
     /// Waves cleared in this stage. At `wavesPerStage` the boss is next.
     @Default(0) int wave,
 
-    /// Skill levels, by skill id.
-    ///
-    /// Reserved now and filled in with the skill system later. Adding a field
-    /// to the save format is a JSON edit today and a database migration once
-    /// the server owns this state.
+    /// Skill levels, by skill id. A skill absent here is one the player has
+    /// never seen.
     @Default(<String, int>{}) Map<String, int> skills,
+
+    /// Unspent duplicate copies, by skill id.
+    ///
+    /// Skills are not instanced the way items are — a second copy of the same
+    /// skill is a number, not another object — so duplicates live in their own
+    /// map rather than as entries in the inventory.
+    @Default(<String, int>{}) Map<String, int> skillCopies,
+
+    /// Skill packs opened since the last guaranteed pull.
+    @Default(0) int skillPity,
 
     /// The hero's own level, earned by killing things.
     @Default(0) int heroLevel,
