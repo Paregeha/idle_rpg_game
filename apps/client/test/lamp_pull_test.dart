@@ -149,16 +149,47 @@ void main() {
     expect(find.textContaining('Wearing this sells'), findsNothing);
   });
 
-  testWidgets('it cannot be walked away from', (tester) async {
-    // The bag holds decisions, not gear, and walking away is what left
-    // something undecided in the first place.
-    final controller = await ready(tester);
+  testWidgets('a tap past it is not a decision', (tester) async {
+    // An accidental dismissal must not look like putting it off on purpose.
+    await ready(tester);
     await pull(tester);
 
     await tester.tapAt(const Offset(8, 8));
     await tester.pumpAndSettle();
 
     expect(find.byType(LampPull), findsOneWidget);
+  });
+
+  testWidgets('DECIDE LATER puts it away without deciding', (tester) async {
+    final controller = await ready(tester);
+    await pull(tester);
+
+    await tester.tap(find.textContaining('DECIDE LATER'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LampPull), findsNothing);
+    expect(
+      pendingItems(controller.state!),
+      hasLength(1),
+      reason: 'the item is still waiting, not sold and not worn',
+    );
+    expect(controller.state!.equipped, isEmpty);
+  });
+
+  testWidgets('what was put off comes back, and costs no second lamp', (
+    tester,
+  ) async {
+    final controller = await ready(tester);
+    await pull(tester);
+    await tester.tap(find.textContaining('DECIDE LATER'));
+    await tester.pumpAndSettle();
+
+    final lampsLeft = controller.state!.resources['gems']!;
+
+    await pull(tester);
+
+    expect(find.byType(LampPull), findsOneWidget);
+    expect(controller.state!.resources['gems'], lampsLeft);
     expect(pendingItems(controller.state!), hasLength(1));
   });
 
@@ -186,7 +217,8 @@ void main() {
     );
 
     await pull(tester);
-    expect(find.textContaining('WAITING'), findsOneWidget);
+    // Once in the title, once on the way out.
+    expect(find.textContaining('WAITING'), findsNWidgets(2));
 
     await tester.tap(find.textContaining('SELL'));
     await tester.pumpAndSettle();

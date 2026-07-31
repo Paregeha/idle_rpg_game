@@ -19,8 +19,9 @@ class LampPull extends ConsumerWidget {
   static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
-      // Not dismissible: the bag holds decisions, not gear, and walking away
-      // is what left something undecided in the first place.
+      // A tap past the screen does not count as a decision — there is an
+      // explicit way out below, and an accidental dismissal should not look
+      // like the same thing.
       barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.9),
       builder: (context) => const LampPull(),
@@ -121,6 +122,20 @@ class LampPull extends ConsumerWidget {
             salvageValue: config.salvage.payoutFor(
               rarity: item.rarity,
               level: drawn.level,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Putting it off is a real answer. The item keeps waiting, the lamp
+          // button counts it, and pressing the lamp brings this back without
+          // charging for another pull.
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(foregroundColor: GamePalette.ash),
+            child: Text(
+              waiting.length > 1
+                  ? 'DECIDE LATER  ·  ${waiting.length} WAITING'
+                  : 'DECIDE LATER',
+              style: const TextStyle(fontSize: 12),
             ),
           ),
         ],
