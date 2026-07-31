@@ -72,6 +72,21 @@ void main() {
     expect(cardSalvage, findsNothing);
   });
 
+  testWidgets('a worn item opened from the bag can still be taken off', (
+    tester,
+  ) async {
+    // Opened from the bag there is no slot to hand in, so the card has to work
+    // out which slot is wearing it. Before that it offered only CLOSE.
+    final controller = await withBag(tester, equipped: const {'weapon': 'i0'});
+    await openBag(tester);
+    await openCard(tester);
+
+    await tester.tap(find.text('TAKE OFF'));
+    await tester.pumpAndSettle();
+
+    expect(controller.state!.equipped, isEmpty);
+  });
+
   testWidgets('the standing rule starts off', (tester) async {
     final controller = await withBag(tester);
 

@@ -53,6 +53,10 @@ class ItemCard extends ConsumerWidget {
     }
 
     final colour = rarityColour(rarity.rank);
+    // Which slot is actually wearing it, whether the card was opened from that
+    // slot or from the bag. Without this, an item opened from the bag could
+    // not be taken off at all.
+    final wornSlotId = _slotWearing(state, itemId);
     final maxed = owned.level >= item.maxLevel;
     final now = item.statsAt(level: owned.level, rarity: rarity);
     final next = maxed
@@ -117,8 +121,7 @@ class ItemCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 10),
                     _Footer(
-                      slot: slot,
-                      isWorn: state.equipped.containsValue(itemId),
+                      wornSlotId: wornSlotId,
                       salvageValue: config.salvage.payoutFor(
                         rarity: item.rarity,
                         level: owned.level,
@@ -126,6 +129,9 @@ class ItemCard extends ConsumerWidget {
                       onEquip: () => ref
                           .read(gameControllerProvider.notifier)
                           .equip(itemId, intoSlot: slot?.id),
+                      onUnequip: () => ref
+                          .read(gameControllerProvider.notifier)
+                          .unequip(wornSlotId!),
                       onSalvage: () {
                         ref
                             .read(gameControllerProvider.notifier)
@@ -141,6 +147,14 @@ class ItemCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// The slot this item is being worn in, or null if it is in the bag.
+  String? _slotWearing(PlayerState state, String itemId) {
+    for (final entry in state.equipped.entries) {
+      if (entry.value == itemId) return entry.key;
+    }
+    return null;
   }
 }
 
@@ -561,66 +575,107 @@ class _UpgradeButton extends StatelessWidget {
   }
 }
 
-/// Wear it, break it down, or go and pick something else for the same slot.
+/// Everything that can be done with the item, from here.
+///
+/// Worn gear can be taken off. The slot grid had no way to do it at all: a
+/// player who could put something on and never take it off would conclude the
+/// slot was stuck.
 class _Footer extends StatelessWidget {
   const _Footer({
-    required this.slot,
-    required this.isWorn,
+    required this.wornSlotId,
     required this.salvageValue,
     required this.onEquip,
+    required this.onUnequip,
     required this.onSalvage,
   });
 
-  final SlotConfig? slot;
-  final bool isWorn;
+  /// The slot wearing this item, or null when it is in the bag.
+  final String? wornSlotId;
+
   final Map<String, BigNum> salvageValue;
   final VoidCallback onEquip;
+  final VoidCallback onUnequip;
   final VoidCallback onSalvage;
 
   @override
   Widget build(BuildContext context) {
+    final worn = wornSlotId != null;
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        if (isWorn && slot != null)
-          TextButton(
+        if (worn) ...[
+          _Action(
+            label: 'TAKE OFF',
+            colour: GamePalette.bone,
+            onPressed: () {
+              onUnequip();
+              Navigator.of(context).pop();
+            },
+          ),
+          _Action(
+            label: 'SWAP',
+            colour: GamePalette.patina,
             onPressed: () {
               Navigator.of(context).pop();
-              context.push(Routes.inventoryFor(slot!.id));
+              context.push(Routes.inventoryFor(wornSlotId));
             },
-            style: TextButton.styleFrom(foregroundColor: GamePalette.patina),
-            child: const Text('SWAP'),
-          )
-        else if (!isWorn)
-          TextButton(
+          ),
+        ] else ...[
+          _Action(
+            label: 'EQUIP',
+            colour: GamePalette.patina,
             onPressed: () {
               onEquip();
               Navigator.of(context).pop();
             },
-            style: TextButton.styleFrom(foregroundColor: GamePalette.patina),
-            child: const Text('EQUIP'),
-          )
-        else
-          const SizedBox.shrink(),
-        // Only offered for gear that is off the hero: breaking down what is
-        // worn would strip a slot as a side effect.
-        if (!isWorn && salvageValue.isNotEmpty)
-          TextButton(
-            onPressed: onSalvage,
-            style: TextButton.styleFrom(foregroundColor: GamePalette.gold),
-            // Says what it pays before it is pressed, not after. There is no
-            // undo for an item that has been broken down.
-            child: Text('SALVAGE  ${_priceLabel(salvageValue)}'),
           ),
-        TextButton(
+          // Only for gear that is off the hero: breaking down what is worn
+          // would strip a slot as a side effect.
+          if (salvageValue.isNotEmpty)
+            _Action(
+              label: 'SALVAGE  ${_priceLabel(salvageValue)}',
+              colour: GamePalette.gold,
+              // Says what it pays before it is pressed, not after. There is no
+              // undo for an item that has been broken down.
+              onPressed: onSalvage,
+            ),
+        ],
+        const Spacer(),
+        _Action(
+          label: 'CLOSE',
+          colour: GamePalette.ash,
           onPressed: () => Navigator.of(context).pop(),
-          style: TextButton.styleFrom(foregroundColor: GamePalette.ash),
-          child: const Text('CLOSE'),
         ),
       ],
     );
   }
 
   String _priceLabel(Map<String, BigNum> payout) =>
-      payout.entries.map((e) => e.value.format()).join(' · ');
+      payout.entries.map((e) => e.value.format()).join(' \u00b7 ');
+}
+
+class _Action extends StatelessWidget {
+  const _Action({
+    required this.label,
+    required this.colour,
+    required this.onPressed,
+  });
+
+  final String label;
+  final Color colour;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: colour,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Text(label, style: const TextStyle(fontSize: 12)),
+    );
+  }
 }

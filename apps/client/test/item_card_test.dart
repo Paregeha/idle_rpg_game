@@ -86,6 +86,41 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
+  testWidgets('a worn item can be taken off from its card', (tester) async {
+    // The slot grid had no way to do it at all: a player who could put
+    // something on and never take it off would conclude the slot was stuck.
+    final controller = await armed(tester);
+    await openCard(tester);
+
+    expect(find.text('TAKE OFF'), findsOneWidget);
+
+    await tester.tap(find.text('TAKE OFF'));
+    await tester.pumpAndSettle();
+
+    expect(controller.state!.equipped, isEmpty);
+    expect(
+      controller.state!.inventory.containsKey('i0'),
+      isTrue,
+      reason: 'taking it off must not destroy it',
+    );
+  });
+
+  testWidgets('an item in the bag is offered EQUIP, not TAKE OFF', (
+    tester,
+  ) async {
+    final controller = await armed(tester);
+    controller.state = controller.state!.copyWith(equipped: const {});
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('weapon'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blade').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('EQUIP'), findsOneWidget);
+    expect(find.text('TAKE OFF'), findsNothing);
+  });
+
   testWidgets('a maxed item offers nothing more to buy', (tester) async {
     final controller = await armed(tester);
     final maxLevel = testBalanceConfig.items['blade']!.maxLevel;
