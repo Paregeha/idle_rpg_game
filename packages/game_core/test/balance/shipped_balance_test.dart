@@ -215,6 +215,12 @@ void main() {
     }
   });
 
+  test('an upgrade never asks for a duplicate', () {
+    // The bag holds one of each kind, so a duplicate cannot exist. A curve
+    // that asked for one would make every item unupgradable.
+    expect(config.itemUpgrade.duplicatesPerLevel, 0);
+  });
+
   test('prestige actually pays off', () {
     expect(config.prestige.bonusPerPoint > BigNum.zero, isTrue);
     expect(config.prestige.currencyExponent, lessThanOrEqualTo(1));

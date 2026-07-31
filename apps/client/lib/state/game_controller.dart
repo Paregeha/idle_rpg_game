@@ -219,13 +219,13 @@ class GameController extends Notifier<PlayerState?> {
       final best = candidates.first;
       if (current.equipped[slot.id] == best.id) continue;
 
-      final result = core.equipItem(
+      final result = core.equipAndSell(
         current,
         best.id,
         config,
         intoSlot: slot.id,
       );
-      if (result.equipped) {
+      if (result.state != current) {
         current = result.state;
         changed++;
       }
@@ -322,27 +322,22 @@ class GameController extends Notifier<PlayerState?> {
     return result;
   }
 
-  /// Turns "sell what I replaced" on or off.
-  void toggleSellReplaced() {
-    final current = state;
-    if (current == null) return;
-
-    state = current.copyWith(sellReplaced: !current.sellReplaced);
-    unawaited(saveNow());
-  }
-
-  /// Swaps [itemId] into [slotId], breaking down what came off if the player
-  /// has asked for that.
+  /// Wears [itemId] and sells whatever came off.
   ///
-  /// One call rather than equip-then-salvage from the screen: the two have to
-  /// happen together or the old item is left loose in the bag having been
-  /// promised as sold.
-  String? equipReplacing(String itemId, {required String slotId}) {
-    final replaced = equip(itemId, intoSlot: slotId);
-    if (replaced == null) return null;
+  /// One of each kind, always: the replaced item cannot go back to a bag that
+  /// does not hold gear. Equipping and selling are one call because they have
+  /// to happen together — if only the first landed, the old item would sit in
+  /// the bag having been promised as sold.
+  void equipReplacing(String itemId, {String? slotId}) {
+    final current = state;
+    final config = _config;
+    if (current == null || config == null) return;
 
-    if (state?.sellReplaced ?? false) salvage(replaced);
-    return replaced;
+    final result = core.equipAndSell(current, itemId, config, intoSlot: slotId);
+    if (result.state == current) return;
+
+    state = result.state;
+    unawaited(saveNow());
   }
 
   /// Turns auto-casting on or off.

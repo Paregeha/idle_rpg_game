@@ -1,4 +1,5 @@
 import 'package:game_core/src/balance/balance_config.dart';
+import 'package:game_core/src/items/equipment.dart';
 import 'package:game_core/src/items/owned_item.dart';
 import 'package:game_core/src/math/big_num.dart';
 import 'package:game_core/src/state/player_state.dart';
@@ -144,4 +145,28 @@ Map<String, BigNum> _credit(
     next[entry.key] = (next[entry.key] ?? BigNum.zero) + entry.value;
   }
   return next;
+}
+
+/// Wears [itemId] and sells whatever came off.
+///
+/// One item of each kind, always. The replaced one cannot go back to the bag —
+/// the bag holds decisions, not gear — and it cannot quietly vanish either, so
+/// it is broken down and paid for.
+///
+/// Equipping and selling are one call because they have to happen together: if
+/// only the first landed, the old item would sit in the bag having been
+/// promised as sold.
+SalvageResult equipAndSell(
+  PlayerState state,
+  String itemId,
+  BalanceConfig config, {
+  String? intoSlot,
+}) {
+  final result = equipItem(state, itemId, config, intoSlot: intoSlot);
+  if (!result.equipped) return SalvageResult(state: state);
+
+  final replaced = result.replaced;
+  if (replaced == null) return SalvageResult(state: result.state);
+
+  return salvageItem(result.state, replaced, config);
 }

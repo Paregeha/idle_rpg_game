@@ -14,15 +14,16 @@ import 'package:idle_rpg/state/game_providers.dart';
 /// item alone would make the player close it, open the slot, and compare by
 /// memory.
 class LampPull extends ConsumerWidget {
-  const LampPull({required this.itemId, super.key});
+  const LampPull({super.key});
 
-  final String itemId;
-
-  static Future<void> show(BuildContext context, {required String itemId}) {
+  static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
+      // Not dismissible: the bag holds decisions, not gear, and walking away
+      // is what left something undecided in the first place.
+      barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.9),
-      builder: (context) => LampPull(itemId: itemId),
+      builder: (context) => const LampPull(),
     );
   }
 
@@ -32,6 +33,17 @@ class LampPull extends ConsumerWidget {
     final state = ref.watch(gameControllerProvider);
     if (config == null || state == null) return const SizedBox.shrink();
 
+    // Whatever is still undecided, oldest first. When the last one is dealt
+    // with there is nothing left to ask about and the screen closes itself.
+    final waiting = pendingItems(state);
+    if (waiting.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+      });
+      return const SizedBox.shrink();
+    }
+
+    final itemId = waiting.first;
     final drawn = state.inventory[itemId];
     final item = drawn == null ? null : config.items[drawn.configId];
     if (drawn == null || item == null) return const SizedBox.shrink();
@@ -54,7 +66,12 @@ class LampPull extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('FROM THE LAMP', style: Theme.of(context).textTheme.labelSmall),
+          Text(
+            waiting.length > 1
+                ? 'FROM THE LAMP  ·  ${waiting.length} WAITING'
+                : 'FROM THE LAMP',
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -89,7 +106,13 @@ class LampPull extends ConsumerWidget {
           const SizedBox(height: 14),
           _Verdict(before: before, after: after, better: better),
           const SizedBox(height: 16),
-          _SellReplaced(on: state.sellReplaced, hasWorn: worn != null),
+          if (worn != null)
+            Text(
+              'Wearing this sells ${shortName(worn.configId)}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: GamePalette.ash),
+            ),
           const SizedBox(height: 12),
           _Actions(
             itemId: itemId,
@@ -251,44 +274,6 @@ class _Verdict extends StatelessWidget {
   }
 }
 
-/// The standing preference, offered where it applies.
-class _SellReplaced extends ConsumerWidget {
-  const _SellReplaced({required this.on, required this.hasWorn});
-
-  final bool on;
-  final bool hasWorn;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Nothing to sell when the slot is empty, so the option is not offered —
-    // a tick box that does nothing teaches the player to ignore tick boxes.
-    if (!hasWorn) return const SizedBox.shrink();
-
-    return GestureDetector(
-      onTap: () =>
-          ref.read(gameControllerProvider.notifier).toggleSellReplaced(),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            on ? Icons.check_box : Icons.check_box_outline_blank,
-            size: 18,
-            color: on ? GamePalette.gold : GamePalette.ash,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Sell what I replace',
-            style: TextStyle(
-              fontSize: 12,
-              color: on ? GamePalette.bone : GamePalette.ash,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _Actions extends ConsumerWidget {
   const _Actions({
     required this.itemId,
@@ -312,10 +297,10 @@ class _Actions extends ConsumerWidget {
           child: _Button(
             label: 'SELL  $price',
             filled: false,
-            onPressed: () {
-              ref.read(gameControllerProvider.notifier).salvage(itemId);
-              Navigator.of(context).pop();
-            },
+            // No pop: the screen closes itself once nothing is waiting, so
+            // a queue of five is five decisions, not five dialogs.
+            onPressed: () =>
+                ref.read(gameControllerProvider.notifier).salvage(itemId),
           ),
         ),
         const SizedBox(width: 10),
@@ -327,12 +312,9 @@ class _Actions extends ConsumerWidget {
             filled: better,
             onPressed: slotId == null
                 ? null
-                : () {
-                    ref
-                        .read(gameControllerProvider.notifier)
-                        .equipReplacing(itemId, slotId: slotId!);
-                    Navigator.of(context).pop();
-                  },
+                : () => ref
+                      .read(gameControllerProvider.notifier)
+                      .equipReplacing(itemId, slotId: slotId),
           ),
         ),
       ],

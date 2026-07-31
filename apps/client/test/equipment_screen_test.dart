@@ -123,13 +123,15 @@ void main() {
     await pumpGame(tester);
 
     await tapVisible(tester, find.textContaining('LIGHT THE LAMP'));
-    // Step past the pull without taking it, then check the empty slot.
-    await tester.tapAt(const Offset(8, 8));
-    await tester.pumpAndSettle();
+    // The pull has to be answered — the bag holds decisions, not gear.
+    await tapVisible(tester, find.textContaining('SELL'));
 
-    // The drawn item is a weapon, so the trinket square must come up empty.
     await tapVisible(tester, find.text('trinket'));
 
-    expect(find.textContaining('Nothing that fits here'), findsOneWidget);
+    // The bag opens on that slot: its name is the title, and the filter is
+    // already set to what fits there.
+    // Twice: once as the screen title, once as the chip already selected.
+    expect(find.text('TRINKET'), findsNWidgets(2));
+    expect(find.widgetWithText(ChoiceChip, 'TRINKET'), findsOneWidget);
   });
 }

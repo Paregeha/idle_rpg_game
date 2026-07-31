@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
@@ -25,7 +26,9 @@ Future<GameController> ready(
 }
 
 Future<void> pull(WidgetTester tester) async {
-  await tester.tap(find.textContaining('LIGHT THE LAMP'));
+  // The button becomes DECIDE once something is waiting, so this taps
+  // whichever it is.
+  await tester.tap(find.byIcon(Icons.light_mode));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 400));
 }
@@ -78,56 +81,35 @@ void main() {
     expect(controller.state!.resources['scrap']! > BigNum.zero, isTrue);
   });
 
-  testWidgets('the sell-what-I-replace box is off until it is ticked', (
+  testWidgets('wearing a new one sells what it replaced', (tester) async {
+    // One of each kind, always. The replaced item cannot go back to a bag
+    // that does not hold gear.
+    final controller = await ready(
+      tester,
+      inventory: const {'i0': OwnedItem(id: 'i0', configId: 'blade')},
+      equipped: const {'weapon': 'i0'},
+    );
+
+    await pull(tester);
+    await tester.tap(find.text('WEAR IT'));
+    await tester.pumpAndSettle();
+
+    expect(controller.state!.inventory.containsKey('i0'), isFalse);
+    expect(controller.state!.equipped.values, isNotEmpty);
+    expect(controller.state!.resources['scrap']! > BigNum.zero, isTrue);
+  });
+
+  testWidgets('nothing is left undecided once the screen closes', (
     tester,
   ) async {
-    final controller = await ready(
-      tester,
-      inventory: const {'i0': OwnedItem(id: 'i0', configId: 'blade')},
-      equipped: const {'weapon': 'i0'},
-    );
-    expect(controller.state!.sellReplaced, isFalse);
-
-    await pull(tester);
-    await tester.tap(find.text('Sell what I replace'));
-    await tester.pumpAndSettle();
-
-    expect(controller.state!.sellReplaced, isTrue);
-  });
-
-  testWidgets('ticked, wearing the new one sells the old one', (tester) async {
-    final controller = await ready(
-      tester,
-      inventory: const {'i0': OwnedItem(id: 'i0', configId: 'blade')},
-      equipped: const {'weapon': 'i0'},
-    );
-    controller.state = controller.state!.copyWith(sellReplaced: true);
-    await tester.pumpAndSettle();
+    final controller = await ready(tester);
 
     await pull(tester);
     await tester.tap(find.text('WEAR IT'));
     await tester.pumpAndSettle();
 
-    expect(
-      controller.state!.inventory.containsKey('i0'),
-      isFalse,
-      reason: 'the replaced item was sold, as asked',
-    );
-    expect(controller.state!.equipped.values, isNotEmpty);
-  });
-
-  testWidgets('unticked, the old one goes back to the bag', (tester) async {
-    final controller = await ready(
-      tester,
-      inventory: const {'i0': OwnedItem(id: 'i0', configId: 'blade')},
-      equipped: const {'weapon': 'i0'},
-    );
-
-    await pull(tester);
-    await tester.tap(find.text('WEAR IT'));
-    await tester.pumpAndSettle();
-
-    expect(controller.state!.inventory.containsKey('i0'), isTrue);
+    expect(pendingItems(controller.state!), isEmpty);
+    expect(find.byType(LampPull), findsNothing);
   });
 
   testWidgets('a better item is marked with the arrow', (tester) async {
@@ -147,24 +129,72 @@ void main() {
     );
   });
 
-  testWidgets('the box is not offered when there is nothing to replace', (
+  testWidgets('it says which item wearing this would sell', (tester) async {
+    await ready(
+      tester,
+      inventory: const {'i0': OwnedItem(id: 'i0', configId: 'blade')},
+      equipped: const {'weapon': 'i0'},
+    );
+    await pull(tester);
+
+    expect(find.textContaining('Wearing this sells'), findsOneWidget);
+  });
+
+  testWidgets('with the slot empty it says nothing about selling', (
     tester,
   ) async {
-    // A tick box that does nothing teaches the player to ignore tick boxes.
     await ready(tester);
     await pull(tester);
 
-    expect(find.text('Sell what I replace'), findsNothing);
+    expect(find.textContaining('Wearing this sells'), findsNothing);
   });
 
-  testWidgets('walking away leaves the item in the bag', (tester) async {
+  testWidgets('it cannot be walked away from', (tester) async {
+    // The bag holds decisions, not gear, and walking away is what left
+    // something undecided in the first place.
     final controller = await ready(tester);
     await pull(tester);
 
     await tester.tapAt(const Offset(8, 8));
     await tester.pumpAndSettle();
 
-    expect(controller.state!.inventory, hasLength(1));
-    expect(controller.state!.equipped, isEmpty);
+    expect(find.byType(LampPull), findsOneWidget);
+    expect(pendingItems(controller.state!), hasLength(1));
+  });
+
+  testWidgets('the bag button counts what is undecided, not what is owned', (
+    tester,
+  ) async {
+    // Everything else is on the hero; counting that here would read as
+    // clutter the player has to clear.
+    await ready(
+      tester,
+      inventory: const {'i0': OwnedItem(id: 'i0', configId: 'blade')},
+      equipped: const {'weapon': 'i0'},
+    );
+
+    expect(find.text('0'), findsWidgets);
+  });
+
+  testWidgets('a queue is walked through one at a time', (tester) async {
+    final controller = await ready(
+      tester,
+      inventory: const {
+        'i0': OwnedItem(id: 'i0', configId: 'blade'),
+        'i1': OwnedItem(id: 'i1', configId: 'blade'),
+      },
+    );
+
+    await pull(tester);
+    expect(find.textContaining('WAITING'), findsOneWidget);
+
+    await tester.tap(find.textContaining('SELL'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LampPull), findsOneWidget);
+
+    await tester.tap(find.textContaining('SELL'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LampPull), findsNothing);
+    expect(pendingItems(controller.state!), isEmpty);
   });
 }

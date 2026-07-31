@@ -22,7 +22,10 @@ class LampPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cost = config.lamp.costAmount;
     final balance = state.resources[config.lamp.costResource] ?? BigNum.zero;
-    final affordable = balance >= cost;
+    final waiting = pendingItems(state).length;
+    // With something waiting the button costs nothing and says so, rather than
+    // looking like a pull that silently turns into a prompt.
+    final affordable = waiting > 0 || balance >= cost;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 2, 8, 8),
@@ -30,7 +33,10 @@ class LampPanel extends ConsumerWidget {
         children: [
           _SideButton(
             icon: Icons.inventory_2_outlined,
-            label: '${state.inventory.length}',
+            // What is still undecided, not what is owned: everything else is
+            // on the hero, and counting that here would read as clutter the
+            // player has to clear.
+            label: '$waiting',
             onTap: () => context.push(Routes.inventory),
           ),
           Expanded(
@@ -72,7 +78,7 @@ class LampPanel extends ConsumerWidget {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          'LIGHT THE LAMP',
+                          waiting > 0 ? 'DECIDE  ($waiting)' : 'LIGHT THE LAMP',
                           maxLines: 1,
                           style: TextStyle(
                             fontSize: 13,
@@ -122,15 +128,23 @@ class LampPanel extends ConsumerWidget {
     ref.read(gameControllerProvider.notifier).equipBest();
   }
 
-  /// A pull does get a screen. The decision after one is always "is this
-  /// better than what I have", and answering it by memory is what makes a
-  /// player stop opening the bag at all.
+  /// A pull gets a screen. The decision after one is always "is this better
+  /// than what I have", and answering it by memory is what makes a player stop
+  /// opening the bag at all.
+  ///
+  /// Anything already waiting is asked about first, and no lamp is spent on
+  /// it: a player who walked away from a pull has an unmade decision, not a
+  /// reason to be charged again.
   void _open(BuildContext context, WidgetRef ref) {
-    final result = ref.read(gameControllerProvider.notifier).openTheLamp();
-    final drawn = result?.item;
-    if (drawn == null) return;
+    if (pendingItems(state).isNotEmpty) {
+      LampPull.show(context);
+      return;
+    }
 
-    LampPull.show(context, itemId: drawn.id);
+    final result = ref.read(gameControllerProvider.notifier).openTheLamp();
+    if (result?.item == null) return;
+
+    LampPull.show(context);
   }
 }
 

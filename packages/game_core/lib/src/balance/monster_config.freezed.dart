@@ -29,8 +29,7 @@ mixin _$MonsterConfig {
 /// Separate from the gold reward: levelling and earning are different
 /// pacing levers, and tying them together removes one of them.
 @BigNumConverter() BigNum get expBase;/// Experience is multiplied by this per level.
- double get expGrowth;/// Probability in `0..1` that a kill drops an item.
-/// Chance a kill pays a lamp, in `0..1`.
+ double get expGrowth;/// Chance a kill pays a lamp, in `0..1`.
 ///
 /// Lamps, not gear: the lamp is where items come from, and a kill that
 /// handed over an item directly would make the lamp beside the point.
@@ -267,7 +266,6 @@ class _MonsterConfig extends MonsterConfig {
 @override@JsonKey()@BigNumConverter() final  BigNum expBase;
 /// Experience is multiplied by this per level.
 @override@JsonKey() final  double expGrowth;
-/// Probability in `0..1` that a kill drops an item.
 /// Chance a kill pays a lamp, in `0..1`.
 ///
 /// Lamps, not gear: the lamp is where items come from, and a kill that

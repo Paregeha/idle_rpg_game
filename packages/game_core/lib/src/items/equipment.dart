@@ -236,3 +236,17 @@ bool hasUpgradeFor(PlayerState state, String slotId, BalanceConfig config) {
   }
   return false;
 }
+
+/// Items sitting in the bag with no decision made about them.
+///
+/// The bag is not storage: everything is either on the hero or sold. What is
+/// left here is a pull the player walked away from, and the lamp will ask
+/// about it before handing out another.
+///
+/// Sorted, so the same save always asks in the same order — the server has to
+/// reach the same inventory (`T-032`).
+List<String> pendingItems(PlayerState state) {
+  final worn = state.equipped.values.toSet();
+  return state.inventory.keys.where((id) => !worn.contains(id)).toList()
+    ..sort();
+}
