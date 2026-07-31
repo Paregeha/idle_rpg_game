@@ -2,6 +2,7 @@ import 'package:game_core/src/balance/balance_config.dart';
 import 'package:game_core/src/balance/slot_config.dart';
 import 'package:game_core/src/battle/combat_stats.dart';
 import 'package:game_core/src/items/item_config.dart';
+import 'package:game_core/src/items/owned_item.dart';
 import 'package:game_core/src/math/big_num.dart';
 import 'package:game_core/src/state/player_state.dart';
 import 'package:meta/meta.dart';
@@ -165,4 +166,73 @@ CombatStats heroCombatStats(PlayerState state, BalanceConfig config) {
     mitigation: (base.mitigation + gear.mitigation).clamp(0.0, 0.9),
     attacksPerSecond: base.attacksPerSecond + gear.attacksPerSecond,
   );
+}
+
+/// How much an item is worth to the hero, as one number.
+///
+/// Attack plus a fraction of health plus what a multiplier is worth, so a
+/// defensive item still counts for something. It is a comparison handle, not a
+/// formula the fight uses — the fight reads the real stats.
+///
+/// Ranked by what the item actually contributes, never by rarity: an upgraded
+/// common can beat a fresh epic, and sorting by rarity would quietly hand the
+/// player the worse item.
+double itemWorth(OwnedItem owned, BalanceConfig config) {
+  final item = config.items[owned.configId];
+  final rarity = config.rarities[item?.rarity];
+  if (item == null || rarity == null) return -1;
+
+  final stats = item.statsAt(level: owned.level, rarity: rarity);
+  return stats.flatAttack.toDouble() +
+      stats.flatHp.toDouble() * 0.2 +
+      (stats.attackMultiplier - 1) * 500 +
+      (stats.hpMultiplier - 1) * 100;
+}
+
+/// Whether wearing [itemId] would beat whatever is in its slot now.
+///
+/// Compares the items rather than simulating the hero twice: this is asked for
+/// every cell in a bag that can hold fifty of them, on a screen that rebuilds
+/// with the game clock.
+///
+/// An item already being worn is never an upgrade over itself.
+bool isUpgrade(PlayerState state, String itemId, BalanceConfig config) {
+  final owned = state.inventory[itemId];
+  final item = owned == null ? null : config.items[owned.configId];
+  if (owned == null || item == null) return false;
+  if (state.equipped.containsValue(itemId)) return false;
+
+  final worth = itemWorth(owned, config);
+
+  // Against the weakest slot of the right kind: with two rings on, the one
+  // worth replacing is the worse of them.
+  double? weakest;
+  var hasSlot = false;
+  for (final slot in config.slots) {
+    if (slot.itemKind != item.slot) continue;
+    hasSlot = true;
+
+    final wornId = state.equipped[slot.id];
+    if (wornId == null) return true;
+
+    final worn = state.inventory[wornId];
+    final wornWorth = worn == null ? -1.0 : itemWorth(worn, config);
+    if (weakest == null || wornWorth < weakest) weakest = wornWorth;
+  }
+
+  if (!hasSlot) return false;
+  return worth > (weakest ?? -1);
+}
+
+/// Whether the bag holds something better than what [slotId] is wearing.
+bool hasUpgradeFor(PlayerState state, String slotId, BalanceConfig config) {
+  for (final entry in state.inventory.entries) {
+    final item = config.items[entry.value.configId];
+    if (item == null) continue;
+
+    final slot = config.slots.where((s) => s.id == slotId);
+    if (slot.isEmpty || slot.first.itemKind != item.slot) continue;
+    if (isUpgrade(state, entry.key, config)) return true;
+  }
+  return false;
 }

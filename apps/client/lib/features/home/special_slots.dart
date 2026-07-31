@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/item_visuals.dart';
+import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
 
 /// The special slots, each sized to what it holds.
 ///
@@ -107,6 +108,7 @@ class SpecialCell extends ConsumerWidget {
     final item = owned == null ? null : config.items[owned.configId];
     final rank = item == null ? 0 : config.rarities[item.rarity]?.rank ?? 0;
     final filled = owned != null;
+    final better = hasUpgradeFor(state, slot.id, config);
 
     return GestureDetector(
       onTap: () => owned == null
@@ -142,6 +144,8 @@ class SpecialCell extends ConsumerWidget {
                 ),
               ),
             ),
+            if (better)
+              const Positioned(right: 2, top: 2, child: UpgradeArrow(size: 11)),
             if (filled)
               Positioned(
                 left: 3,

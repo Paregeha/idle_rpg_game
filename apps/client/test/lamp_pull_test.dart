@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
+import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
 import 'package:idle_rpg/features/home/lamp_pull.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
@@ -127,6 +128,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.state!.inventory.containsKey('i0'), isTrue);
+  });
+
+  testWidgets('a better item is marked with the arrow', (tester) async {
+    // One arrow, one meaning: the bag, the slots and a pull all ask the same
+    // function whether something is worth wearing.
+    await ready(tester);
+    await pull(tester);
+
+    // Scoped to the pull: the slot behind it now wears one too, which is the
+    // point — the same rule lit both.
+    expect(
+      find.descendant(
+        of: find.byType(LampPull),
+        matching: find.byType(UpgradeArrow),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the box is not offered when there is nothing to replace', (

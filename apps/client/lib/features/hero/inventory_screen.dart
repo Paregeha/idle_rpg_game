@@ -4,6 +4,7 @@ import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/item_visuals.dart';
+import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 
@@ -84,6 +85,10 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     });
 
     final kinds = config.slots.map((s) => s.itemKind).toSet().toList();
+    final upgrades = {
+      for (final owned in items)
+        if (isUpgrade(state, owned.id, config)) owned.id,
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -126,6 +131,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
             child: switch (_tab) {
               BagTab.gear => _GearTab(
                 items: items,
+                upgrades: upgrades,
                 kinds: kinds,
                 kind: _kind,
                 onKind: (kind) => setState(() => _kind = kind),
@@ -286,6 +292,7 @@ class _Tab extends StatelessWidget {
 class _GearTab extends StatelessWidget {
   const _GearTab({
     required this.items,
+    required this.upgrades,
     required this.kinds,
     required this.kind,
     required this.onKind,
@@ -297,6 +304,11 @@ class _GearTab extends StatelessWidget {
   });
 
   final List<OwnedItem> items;
+
+  /// Ids worth wearing over what is on. Worked out once for the whole grid
+  /// rather than per cell: this screen rebuilds with the game clock.
+  final Set<String> upgrades;
+
   final List<String> kinds;
   final String? kind;
   final ValueChanged<String?> onKind;
@@ -332,6 +344,7 @@ class _GearTab extends StatelessWidget {
                     owned: items[index],
                     config: config,
                     isWorn: state.equipped.containsValue(items[index].id),
+                    isUpgrade: upgrades.contains(items[index].id),
                     slot: slot,
                   ),
                 ),
@@ -378,12 +391,14 @@ class _Cell extends StatelessWidget {
     required this.owned,
     required this.config,
     required this.isWorn,
+    required this.isUpgrade,
     required this.slot,
   });
 
   final OwnedItem owned;
   final BalanceConfig config;
   final bool isWorn;
+  final bool isUpgrade;
   final SlotConfig? slot;
 
   @override
@@ -432,6 +447,12 @@ class _Cell extends StatelessWidget {
                           color: colour,
                         ),
                       ),
+                    ),
+                  if (isUpgrade)
+                    const Positioned(
+                      right: 2,
+                      top: 2,
+                      child: UpgradeArrow(size: 12),
                     ),
                   if (isWorn)
                     Positioned(

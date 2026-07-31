@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/item_visuals.dart';
+import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 
@@ -44,7 +45,8 @@ class LampPull extends ConsumerWidget {
       equipItem(state, itemId, config, intoSlot: slot?.id).state,
       config,
     );
-    final better = after.attack > before.attack || after.maxHp > before.maxHp;
+    // The same rule the bag and the slots use, so one arrow means one thing.
+    final better = isUpgrade(state, itemId, config);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -79,6 +81,7 @@ class LampPull extends ConsumerWidget {
                   owned: drawn,
                   config: config,
                   dim: false,
+                  better: better,
                 ),
               ),
             ],
@@ -121,12 +124,14 @@ class _Side extends StatelessWidget {
     required this.owned,
     required this.config,
     required this.dim,
+    this.better = false,
   });
 
   final String label;
   final OwnedItem? owned;
   final BalanceConfig config;
   final bool dim;
+  final bool better;
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +141,16 @@ class _Side extends StatelessWidget {
 
     return Column(
       children: [
-        Text(label, style: Theme.of(context).textTheme.labelSmall),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.labelSmall),
+            if (better) ...[
+              const SizedBox(width: 6),
+              const UpgradeArrow(size: 12),
+            ],
+          ],
+        ),
         const SizedBox(height: 8),
         Container(
           height: 128,

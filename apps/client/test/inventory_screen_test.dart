@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/features/hero/inventory_screen.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
+import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
 import 'package:idle_rpg/features/home/home_screen.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
@@ -54,6 +55,26 @@ void main() {
 
     expect(find.text('Blade'), findsNWidgets(2));
     expect(find.text('ON', skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('a better item wears the arrow, a worse one does not', (
+    tester,
+  ) async {
+    // i1 is the same blade at level 3 and is worn; i0 is a fresh one, so the
+    // bag holds nothing worth swapping in.
+    await stocked(tester);
+    await openBag(tester);
+
+    expect(find.byType(UpgradeArrow), findsNothing);
+  });
+
+  testWidgets('a slot says when the bag holds better for it', (tester) async {
+    // The player should not have to open the bag to find that out.
+    final controller = await stocked(tester);
+    controller.state = controller.state!.copyWith(equipped: const {});
+    await tester.pumpAndSettle();
+
+    expect(find.byType(UpgradeArrow), findsWidgets);
   });
 
   testWidgets('a cell opens the item', (tester) async {

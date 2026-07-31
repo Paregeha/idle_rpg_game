@@ -213,7 +213,9 @@ class GameController extends Notifier<PlayerState?> {
       }).toList();
       if (candidates.isEmpty) continue;
 
-      candidates.sort((a, b) => _worth(b, config).compareTo(_worth(a, config)));
+      candidates.sort(
+        (a, b) => itemWorth(b, config).compareTo(itemWorth(a, config)),
+      );
       final best = candidates.first;
       if (current.equipped[slot.id] == best.id) continue;
 
@@ -234,17 +236,6 @@ class GameController extends Notifier<PlayerState?> {
       unawaited(saveNow());
     }
     return changed;
-  }
-
-  double _worth(OwnedItem owned, BalanceConfig config) {
-    final item = config.items[owned.configId];
-    final rarity = config.rarities[item?.rarity];
-    if (item == null || rarity == null) return -1;
-
-    final stats = item.statsAt(level: owned.level, rarity: rarity);
-    return stats.flatAttack.toDouble() +
-        stats.flatHp.toDouble() * 0.2 +
-        (stats.attackMultiplier - 1) * 500;
   }
 
   /// Opens the lamp once.

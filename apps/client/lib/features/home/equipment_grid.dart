@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:idle_rpg/app/router.dart';
 import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/item_visuals.dart';
+import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
 import 'package:idle_rpg/features/home/special_slots.dart';
 
 /// The equipment panel: gear on the left, the special slots on the right.
@@ -107,6 +108,9 @@ class _Cell extends ConsumerWidget {
     final item = owned == null ? null : config.items[owned.configId];
     final rank = item == null ? 0 : config.rarities[item.rarity]?.rank ?? 0;
     final filled = owned != null;
+    // The arrow is on the slot, not only in the bag: the player should not
+    // have to open the bag to find out there is something better in it.
+    final better = hasUpgradeFor(state, slot.id, config);
 
     return GestureDetector(
       // A full slot opens the item; an empty one opens the bag to fill it.
@@ -145,6 +149,8 @@ class _Cell extends ConsumerWidget {
                 ),
               ),
             ),
+            if (better)
+              const Positioned(right: 2, top: 2, child: UpgradeArrow(size: 11)),
             if (filled)
               Positioned(
                 left: 3,
