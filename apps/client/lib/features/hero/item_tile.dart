@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
+import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 
 /// Colour for a rarity rank. Rank rather than name, so a config that adds a
@@ -26,7 +27,7 @@ class ItemTile extends ConsumerWidget {
     required this.config,
     required this.state,
     required this.isEquipped,
-    this.intoSlot,
+    this.slot,
     super.key,
   });
 
@@ -35,11 +36,11 @@ class ItemTile extends ConsumerWidget {
   final PlayerState state;
   final bool isEquipped;
 
-  /// Which slot to equip into, when the sheet was opened from one.
+  /// Which slot the bag was opened from, if any.
   ///
   /// Without it, tapping a ring from the `ring2` panel could land it on the
   /// other finger, which is not what the player pointed at.
-  final String? intoSlot;
+  final SlotConfig? slot;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,69 +50,69 @@ class ItemTile extends ConsumerWidget {
 
     final preview = _preview();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: BoxDecoration(
-        color: GamePalette.forgeSurface,
-        borderRadius: BorderRadius.circular(6),
-        border: Border(
-          left: BorderSide(color: rarityColour(rarity.rank), width: 3),
+    return GestureDetector(
+      // The row is a way in, not the place upgrades happen: a list line with a
+      // "+" on it reads as a settings screen, not as gear.
+      onTap: () => ItemCard.show(context, itemId: owned.id, slot: slot),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        decoration: BoxDecoration(
+          color: GamePalette.forgeSurface,
+          borderRadius: BorderRadius.circular(6),
+          border: Border(
+            left: BorderSide(color: rarityColour(rarity.rank), width: 3),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      shortName(owned.configId),
-                      style: TextStyle(
-                        color: rarityColour(rarity.rank),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (owned.level > 0) ...[
-                      const SizedBox(width: 6),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
                       Text(
-                        '+${owned.level}',
-                        style: counterStyle(context, fontSize: 13),
+                        shortName(owned.configId),
+                        style: TextStyle(
+                          color: rarityColour(rarity.rank),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
+                      if (owned.level > 0) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          '+${owned.level}',
+                          style: counterStyle(context, fontSize: 13),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  isEquipped ? 'worn · ${item.slot}' : preview.label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isEquipped
-                        ? GamePalette.ash
-                        : (preview.better
-                              ? GamePalette.patina
-                              : GamePalette.ash),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 3),
+                  Text(
+                    isEquipped ? 'worn · ${item.slot}' : preview.label,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: isEquipped
+                          ? GamePalette.ash
+                          : (preview.better
+                                ? GamePalette.patina
+                                : GamePalette.ash),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (!isEquipped)
-            _SmallButton(
-              label: 'EQUIP',
-              onPressed: () => ref
-                  .read(gameControllerProvider.notifier)
-                  .equip(owned.id, intoSlot: intoSlot),
-            ),
-          const SizedBox(width: 6),
-          _SmallButton(
-            label: '+',
-            onPressed: owned.level >= item.maxLevel
-                ? null
-                : () => _upgrade(context, ref),
-          ),
-        ],
+            if (!isEquipped)
+              _SmallButton(
+                label: 'EQUIP',
+                onPressed: () => ref
+                    .read(gameControllerProvider.notifier)
+                    .equip(owned.id, intoSlot: slot?.id),
+              ),
+            const SizedBox(width: 6),
+            const Icon(Icons.chevron_right, size: 18, color: GamePalette.ash),
+          ],
+        ),
       ),
     );
   }
@@ -128,7 +129,7 @@ class ItemTile extends ConsumerWidget {
   ({String label, bool better}) _preview() {
     final before = heroCombatStats(state, config);
     final after = heroCombatStats(
-      equipItem(state, owned.id, config, intoSlot: intoSlot).state,
+      equipItem(state, owned.id, config, intoSlot: slot?.id).state,
       config,
     );
 
@@ -158,27 +159,6 @@ class ItemTile extends ConsumerWidget {
     return (
       label: parts.isEmpty ? 'no change' : parts.join(' · '),
       better: better,
-    );
-  }
-
-  void _upgrade(BuildContext context, WidgetRef ref) {
-    final result = ref.read(gameControllerProvider.notifier).upgrade(owned.id);
-    if (result == null) return;
-
-    final message = switch (result.refusal) {
-      UpgradeRefusal.cannotAfford => 'Not enough gold',
-      UpgradeRefusal.notEnoughDuplicates => 'Needs a spare copy',
-      UpgradeRefusal.alreadyMaxLevel => 'Already at maximum',
-      UpgradeRefusal.unknownItem => 'That item is gone',
-      null =>
-        result.consumed.isEmpty
-            ? 'Upgraded to +${result.item!.level}'
-            : 'Upgraded to +${result.item!.level}, '
-                  'used ${result.consumed.length} spare',
-    };
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 }

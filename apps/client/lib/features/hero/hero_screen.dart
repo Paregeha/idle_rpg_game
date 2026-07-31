@@ -4,6 +4,7 @@ import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/hero_figure.dart';
 import 'package:idle_rpg/features/hero/inventory_sheet.dart';
+import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/slot_button.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
@@ -83,7 +84,16 @@ class _SlotColumn extends StatelessWidget {
                 slot: slot,
                 config: config,
                 state: state,
-                onTap: () => InventorySheet.show(context, slot: slot),
+                // Same rule as the home grid: a full slot opens the item, an
+                // empty one opens the bag to fill it.
+                onTap: () {
+                  final wornId = state.equipped[slot.id];
+                  if (wornId == null) {
+                    InventorySheet.show(context, slot: slot);
+                  } else {
+                    ItemCard.show(context, itemId: wornId, slot: slot);
+                  }
+                },
               ),
           ],
         ),

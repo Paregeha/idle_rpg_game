@@ -38,6 +38,27 @@ class UpgradeResult {
   bool get upgraded => item != null;
 }
 
+/// Spare copies of [itemId] an upgrade is allowed to eat.
+///
+/// Unequipped copies only, and never the item itself. The upgrade and the
+/// screen that offers it both read this, so a card promising "2 spares" cannot
+/// be refused by an upgrade that counted differently.
+List<String> spareCopiesOf(PlayerState state, String itemId) {
+  final owned = state.inventory[itemId];
+  if (owned == null) return const [];
+
+  final worn = state.equipped.values.toSet();
+  return state.inventory.values
+      .where(
+        (other) =>
+            other.id != itemId &&
+            other.configId == owned.configId &&
+            !worn.contains(other.id),
+      )
+      .map((other) => other.id)
+      .toList();
+}
+
 /// Raises an item one level.
 ///
 /// Duplicates are drawn from unequipped copies only. Eating the item the player
@@ -65,17 +86,10 @@ UpgradeResult upgradeItem(
     return UpgradeResult(state: state, refusal: UpgradeRefusal.cannotAfford);
   }
 
-  final worn = state.equipped.values.toSet();
-  final duplicates = state.inventory.values
-      .where(
-        (other) =>
-            other.id != itemId &&
-            other.configId == owned.configId &&
-            !worn.contains(other.id),
-      )
-      .take(upgrade.duplicatesPerLevel)
-      .map((other) => other.id)
-      .toList();
+  final duplicates = spareCopiesOf(
+    state,
+    itemId,
+  ).take(upgrade.duplicatesPerLevel).toList();
 
   if (duplicates.length < upgrade.duplicatesPerLevel) {
     return UpgradeResult(

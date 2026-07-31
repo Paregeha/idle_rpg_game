@@ -116,7 +116,7 @@ class _InventorySheetState extends ConsumerState<InventorySheet> {
                           config: config,
                           state: state,
                           isEquipped: state.equipped.containsValue(owned.id),
-                          intoSlot: widget.slot?.id,
+                          slot: widget.slot,
                         ),
                     ],
                   ),

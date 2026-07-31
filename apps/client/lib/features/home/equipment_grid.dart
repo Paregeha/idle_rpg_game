@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/inventory_sheet.dart';
+import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/item_tile.dart';
 import 'package:idle_rpg/features/home/special_slots.dart';
 
@@ -107,7 +108,12 @@ class _Cell extends ConsumerWidget {
     final filled = owned != null;
 
     return GestureDetector(
-      onTap: () => InventorySheet.show(context, slot: slot),
+      // A full slot opens the item; an empty one opens the bag to fill it.
+      // Tapping worn gear and getting a list of everything else is an answer
+      // to a question the player did not ask.
+      onTap: () => owned == null
+          ? InventorySheet.show(context, slot: slot)
+          : ItemCard.show(context, itemId: owned.id, slot: slot),
       child: Container(
         decoration: BoxDecoration(
           color: filled

@@ -143,6 +143,37 @@ void main() {
     });
   });
 
+  group('spare copies', () {
+    test('are what the upgrade would actually eat', () {
+      // The card offering the upgrade counts with this function, so a screen
+      // promising a spare cannot be contradicted by the upgrade refusing.
+      final worn = state(copies: 4).copyWith(equipped: const {'weapon': 'i1'});
+
+      final spares = spareCopiesOf(worn, 'i0');
+
+      expect(spares, unorderedEquals(['i2', 'i3']));
+      expect(
+        upgradeItem(worn, 'i0', config(duplicatesPerLevel: 2)).consumed,
+        everyElement(isIn(spares)),
+      );
+    });
+
+    test('a different item is not a spare copy of this one', () {
+      final mixed = state().copyWith(
+        inventory: {
+          'i0': const OwnedItem(id: 'i0', configId: 'blade'),
+          'i1': const OwnedItem(id: 'i1', configId: 'other'),
+        },
+      );
+
+      expect(spareCopiesOf(mixed, 'i0'), isEmpty);
+    });
+
+    test('an item that is not owned has none', () {
+      expect(spareCopiesOf(state(), 'nothing'), isEmpty);
+    });
+  });
+
   group('twenty upgrades in a row', () {
     test('strengthen the item monotonically and keep the state sound', () {
       const rarity = RarityConfig();

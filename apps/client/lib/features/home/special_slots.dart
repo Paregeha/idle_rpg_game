@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import 'package:idle_rpg/app/theme.dart';
 import 'package:idle_rpg/features/hero/inventory_sheet.dart';
+import 'package:idle_rpg/features/hero/item_card.dart';
 import 'package:idle_rpg/features/hero/item_tile.dart';
 
 /// The special slots, each sized to what it holds.
@@ -107,7 +108,9 @@ class SpecialCell extends ConsumerWidget {
     final filled = owned != null;
 
     return GestureDetector(
-      onTap: () => InventorySheet.show(context, slot: slot),
+      onTap: () => owned == null
+          ? InventorySheet.show(context, slot: slot)
+          : ItemCard.show(context, itemId: owned.id, slot: slot),
       child: Container(
         decoration: BoxDecoration(
           color: filled
