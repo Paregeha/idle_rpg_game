@@ -12,17 +12,17 @@ import 'package:idle_rpg/features/shop/shop_screen.dart';
 /// deep-link straight into one of them.
 abstract final class Routes {
   static const home = '/home';
+  static const hero = '/hero';
   static const shop = '/shop';
   static const upgrades = '/upgrades';
 
-  /// Materials, and the hero. Outside the shell, so they cover the tabs and
-  /// come back with a back button — somewhere the player goes, not more tabs.
+  /// Materials. Outside the shell, so it covers the tabs and comes back with
+  /// a back button — it is somewhere the player goes, not a tab.
   static const materials = '/materials';
-  static const hero = '/hero';
 
   /// Home first: the fight, the gear and the lamp are all on it, so most
   /// sessions never leave this tab.
-  static const tabs = [home, shop, upgrades];
+  static const tabs = [home, hero, shop, upgrades];
 }
 
 GoRouter buildRouter() {
@@ -39,6 +39,11 @@ GoRouter buildRouter() {
             path: Routes.home,
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: HomeScreen()),
+          ),
+          GoRoute(
+            path: Routes.hero,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HeroPage()),
           ),
           GoRoute(
             path: Routes.shop,

@@ -23,23 +23,37 @@ Future<GameController> openHero(
   );
   await tester.pumpAndSettle();
 
-  await tester.tap(find.byType(PlayerBar));
+  await tester.tap(find.text('HERO'));
   await tester.pumpAndSettle();
 
   return controller;
 }
 
 void main() {
-  testWidgets('the player bar opens the hero page', (tester) async {
+  testWidgets('the hero is a tab of its own', (tester) async {
     await openHero(tester);
 
     expect(find.byType(HeroPage), findsOneWidget);
   });
 
-  testWidgets('every slot is listed, worn or not', (tester) async {
+  testWidgets('the outfit sits along the bottom, without the rune', (
+    tester,
+  ) async {
+    // Wings, skin and mount are worn on the character rather than in their
+    // hands. A rune is not gear and gets its own place.
+    await openHero(tester);
+
+    expect(find.text('WINGS'), findsOneWidget);
+    expect(find.text('SKIN'), findsOneWidget);
+    expect(find.text('MOUNT'), findsOneWidget);
+    expect(find.text('RUNE'), findsNothing);
+  });
+
+  testWidgets('every slot but the rune is on the page', (tester) async {
     await openHero(tester);
 
     for (final slot in testBalanceConfig.slots) {
+      if (slot.itemKind == 'rune') continue;
       expect(find.text(slot.id.toUpperCase()), findsOneWidget, reason: slot.id);
     }
     expect(find.text('empty'), findsWidgets);
@@ -85,10 +99,10 @@ void main() {
     expect(find.text(stats.maxHp.format()), findsOneWidget);
   });
 
-  testWidgets('it comes back to where the player was', (tester) async {
+  testWidgets('home is one tap away again', (tester) async {
     await openHero(tester);
 
-    await tester.pageBack();
+    await tester.tap(find.text('HOME'));
     await tester.pumpAndSettle();
 
     expect(find.byType(HeroPage), findsNothing);

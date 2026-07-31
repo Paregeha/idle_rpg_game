@@ -8,12 +8,17 @@ import 'package:idle_rpg/features/hero/upgrade_arrow.dart';
 import 'package:idle_rpg/state/game_controller.dart';
 import 'package:idle_rpg/state/game_providers.dart';
 
-/// The hero, with everything they are wearing down one side.
+/// The hero in the middle, with what they are wearing around them.
 ///
 /// Home shows the gear as a grid because it has a fight to fit around it. Here
-/// there is nothing else to fit, so the slots run down the left and the hero
-/// stands beside them — the arrangement a player expects when they go looking
+/// there is nothing else to fit, so the character gets the centre and the
+/// slots frame them — the arrangement a player expects when they go looking
 /// for "my character" rather than "my next tap".
+///
+/// Wings, skin and mount sit along the bottom: they are worn on the character
+/// rather than in their hands, and they are the three the player is usually
+/// working towards rather than swapping. The rune is deliberately not here —
+/// it is not gear and gets its own place.
 class HeroPage extends ConsumerWidget {
   const HeroPage({super.key});
 
@@ -27,43 +32,103 @@ class HeroPage extends ConsumerWidget {
       ..sort((a, b) => a.order.compareTo(b.order));
     final stats = heroCombatStats(state, config);
 
+    // Split by the order the config gives, so adding a slot lands somewhere
+    // sensible without a code change.
+    const worn = {'wings', 'skin', 'mount'};
+    const elsewhere = {'rune'};
+    final gear = slots
+        .where((s) => !worn.contains(s.itemKind))
+        .where((s) => !elsewhere.contains(s.itemKind))
+        .toList();
+    final half = (gear.length / 2).ceil();
+    final outfit = slots.where((s) => worn.contains(s.itemKind)).toList()
+      ..sort(
+        (a, b) => worn
+            .toList()
+            .indexOf(a.itemKind)
+            .compareTo(worn.toList().indexOf(b.itemKind)),
+      );
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: GamePalette.forgeSurface,
-        foregroundColor: GamePalette.bone,
-        title: Text('HERO', style: Theme.of(context).textTheme.labelSmall),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 96,
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(10, 12, 4, 12),
-                    children: [
-                      for (final slot in slots)
-                        _SlotTile(slot: slot, config: config, state: state),
-                    ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Column(
+                    slots: gear.take(half).toList(),
+                    config: config,
+                    state: state,
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 12, 12, 12),
-                    child: Column(
-                      children: [
-                        Expanded(child: _Figure(level: state.heroLevel)),
-                        const SizedBox(height: 12),
-                        _Stats(stats: stats),
-                      ],
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        children: [
+                          Expanded(child: _Figure(level: state.heroLevel)),
+                          const SizedBox(height: 14),
+                          _Stats(stats: stats),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  _Column(
+                    slots: gear.skip(half).toList(),
+                    config: config,
+                    state: state,
+                  ),
+                ],
+              ),
             ),
-          ),
+            if (outfit.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
+                child: Row(
+                  children: [
+                    for (final slot in outfit)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: _SlotTile(
+                            slot: slot,
+                            config: config,
+                            state: state,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One side of the hero.
+class _Column extends StatelessWidget {
+  const _Column({
+    required this.slots,
+    required this.config,
+    required this.state,
+  });
+
+  final List<SlotConfig> slots;
+  final BalanceConfig config;
+  final PlayerState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 92,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
+        children: [
+          for (final slot in slots)
+            _SlotTile(slot: slot, config: config, state: state),
         ],
       ),
     );

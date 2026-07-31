@@ -22,6 +22,9 @@ final testBalanceConfig = BalanceConfig(
     SlotConfig(id: 'weapon'),
     SlotConfig(id: 'trinket'),
     SlotConfig(id: 'wings'),
+    SlotConfig(id: 'skin'),
+    SlotConfig(id: 'mount'),
+    SlotConfig(id: 'rune'),
   ],
   rarities: const {'common': RarityConfig()},
   items: {
