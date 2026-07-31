@@ -168,6 +168,53 @@ void main() {
     );
   });
 
+  test('every rarity is worth breaking down', () {
+    // A rarity salvage pays nothing for is a pile the player can never clear.
+    for (final rarity in config.rarities.keys) {
+      final payout = config.salvage.payoutFor(rarity: rarity, level: 0);
+      expect(payout, isNotEmpty, reason: rarity);
+    }
+  });
+
+  test('rarer gear salvages for more', () {
+    final byRank = config.rarities.entries.toList()
+      ..sort((a, b) => a.value.rank.compareTo(b.value.rank));
+
+    for (var i = 1; i < byRank.length; i++) {
+      final lower = config.salvage.payoutFor(
+        rarity: byRank[i - 1].key,
+        level: 0,
+      );
+      final higher = config.salvage.payoutFor(rarity: byRank[i].key, level: 0);
+
+      expect(
+        higher['gold']! > lower['gold']!,
+        isTrue,
+        reason:
+            '${byRank[i].key} breaks down for no more than '
+            '${byRank[i - 1].key}',
+      );
+    }
+  });
+
+  test('the materials tab has something to show once salvage runs', () {
+    // The bag declares a MATERIALS tab. A material nothing produces would
+    // leave it permanently empty with no explanation.
+    expect(config.materialResources, isNotEmpty);
+    for (final material in config.materialResources) {
+      expect(
+        config.salvage.yields.values.any((y) => y.containsKey(material)),
+        isTrue,
+        reason: '$material is declared a material but nothing produces it',
+      );
+      expect(
+        config.displayedResources,
+        isNot(contains(material)),
+        reason: '$material belongs on the bag tab, not in the top row',
+      );
+    }
+  });
+
   test('prestige actually pays off', () {
     expect(config.prestige.bonusPerPoint > BigNum.zero, isTrue);
     expect(config.prestige.currencyExponent, lessThanOrEqualTo(1));

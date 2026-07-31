@@ -35,6 +35,12 @@ final testBalanceConfig = BalanceConfig(
     'wave': SkillConfig(unlockAtLevel: 12, targets: 0),
   },
   skillPack: const SkillPackConfig(costAmount: 50, weights: {'common': 1}),
+  salvage: SalvageConfig(
+    yields: {
+      'common': {'gold': BigNum.fromDouble(10), 'scrap': BigNum.one},
+    },
+  ),
+  materialResources: const ['scrap'],
   lamp: const LampConfig(weights: {'common': 1}, costResource: 'gems'),
   displayedResources: const ['gold', 'gems'],
   start: StartConfig(

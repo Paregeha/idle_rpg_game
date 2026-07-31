@@ -59,7 +59,8 @@
       "gold": "0e0",
       "gems": "0e0",
       "premiumGems": "0e0",
-      "lamps": "1e1"
+      "lamps": "1e1",
+      "scrap": "0e0"
     }
   },
   "prestige": {
@@ -659,5 +660,29 @@
     "pityRarity": "legendary",
     "bossDropChance": 0.15,
     "monsterDropChance": 0.004
-  }
+  },
+  "salvage": {
+    "levelMultiplier": 1.6,
+    "yields": {
+      "common": {
+        "gold": "2e2",
+        "scrap": "1e0"
+      },
+      "rare": {
+        "gold": "1e3",
+        "scrap": "3e0"
+      },
+      "epic": {
+        "gold": "6e3",
+        "scrap": "1e1"
+      },
+      "legendary": {
+        "gold": "4e4",
+        "scrap": "4e1"
+      }
+    }
+  },
+  "materialResources": [
+    "scrap"
+  ]
 }

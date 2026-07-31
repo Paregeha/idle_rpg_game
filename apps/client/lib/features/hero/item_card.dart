@@ -119,9 +119,19 @@ class ItemCard extends ConsumerWidget {
                     _Footer(
                       slot: slot,
                       isWorn: state.equipped.containsValue(itemId),
+                      salvageValue: config.salvage.payoutFor(
+                        rarity: item.rarity,
+                        level: owned.level,
+                      ),
                       onEquip: () => ref
                           .read(gameControllerProvider.notifier)
                           .equip(itemId, intoSlot: slot?.id),
+                      onSalvage: () {
+                        ref
+                            .read(gameControllerProvider.notifier)
+                            .salvage(itemId);
+                        Navigator.of(context).pop();
+                      },
                     ),
                   ],
                 ),
@@ -551,17 +561,21 @@ class _UpgradeButton extends StatelessWidget {
   }
 }
 
-/// Wear it, or go and pick something else for the same slot.
+/// Wear it, break it down, or go and pick something else for the same slot.
 class _Footer extends StatelessWidget {
   const _Footer({
     required this.slot,
     required this.isWorn,
+    required this.salvageValue,
     required this.onEquip,
+    required this.onSalvage,
   });
 
   final SlotConfig? slot;
   final bool isWorn;
+  final Map<String, BigNum> salvageValue;
   final VoidCallback onEquip;
+  final VoidCallback onSalvage;
 
   @override
   Widget build(BuildContext context) {
@@ -588,6 +602,16 @@ class _Footer extends StatelessWidget {
           )
         else
           const SizedBox.shrink(),
+        // Only offered for gear that is off the hero: breaking down what is
+        // worn would strip a slot as a side effect.
+        if (!isWorn && salvageValue.isNotEmpty)
+          TextButton(
+            onPressed: onSalvage,
+            style: TextButton.styleFrom(foregroundColor: GamePalette.gold),
+            // Says what it pays before it is pressed, not after. There is no
+            // undo for an item that has been broken down.
+            child: Text('SALVAGE  ${_priceLabel(salvageValue)}'),
+          ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           style: TextButton.styleFrom(foregroundColor: GamePalette.ash),
@@ -596,4 +620,7 @@ class _Footer extends StatelessWidget {
       ],
     );
   }
+
+  String _priceLabel(Map<String, BigNum> payout) =>
+      payout.entries.map((e) => e.value.format()).join(' · ');
 }

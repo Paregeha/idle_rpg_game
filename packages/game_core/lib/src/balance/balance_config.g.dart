@@ -65,6 +65,14 @@ _BalanceConfig _$BalanceConfigFromJson(
   skillPack: json['skillPack'] == null
       ? const SkillPackConfig()
       : SkillPackConfig.fromJson(json['skillPack'] as Map<String, dynamic>),
+  salvage: json['salvage'] == null
+      ? const SalvageConfig()
+      : SalvageConfig.fromJson(json['salvage'] as Map<String, dynamic>),
+  materialResources:
+      (json['materialResources'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const <String>[],
   start: json['start'] == null
       ? const StartConfig()
       : StartConfig.fromJson(json['start'] as Map<String, dynamic>),
@@ -87,6 +95,8 @@ Map<String, dynamic> _$BalanceConfigToJson(_BalanceConfig instance) =>
       'items': instance.items.map((k, e) => MapEntry(k, e.toJson())),
       'skills': instance.skills.map((k, e) => MapEntry(k, e.toJson())),
       'skillPack': instance.skillPack.toJson(),
+      'salvage': instance.salvage.toJson(),
+      'materialResources': instance.materialResources,
       'start': instance.start.toJson(),
       'offlineCapMs': instance.offlineCapMs,
     };

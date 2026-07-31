@@ -120,18 +120,19 @@ void main() {
     }
   });
 
-  testWidgets('materials say what will fill them rather than nothing', (
+  testWidgets('materials are their own tab, and say what they are for', (
     tester,
   ) async {
-    // The tab exists before the thing it holds does, so the shape of the bag
-    // does not change under the player the day crafting lands.
     await stocked(tester);
     await openBag(tester);
 
     await tester.tap(find.text('MATERIALS'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Crafting materials'), findsOneWidget);
+    for (final material in testBalanceConfig.materialResources) {
+      expect(find.text(material.toUpperCase()), findsOneWidget);
+    }
+    expect(find.textContaining('Crafting will spend them'), findsOneWidget);
     expect(find.text('Blade'), findsNothing);
     expect(
       find.text('EQUIP BEST'),

@@ -101,7 +101,17 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
         children: [
           _Tabs(
             selected: _tab,
-            counts: {BagTab.gear: state.inventory.length, BagTab.materials: 0},
+            counts: {
+              BagTab.gear: state.inventory.length,
+              // Kinds the player actually holds, not kinds that exist: a tab
+              // reading "1" with nothing in it is worse than one reading "0".
+              BagTab.materials: config.materialResources
+                  .where(
+                    (key) =>
+                        (state.resources[key] ?? BigNum.zero) > BigNum.zero,
+                  )
+                  .length,
+            },
             onSelected: (tab) => setState(() => _tab = tab),
           ),
           Expanded(
@@ -115,23 +125,20 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 state: state,
                 slot: slot,
               ),
-              BagTab.materials => const _NotYet(
-                icon: Icons.science_outlined,
-                // Says what will fill it rather than pretending it is broken.
-                // Materials arrive with crafting (T-088); until then this tab
-                // exists so the shape of the bag does not change under the
-                // player the day they do.
-                message:
-                    'Crafting materials land here.\n'
-                    'Nothing drops them yet.',
-              ),
+              BagTab.materials => _MaterialsTab(config: config),
             },
           ),
           if (_tab == BagTab.gear)
             _BottomBar(
+              enabled: state.inventory.isNotEmpty,
+              junkLabel: _junkLabel(config, state.autoSalvageRank),
               onEquipBest: () =>
                   ref.read(gameControllerProvider.notifier).equipBest(),
-              enabled: state.inventory.isNotEmpty,
+              onSalvageJunk: state.autoSalvageRank < 0
+                  ? null
+                  : () => ref
+                        .read(gameControllerProvider.notifier)
+                        .salvageJunkUpTo(state.autoSalvageRank),
             ),
         ],
       ),
@@ -144,6 +151,18 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       if (slot.id == widget.slotId) return slot;
     }
     return null;
+  }
+
+  /// Names the rank the salvage button will take, so it cannot be pressed
+  /// blind. There is no undo for gear that has been broken down.
+  String _junkLabel(BalanceConfig config, int rank) {
+    if (rank < 0) return 'SALVAGE';
+
+    final named = config.rarities.entries
+        .where((entry) => entry.value.rank == rank)
+        .map((entry) => entry.key.toUpperCase());
+
+    return named.isEmpty ? 'SALVAGE' : 'SALVAGE ${named.first} ↓';
   }
 
   int _rank(OwnedItem owned, BalanceConfig config) {
@@ -278,6 +297,7 @@ class _GearTab extends StatelessWidget {
     return Column(
       children: [
         _Filters(kinds: kinds, selected: kind, onSelected: onKind),
+        _AutoSalvageRule(config: config, chosen: state.autoSalvageRank),
         Expanded(
           child: items.isEmpty
               ? _Empty(bagIsEmpty: state.inventory.isEmpty)
@@ -511,10 +531,211 @@ class _Empty extends StatelessWidget {
   }
 }
 
+/// The standing rule: what gets broken down the moment it drops.
+///
+/// Off by default, and off is a real option rather than a hidden one. A game
+/// that destroys gear nobody asked it to destroy is a game the player stops
+/// trusting, so the rule names the rarity in full — COMMON means common and
+/// everything below it.
+class _AutoSalvageRule extends ConsumerWidget {
+  const _AutoSalvageRule({required this.config, required this.chosen});
+
+  final BalanceConfig config;
+  final int chosen;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ranks = config.rarities.entries.toList()
+      ..sort((a, b) => a.value.rank.compareTo(b.value.rank));
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+      child: Row(
+        children: [
+          Text(
+            'AUTO SALVAGE',
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(fontSize: 9),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: SizedBox(
+              height: 24,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _RulePill(
+                    label: 'OFF',
+                    active: chosen < 0,
+                    colour: GamePalette.ash,
+                    onTap: () => ref
+                        .read(gameControllerProvider.notifier)
+                        .setAutoSalvageRank(-1),
+                  ),
+                  for (final entry in ranks)
+                    _RulePill(
+                      label: entry.key.toUpperCase(),
+                      active: chosen == entry.value.rank,
+                      colour: rarityColour(entry.value.rank),
+                      onTap: () => ref
+                          .read(gameControllerProvider.notifier)
+                          .setAutoSalvageRank(entry.value.rank),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RulePill extends StatelessWidget {
+  const _RulePill({
+    required this.label,
+    required this.active,
+    required this.colour,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool active;
+  final Color colour;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: active
+                ? colour.withValues(alpha: 0.22)
+                : GamePalette.forgeDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: active ? colour : GamePalette.forgeRaised,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 9,
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w700,
+              color: active ? GamePalette.bone : GamePalette.ash,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What breaking gear down has banked, and what it is for.
+class _MaterialsTab extends ConsumerWidget {
+  const _MaterialsTab({required this.config});
+
+  final BalanceConfig config;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (config.materialResources.isEmpty) {
+      return const _NotYet(
+        icon: Icons.science_outlined,
+        message: 'Crafting materials land here.\nNothing produces them yet.',
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
+      children: [
+        for (final key in config.materialResources)
+          _MaterialRow(resourceKey: key),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(4, 14, 4, 0),
+          child: Text(
+            'Breaking gear down pays these. Crafting will spend them.',
+            style: TextStyle(fontSize: 11, color: GamePalette.ash),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MaterialRow extends ConsumerWidget {
+  const _MaterialRow({required this.resourceKey});
+
+  final String resourceKey;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final held = ref.watch(resourceProvider(resourceKey));
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: GamePalette.forgeSurface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: GamePalette.forgeRaised),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(7),
+              border: Border.all(color: GamePalette.patina),
+              gradient: const LinearGradient(
+                colors: [Color(0x334FB3A0), GamePalette.forgeDark],
+              ),
+            ),
+            child: const Icon(
+              Icons.hexagon_outlined,
+              size: 17,
+              color: GamePalette.patina,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              resourceKey.toUpperCase(),
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ),
+          Text(held.format(), style: counterStyle(context, fontSize: 15)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Wear the best of it, or break down the rest.
 class _BottomBar extends StatelessWidget {
-  const _BottomBar({required this.onEquipBest, required this.enabled});
+  const _BottomBar({
+    required this.onEquipBest,
+    required this.onSalvageJunk,
+    required this.junkLabel,
+    required this.enabled,
+  });
 
   final VoidCallback onEquipBest;
+
+  /// Null when no standing rule is set: with no rank chosen there is nothing
+  /// for it to take, and a button that silently does nothing is worse than a
+  /// disabled one.
+  final VoidCallback? onSalvageJunk;
+
+  final String junkLabel;
   final bool enabled;
 
   @override
@@ -523,25 +744,63 @@ class _BottomBar extends StatelessWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
-        child: SizedBox(
-          width: double.infinity,
-          height: 44,
-          child: FilledButton(
-            onPressed: enabled ? onEquipBest : null,
-            style: FilledButton.styleFrom(
-              backgroundColor: GamePalette.emberDim,
-              disabledBackgroundColor: GamePalette.forgeRaised,
-              foregroundColor: GamePalette.bone,
-              disabledForegroundColor: GamePalette.ash,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
+        child: Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 44,
+                child: FilledButton(
+                  onPressed: enabled ? onEquipBest : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: GamePalette.emberDim,
+                    disabledBackgroundColor: GamePalette.forgeRaised,
+                    foregroundColor: GamePalette.bone,
+                    disabledForegroundColor: GamePalette.ash,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                  ),
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'EQUIP BEST',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-            child: const Text(
-              'EQUIP BEST',
-              style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.8),
+            const SizedBox(width: 10),
+            Expanded(
+              child: SizedBox(
+                height: 44,
+                child: OutlinedButton(
+                  onPressed: enabled ? onSalvageJunk : null,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: GamePalette.gold,
+                    disabledForegroundColor: GamePalette.ash,
+                    side: const BorderSide(color: GamePalette.forgeRaised),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      junkLabel,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

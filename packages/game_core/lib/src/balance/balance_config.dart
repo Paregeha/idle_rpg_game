@@ -9,6 +9,7 @@ import 'package:game_core/src/balance/lamp_config.dart';
 import 'package:game_core/src/balance/monster_config.dart';
 import 'package:game_core/src/balance/prestige_config.dart';
 import 'package:game_core/src/balance/progression_config.dart';
+import 'package:game_core/src/balance/salvage_config.dart';
 import 'package:game_core/src/balance/skill_config.dart';
 import 'package:game_core/src/balance/slot_config.dart';
 import 'package:game_core/src/balance/start_config.dart';
@@ -72,6 +73,15 @@ abstract class BalanceConfig with _$BalanceConfig {
 
     /// Where skill copies come from: the pack, bosses and monsters.
     @Default(SkillPackConfig()) SkillPackConfig skillPack,
+
+    /// What breaking an item down pays.
+    @Default(SalvageConfig()) SalvageConfig salvage,
+
+    /// Resources that are crafting materials rather than currencies.
+    ///
+    /// Data, because which of them exist is a balance decision. The bag shows
+    /// these on its own tab; the top row shows `displayedResources`.
+    @Default(<String>[]) List<String> materialResources,
 
     @Default(StartConfig()) StartConfig start,
 
@@ -325,6 +335,30 @@ abstract class BalanceConfig with _$BalanceConfig {
       throw BalanceConfigException(
         'guarantees "${lamp.pityRarity}", which no rarity defines',
         field: 'lamp.pityRarity',
+      );
+    }
+
+    for (final entry in salvage.yields.entries) {
+      if (!rarities.containsKey(entry.key)) {
+        throw BalanceConfigException(
+          'pays for "${entry.key}", which no rarity defines',
+          field: 'salvage.yields',
+        );
+      }
+      for (final payout in entry.value.entries) {
+        if (payout.value.isNegative) {
+          throw BalanceConfigException(
+            'must not be negative: salvage cannot charge the player',
+            field: 'salvage.yields.${entry.key}.${payout.key}',
+          );
+        }
+      }
+    }
+    if (salvage.levelMultiplier < 1) {
+      throw const BalanceConfigException(
+        'must be at least 1, or an upgraded item would salvage for less than '
+        'a fresh one and upgrading anything would be a trap',
+        field: 'salvage.levelMultiplier',
       );
     }
 
